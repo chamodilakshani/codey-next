@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math Race</title>
+    <style>
+      body { margin: 0; font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; display: grid; place-items: center; min-height: 100vh; }
+      .wrap { width: min(560px, 92vw); background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 18px; }
+      .q { font-size: 28px; margin: 14px 0; }
+      input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #475569; background: #0f172a; color: #fff; }
+      button { margin-top: 10px; padding: 10px 14px; border-radius: 999px; border: 0; background: #22c55e; color: #fff; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h2>Math Race</h2>
+      <p>Solve as many as you can in 30 seconds.</p>
+      <div>Time: <span id="time">30</span>s | Score: <span id="score">0</span></div>
+      <div id="question" class="q"></div>
+      <input id="answer" type="number" placeholder="Your answer" />
+      <button id="submit">Submit</button>
+      <p id="status"></p>
+    </div>
+    <script>
+      let a = 0, b = 0, op = "+", answer = 0, score = 0, time = 30;
+      const timeEl = document.getElementById("time");
+      const scoreEl = document.getElementById("score");
+      const qEl = document.getElementById("question");
+      const statusEl = document.getElementById("status");
+
+      function nextQuestion() {
+        a = Math.floor(Math.random() * 10) + 1;
+        b = Math.floor(Math.random() * 10) + 1;
+        op = Math.random() > 0.5 ? "+" : "-";
+        answer = op === "+" ? a + b : a - b;
+        qEl.textContent = `${a} ${op} ${b} = ?`;
+      }
+
+      function submit() {
+        const value = Number(document.getElementById("answer").value);
+        if (value === answer) {
+          score += 1;
+          statusEl.textContent = "Correct";
+          scoreEl.textContent = String(score);
+        } else {
+          statusEl.textContent = `Oops! Correct was ${answer}`;
+        }
+        document.getElementById("answer").value = "";
+        nextQuestion();
+      }
+
+      document.getElementById("submit").addEventListener("click", submit);
+      document.getElementById("answer").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submit();
+      });
+
+      const timer = setInterval(() => {
+        time -= 1;
+        timeEl.textContent = String(time);
+        if (time <= 0) {
+          clearInterval(timer);
+          statusEl.textContent = `Time up! Final score: ${score}`;
+          document.getElementById("submit").disabled = true;
+          document.getElementById("answer").disabled = true;
+        }
+      }, 1000);
+
+      nextQuestion();
+    </script>
+  </body>
+</html>

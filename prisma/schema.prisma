@@ -7,6 +7,18 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AgeGroup {
+  AGE_5_7
+  AGE_8_10
+  AGE_11_13
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
 model User { 
   id    Int     @id @default(autoincrement()) 
   email String  @unique
@@ -20,4 +32,51 @@ model Post {
   published Boolean @default(false) 
   authorId  Int
   author    User    @relation(fields: [authorId], references: [id]) 
-} 
+}
+
+model Course {
+  id               String     @id @default(cuid())
+  slug             String     @unique
+  title            String
+  shortDescription String
+  description      String
+  thumbnailUrl     String
+  ageGroup         AgeGroup
+  difficulty       Difficulty @default(BEGINNER)
+  durationMinutes  Int
+  isPublished      Boolean    @default(true)
+  displayOrder     Int        @default(0)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  lessons          Lesson[]
+}
+
+model Lesson {
+  id              String   @id @default(cuid())
+  courseId        String
+  title           String
+  slug            String
+  description     String
+  videoUrl        String
+  gameHtmlPath    String?
+  durationMinutes Int
+  displayOrder    Int      @default(0)
+  isPreview       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quiz            Quiz?
+
+  @@unique([courseId, slug])
+  @@index([courseId, displayOrder])
+}
+
+model Quiz {
+  id        String   @id @default(cuid())
+  lessonId  String   @unique
+  title     String
+  questions Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}

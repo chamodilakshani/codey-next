@@ -1,0 +1,171 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, PlayCircle } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { LessonQuiz } from "@/components/lesson/lesson-quiz";
+import { getLessonBySlugs } from "@/lib/course-data";
+
+type QuizQuestion = {
+  question: string;
+  options: string[];
+  answerIndex: number;
+  explanation?: string;
+};
+
+function normalizeQuizQuestions(value: unknown): QuizQuestion[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const normalized: Array<QuizQuestion | null> = value.map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const candidate = item as {
+        question?: unknown;
+        options?: unknown;
+        answerIndex?: unknown;
+        explanation?: unknown;
+      };
+
+      if (typeof candidate.question !== "string" || !Array.isArray(candidate.options)) {
+        return null;
+      }
+
+      const options = candidate.options.map((option) => String(option));
+      const answerIndex = Number(candidate.answerIndex);
+
+      if (!Number.isInteger(answerIndex) || answerIndex < 0 || answerIndex >= options.length) {
+        return null;
+      }
+
+      return {
+        question: candidate.question,
+        options,
+        answerIndex,
+        explanation:
+          typeof candidate.explanation === "string" ? candidate.explanation : undefined,
+      } satisfies QuizQuestion;
+    });
+
+  return normalized.filter((item): item is QuizQuestion => item !== null);
+}
+
+type LessonPageProps = {
+  params: Promise<{ courseSlug: string; lessonSlug: string }>;
+};
+
+export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
+  const { courseSlug, lessonSlug } = await params;
+  const lesson = await getLessonBySlugs(courseSlug, lessonSlug);
+
+  if (!lesson) {
+    return {
+      title: "Lesson Not Found",
+    };
+  }
+
+  return {
+    title: `${lesson.title} | ${lesson.course.title}`,
+    description: lesson.description,
+  };
+}
+
+export default async function LessonPage({ params }: LessonPageProps) {
+  const { courseSlug, lessonSlug } = await params;
+  const lesson = await getLessonBySlugs(courseSlug, lessonSlug);
+
+  if (!lesson || !lesson.course.isPublished) {
+    notFound();
+  }
+
+  const quizQuestions = normalizeQuizQuestions(lesson.quiz?.questions);
+
+  return (
+    <main className="min-h-full bg-background px-6 py-8 sm:px-10">
+      <section className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[2fr_1fr]">
+        <article className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-6">
+          <Button asChild variant="ghost" className="mb-4 px-0">
+            <Link href={`/courses/${courseSlug}`}>
+              <ArrowLeft className="mr-2 size-4" />
+              Back to course
+            </Link>
+          </Button>
+
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{lesson.title}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{lesson.description}</p>
+
+          <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-muted/30">
+            <div className="relative aspect-video w-full">
+              <iframe
+                src={lesson.videoUrl}
+                title={lesson.title}
+                className="absolute inset-0 h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          </div>
+
+          {lesson.quiz && quizQuestions.length > 0 ? (
+            <div className="mt-6">
+              <LessonQuiz title={lesson.quiz.title} questions={quizQuestions} />
+            </div>
+          ) : null}
+
+          {lesson.gameHtmlPath ? (
+            <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card p-4 sm:p-5">
+              <h2 className="text-xl font-semibold">Interactive Game</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Play this mini game to practice what you learned in this lesson.
+              </p>
+              <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted/20">
+                <div className="relative h-[520px] w-full">
+                  <iframe
+                    src={lesson.gameHtmlPath}
+                    title={`${lesson.title} interactive game`}
+                    className="absolute inset-0 h-full w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </article>
+
+        <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-sm font-semibold text-primary">Playlist</p>
+          <h2 className="mt-1 text-lg font-semibold">{lesson.course.title}</h2>
+
+          <div className="mt-4 space-y-2">
+            {lesson.course.lessons.map((item) => {
+              const isActive = item.slug === lesson.slug;
+
+              return (
+                <Link
+                  key={item.id}
+                  href={`/courses/${courseSlug}/lessons/${item.slug}`}
+                  className={[
+                    "flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition",
+                    isActive
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border hover:bg-muted",
+                  ].join(" ")}
+                >
+                  <span className="line-clamp-1">{item.title}</span>
+                  <span className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <PlayCircle className="size-3.5" />
+                    {item.durationMinutes}m
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </aside>
+      </section>
+    </main>
+  );
+}

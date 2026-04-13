@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Word Blast</title>
+    <style>
+      body { margin: 0; font-family: Arial, sans-serif; background: #111827; color: #f9fafb; display: grid; place-items: center; min-height: 100vh; }
+      .card { width: min(620px, 92vw); background: #1f2937; border: 1px solid #374151; border-radius: 16px; padding: 20px; }
+      .word { font-size: 34px; letter-spacing: 8px; text-align: center; margin: 18px 0; }
+      input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #4b5563; background: #111827; color: white; }
+      button { margin-top: 12px; padding: 10px 16px; border-radius: 999px; border: 0; background: #10b981; color: white; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Word Blast</h2>
+      <p>Unscramble the word and press Check.</p>
+      <div class="word" id="scrambled"></div>
+      <input id="guess" placeholder="Type your answer" />
+      <button id="check">Check</button>
+      <button id="next" style="background:#6366f1">Next Word</button>
+      <p id="status"></p>
+    </div>
+    <script>
+      const words = ["PLANET", "ROCKET", "CODING", "STORY", "GRAVITY", "PYTHON"];
+      let current = "";
+
+      function shuffle(text) {
+        const arr = text.split("");
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr.join("");
+      }
+
+      function nextWord() {
+        current = words[Math.floor(Math.random() * words.length)];
+        let mixed = shuffle(current);
+        while (mixed === current) mixed = shuffle(current);
+        document.getElementById("scrambled").textContent = mixed;
+        document.getElementById("guess").value = "";
+        document.getElementById("status").textContent = "";
+      }
+
+      document.getElementById("check").addEventListener("click", () => {
+        const guess = document.getElementById("guess").value.toUpperCase().trim();
+        document.getElementById("status").textContent = guess === current ? "Great job!" : "Try again!";
+      });
+
+      document.getElementById("next").addEventListener("click", nextWord);
+      nextWord();
+    </script>
+  </body>
+</html>

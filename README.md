@@ -1,4 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) course platform for kids with Prisma-backed courses, lessons, and an admin dashboard.
+
+## Environment setup
+
+Create a `.env` file based on `.env.example` and set these values:
+
+- `DATABASE_URL`: PostgreSQL connection string
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: Clerk publishable key
+- `CLERK_SECRET_KEY`: Clerk secret key
 
 ## Getting Started
 
@@ -15,6 +23,21 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+Run database commands as needed:
+
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
+
+## Admin dashboard
+
+- Clerk sign-in page: `/sign-in`
+- Admin dashboard: `/admin`
+
+The `/admin` route is protected by Clerk authentication via `proxy.ts`, and server actions also enforce Clerk auth checks.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
