@@ -25,15 +25,15 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "#",
+      title: "Users",
+      url: "/dashboard/users",
       icon: (
-        <LayoutDashboardIcon
+        <UsersIcon
         />
       ),
     },
     {
-      title: "Lifecycle",
+      title: "Courses",
       url: "#",
       icon: (
         <ListIcon
@@ -41,7 +41,7 @@ const data = {
       ),
     },
     {
-      title: "Analytics",
+      title: "Lessons",
       url: "#",
       icon: (
         <ChartBarIcon
@@ -49,21 +49,14 @@ const data = {
       ),
     },
     {
-      title: "Projects",
+      title: "Quizzes",
       url: "#",
       icon: (
         <FolderIcon
         />
       ),
     },
-    {
-      title: "Team",
-      url: "#",
-      icon: (
-        <UsersIcon
-        />
-      ),
-    },
+    
   ],
   navClouds: [
     {
@@ -196,8 +189,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* <NavDocuments items={data.documents} /> */}
+        {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
