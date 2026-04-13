@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { AppSidebar } from "@/components/app-sidebar"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { SectionCards } from "@/components/section-cards"
