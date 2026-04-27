@@ -1,14 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { getRoleFromSessionClaims, getRoleFromUser } from "@/lib/clerk-role";
 
 import { AgeGroup, Difficulty } from "@/app/generated/prisma/enums";
 import prisma from "@/lib/prisma";
 
 async function requireAdminSession() {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const claimRole = getRoleFromSessionClaims(sessionClaims);
+  if (claimRole === "admin") {
+    return;
+  }
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  const metadataRole = getRoleFromUser(user);
+  if (metadataRole !== "admin") {
     throw new Error("Unauthorized");
   }
 }
@@ -156,6 +169,10 @@ function normalizeSlug(value: string) {
 function revalidateAdminAndSite() {
   revalidatePath("/");
   revalidatePath("/admin");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/courses");
+  revalidatePath("/dashboard/lessons");
+  revalidatePath("/dashboard/quizzes");
   revalidatePath("/courses/[courseSlug]", "page");
   revalidatePath("/courses/[courseSlug]/lessons/[lessonSlug]", "page");
 }
@@ -231,7 +248,10 @@ export async function createLessonAction(formData: FormData) {
     },
   });
 
-  await saveQuizForLesson(lesson.id, formData);
+  const hasQuizFields = formData.has("quizTitle") || formData.has("quizQuestionsJson");
+  if (hasQuizFields) {
+    await saveQuizForLesson(lesson.id, formData);
+  }
 
   revalidateAdminAndSite();
 }
@@ -243,6 +263,7 @@ export async function updateLessonAction(formData: FormData) {
   await prisma.lesson.update({
     where: { id },
     data: {
+      courseId: getRequiredString(formData, "courseId"),
       title: getRequiredString(formData, "title"),
       slug: normalizeSlug(getRequiredString(formData, "slug")),
       description: getRequiredString(formData, "description"),
@@ -254,7 +275,10 @@ export async function updateLessonAction(formData: FormData) {
     },
   });
 
-  await saveQuizForLesson(id, formData);
+  const hasQuizFields = formData.has("quizTitle") || formData.has("quizQuestionsJson");
+  if (hasQuizFields) {
+    await saveQuizForLesson(id, formData);
+  }
 
   revalidateAdminAndSite();
 }
@@ -264,6 +288,55 @@ export async function deleteLessonAction(formData: FormData) {
   const id = getRequiredString(formData, "id");
 
   await prisma.lesson.delete({ where: { id } });
+
+  revalidateAdminAndSite();
+}
+
+export async function createQuizAction(formData: FormData) {
+  await requireAdminSession();
+  const lessonId = getRequiredString(formData, "lessonId");
+  const title = getRequiredString(formData, "title");
+  const quizQuestionsJson = getRequiredString(formData, "quizQuestionsJson");
+  const questions = parseQuizQuestions(quizQuestionsJson);
+
+  await prisma.quiz.create({
+    data: {
+      lessonId,
+      title,
+      questions: questions as unknown as object,
+    },
+  });
+
+  revalidateAdminAndSite();
+}
+
+export async function updateQuizAction(formData: FormData) {
+  await requireAdminSession();
+  const id = getRequiredString(formData, "id");
+  const lessonId = getRequiredString(formData, "lessonId");
+  const title = getRequiredString(formData, "title");
+  const quizQuestionsJson = getRequiredString(formData, "quizQuestionsJson");
+  const questions = parseQuizQuestions(quizQuestionsJson);
+
+  await prisma.quiz.update({
+    where: { id },
+    data: {
+      lessonId,
+      title,
+      questions: questions as unknown as object,
+    },
+  });
+
+  revalidateAdminAndSite();
+}
+
+export async function deleteQuizAction(formData: FormData) {
+  await requireAdminSession();
+  const id = getRequiredString(formData, "id");
+
+  await prisma.quiz.delete({
+    where: { id },
+  });
 
   revalidateAdminAndSite();
 }

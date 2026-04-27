@@ -16,9 +16,10 @@ type QuizQuestion = {
 type LessonQuizProps = {
   title: string;
   questions: QuizQuestion[];
+  onSubmitted?: (result: { total: number; correct: number; percent: number }) => void;
 };
 
-export function LessonQuiz({ title, questions }: LessonQuizProps) {
+export function LessonQuiz({ title, questions, onSubmitted }: LessonQuizProps) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -72,7 +73,13 @@ export function LessonQuiz({ title, questions }: LessonQuizProps) {
         ))}
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="button" onClick={() => setIsSubmitted(true)}>
+          <Button
+            type="button"
+            onClick={() => {
+              setIsSubmitted(true);
+              onSubmitted?.(result);
+            }}
+          >
             Check Answers
           </Button>
           <Button

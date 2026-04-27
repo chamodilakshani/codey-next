@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { ArrowLeft, PlayCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { LessonQuiz } from "@/components/lesson/lesson-quiz";
+import { LessonLearningFlow } from "@/components/lesson/lesson-learning-flow";
 import { getLessonBySlugs } from "@/lib/course-data";
+import {
+  getRoleFromSessionClaims,
+  parseLessonActivityMap,
+} from "@/lib/clerk-role";
 
 type QuizQuestion = {
   question: string;
@@ -13,6 +18,23 @@ type QuizQuestion = {
   answerIndex: number;
   explanation?: string;
 };
+
+function resolveGamePath(gameHtmlPath: string | null | undefined) {
+  if (!gameHtmlPath) {
+    return null;
+  }
+
+  const trimmedPath = gameHtmlPath.trim();
+  if (!trimmedPath) {
+    return null;
+  }
+
+  if (trimmedPath.startsWith("http://") || trimmedPath.startsWith("https://")) {
+    return trimmedPath;
+  }
+
+  return trimmedPath.startsWith("/") ? trimmedPath : `/${trimmedPath}`;
+}
 
 function normalizeQuizQuestions(value: unknown): QuizQuestion[] {
   if (!Array.isArray(value)) {
@@ -83,6 +105,23 @@ export default async function LessonPage({ params }: LessonPageProps) {
   }
 
   const quizQuestions = normalizeQuizQuestions(lesson.quiz?.questions);
+  const gamePath = resolveGamePath(lesson.gameHtmlPath);
+  const { userId, sessionClaims } = await auth();
+  const role = getRoleFromSessionClaims(sessionClaims);
+  const isSignedIn = Boolean(userId);
+  const isLearner = isSignedIn && role === "learner";
+
+  let initialVideoCompleted = false;
+  let initialGamePlayed = false;
+
+  if (isLearner && userId) {
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const activityMap = parseLessonActivityMap(user.privateMetadata?.lessonActivity);
+    const activity = activityMap[lesson.id];
+    initialVideoCompleted = Boolean(activity?.videoCompletedAt);
+    initialGamePlayed = Boolean(activity?.gamePlayedAt);
+  }
 
   return (
     <main className="min-h-full bg-background px-6 py-8 sm:px-10">
@@ -98,42 +137,20 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{lesson.title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{lesson.description}</p>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-muted/30">
-            <div className="relative aspect-video w-full">
-              <iframe
-                src={lesson.videoUrl}
-                title={lesson.title}
-                className="absolute inset-0 h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
-            </div>
-          </div>
-
-          {lesson.quiz && quizQuestions.length > 0 ? (
-            <div className="mt-6">
-              <LessonQuiz title={lesson.quiz.title} questions={quizQuestions} />
-            </div>
-          ) : null}
-
-          {lesson.gameHtmlPath ? (
-            <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card p-4 sm:p-5">
-              <h2 className="text-xl font-semibold">Interactive Game</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Play this mini game to practice what you learned in this lesson.
-              </p>
-              <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted/20">
-                <div className="relative h-[520px] w-full">
-                  <iframe
-                    src={lesson.gameHtmlPath}
-                    title={`${lesson.title} interactive game`}
-                    className="absolute inset-0 h-full w-full"
-                  />
-                </div>
-              </div>
-            </div>
-          ) : null}
+          <LessonLearningFlow
+            lessonId={lesson.id}
+            courseSlug={courseSlug}
+            lessonSlug={lessonSlug}
+            lessonTitle={lesson.title}
+            videoUrl={lesson.videoUrl}
+            gamePath={gamePath}
+            quizTitle={lesson.quiz?.title ?? null}
+            quizQuestions={quizQuestions}
+            isSignedIn={isSignedIn}
+            isLearner={isLearner}
+            initialVideoCompleted={initialVideoCompleted}
+            initialGamePlayed={initialGamePlayed}
+          />
         </article>
 
         <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm">

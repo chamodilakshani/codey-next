@@ -71,38 +71,48 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 Start First Lesson
               </Link>
             </Button>
-          ) : null}
+          ) : (
+            <p className="mt-6 text-sm text-muted-foreground">
+              Lessons for this course are being prepared. Check back soon.
+            </p>
+          )}
         </div>
 
         <section className="grid gap-4">
           <h2 className="text-xl font-semibold">Lessons</h2>
 
-          {course.lessons.map((lesson) => (
-            <article
-              key={lesson.id}
-              className="rounded-2xl border border-border bg-card p-5 shadow-sm"
-            >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Lesson {lesson.displayOrder}</p>
-                  <h3 className="text-lg font-semibold">{lesson.title}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{lesson.description}</p>
-                </div>
+          {course.lessons.length > 0 ? (
+            course.lessons.map((lesson) => (
+              <article
+                key={lesson.id}
+                className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Lesson {lesson.displayOrder}</p>
+                    <h3 className="text-lg font-semibold">{lesson.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">{lesson.description}</p>
+                  </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-muted-foreground">
-                    {lesson.durationMinutes} mins
-                  </span>
-                  <Button asChild variant="outline">
-                    <Link href={`/courses/${course.slug}/lessons/${lesson.slug}`}>
-                      <PlayCircle className="mr-1 size-4" />
-                      Watch
-                    </Link>
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">
+                      {lesson.durationMinutes} mins
+                    </span>
+                    <Button asChild variant="outline">
+                      <Link href={`/courses/${course.slug}/lessons/${lesson.slug}`}>
+                        <PlayCircle className="mr-1 size-4" />
+                        Watch
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))
+          ) : (
+            <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+              No lessons available for this course yet.
+            </p>
+          )}
         </section>
       </section>
     </main>

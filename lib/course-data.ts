@@ -83,3 +83,16 @@ export function getCourseCount() {
     where: { isPublished: true },
   });
 }
+
+export function getAllcourses() {
+  return prisma.course.findMany({
+    include: {
+      lessons: {
+        orderBy: {
+          displayOrder: "asc",
+        },
+      },
+    },
+    orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+  });
+}
