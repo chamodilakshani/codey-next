@@ -52,14 +52,58 @@ function isYouTubeUrl(url: string) {
   return /youtube\.com|youtu\.be/.test(url);
 }
 
-function withYouTubeApiParams(url: string) {
+function toYouTubeEmbedUrl(url: string) {
   if (!isYouTubeUrl(url)) {
     return url;
   }
 
-  const hasQuery = url.includes("?");
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "");
+
+    let videoId = "";
+    if (host === "youtu.be") {
+      videoId = parsed.pathname.replace("/", "");
+    } else if (host === "youtube.com" || host === "m.youtube.com") {
+      if (parsed.pathname === "/watch") {
+        videoId = parsed.searchParams.get("v") ?? "";
+      } else if (parsed.pathname.startsWith("/embed/")) {
+        videoId = parsed.pathname.replace("/embed/", "");
+      } else if (parsed.pathname.startsWith("/shorts/")) {
+        videoId = parsed.pathname.replace("/shorts/", "");
+      }
+    }
+
+    if (!videoId) {
+      return url;
+    }
+
+    const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
+    const start = parsed.searchParams.get("t") ?? parsed.searchParams.get("start");
+    if (start) {
+      const seconds = start.replace("s", "");
+      if (/^\d+$/.test(seconds)) {
+        embedUrl.searchParams.set("start", seconds);
+      }
+    }
+
+    return embedUrl.toString();
+  } catch {
+    return url;
+  }
+}
+
+function withYouTubeApiParams(url: string) {
+  const normalized = toYouTubeEmbedUrl(url);
+  if (!isYouTubeUrl(normalized)) {
+    return normalized;
+  }
+
+  const hasQuery = normalized.includes("?");
   const separator = hasQuery ? "&" : "?";
-  const withJsApi = url.includes("enablejsapi=") ? url : `${url}${separator}enablejsapi=1`;
+  const withJsApi = normalized.includes("enablejsapi=")
+    ? normalized
+    : `${normalized}${separator}enablejsapi=1`;
   return withJsApi;
 }
 

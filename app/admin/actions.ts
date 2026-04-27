@@ -57,6 +57,14 @@ function getOptionalString(formData: FormData, key: string) {
   return value.length > 0 ? value : null;
 }
 
+function getRoleFromFormData(formData: FormData) {
+  const role = getString(formData, "role");
+  if (role === "admin" || role === "learner") {
+    return role;
+  }
+  return "learner";
+}
+
 type QuizQuestion = {
   question: string;
   options: string[];
@@ -170,11 +178,59 @@ function revalidateAdminAndSite() {
   revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/users");
   revalidatePath("/dashboard/courses");
   revalidatePath("/dashboard/lessons");
   revalidatePath("/dashboard/quizzes");
   revalidatePath("/courses/[courseSlug]", "page");
   revalidatePath("/courses/[courseSlug]/lessons/[lessonSlug]", "page");
+}
+
+export async function createUserAction(formData: FormData) {
+  await requireAdminSession();
+  const email = getRequiredString(formData, "email");
+  const password = getRequiredString(formData, "password");
+  const name = getOptionalString(formData, "name");
+  const role = getRoleFromFormData(formData);
+
+  const client = await clerkClient();
+  await client.users.createUser({
+    emailAddress: [email],
+    password,
+    firstName: name ?? undefined,
+    publicMetadata: {
+      role,
+    },
+  });
+
+  revalidateAdminAndSite();
+}
+
+export async function updateUserAction(formData: FormData) {
+  await requireAdminSession();
+  const id = getRequiredString(formData, "id");
+  const name = getOptionalString(formData, "name");
+  const role = getRoleFromFormData(formData);
+
+  const client = await clerkClient();
+  await client.users.updateUser(id, {
+    firstName: name ?? undefined,
+    publicMetadata: {
+      role,
+    },
+  });
+
+  revalidateAdminAndSite();
+}
+
+export async function deleteUserAction(formData: FormData) {
+  await requireAdminSession();
+  const id = getRequiredString(formData, "id");
+
+  const client = await clerkClient();
+  await client.users.deleteUser(id);
+
+  revalidateAdminAndSite();
 }
 
 export async function createCourseAction(formData: FormData) {
