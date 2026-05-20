@@ -8,6 +8,7 @@ import {
   getAgeGroupLabel,
   getCourseBySlug,
   getDifficultyLabel,
+  getLevelsByCourseSlug,
 } from "@/lib/course-data";
 
 type CoursePageProps = {
@@ -33,12 +34,17 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 export default async function CoursePage({ params }: CoursePageProps) {
   const { courseSlug } = await params;
   const course = await getCourseBySlug(courseSlug);
+  const levels = await getLevelsByCourseSlug(courseSlug);
 
   if (!course || !course.isPublished) {
     notFound();
   }
 
-  const firstLesson = course.lessons[0];
+  const courseWithLevels = { ...course, levels };
+  const levelLessons = courseWithLevels.levels.flatMap((level) => level.lessons);
+  const totalLessons = levelLessons.length || courseWithLevels.lessons.length;
+  const firstLevel = courseWithLevels.levels[0] ?? null;
+  const firstLesson = firstLevel?.lessons[0] ?? courseWithLevels.lessons[0] ?? null;
 
   return (
     <main className="min-h-full bg-background px-6 py-8 sm:px-10">
@@ -51,7 +57,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 font-medium text-secondary-foreground">
               <BookOpenCheck className="size-4" />
-              {course.lessons.length} lessons
+              {totalLessons} lessons
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 font-medium text-muted-foreground">
               <Clock3 className="size-4" />
@@ -67,7 +73,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
           {firstLesson ? (
             <Button asChild className="mt-6">
-              <Link href={`/courses/${course.slug}/lessons/${firstLesson.slug}`}>
+              <Link
+                href={
+                  firstLevel
+                    ? `/courses/${course.slug}/levels/${firstLevel.slug}/lessons/${firstLesson.slug}`
+                    : `/courses/${course.slug}/lessons/${firstLesson.slug}`
+                }
+              >
                 Start First Lesson
               </Link>
             </Button>
@@ -79,9 +91,38 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
 
         <section className="grid gap-4">
-          <h2 className="text-xl font-semibold">Lessons</h2>
+          <h2 className="text-xl font-semibold">Levels</h2>
 
-          {course.lessons.length > 0 ? (
+          {courseWithLevels.levels.length > 0 ? (
+            courseWithLevels.levels.map((level) => (
+              <article
+                key={level.id}
+                className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">{level.title}</p>
+                    <h3 className="text-lg font-semibold">{level.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {level.lessons.length} lessons
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground">
+                      Level {level.displayOrder}
+                    </span>
+                    <Button asChild variant="outline">
+                      <Link href={`/courses/${course.slug}/levels/${level.slug}`}>
+                        <PlayCircle className="mr-1 size-4" />
+                        Open Level
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </article>
+            ))
+          ) : course.lessons.length > 0 ? (
             course.lessons.map((lesson) => (
               <article
                 key={lesson.id}
@@ -110,7 +151,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             ))
           ) : (
             <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-              No lessons available for this course yet.
+              No levels or lessons available for this course yet.
             </p>
           )}
         </section>

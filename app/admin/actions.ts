@@ -180,6 +180,7 @@ function revalidateAdminAndSite() {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/users");
   revalidatePath("/dashboard/courses");
+  revalidatePath("/dashboard/levels");
   revalidatePath("/dashboard/lessons");
   revalidatePath("/dashboard/quizzes");
   revalidatePath("/courses/[courseSlug]", "page");
@@ -344,6 +345,47 @@ export async function deleteLessonAction(formData: FormData) {
   const id = getRequiredString(formData, "id");
 
   await prisma.lesson.delete({ where: { id } });
+
+  revalidateAdminAndSite();
+}
+
+export async function createLevelAction(formData: FormData) {
+  await requireAdminSession();
+
+  await prisma.level.create({
+    data: {
+      courseId: getRequiredString(formData, "courseId"),
+      title: getRequiredString(formData, "title"),
+      slug: normalizeSlug(getRequiredString(formData, "slug")),
+      displayOrder: Math.max(0, getNumber(formData, "displayOrder", 0)),
+    },
+  });
+
+  revalidateAdminAndSite();
+}
+
+export async function updateLevelAction(formData: FormData) {
+  await requireAdminSession();
+  const id = getRequiredString(formData, "id");
+
+  await prisma.level.update({
+    where: { id },
+    data: {
+      courseId: getRequiredString(formData, "courseId"),
+      title: getRequiredString(formData, "title"),
+      slug: normalizeSlug(getRequiredString(formData, "slug")),
+      displayOrder: Math.max(0, getNumber(formData, "displayOrder", 0)),
+    },
+  });
+
+  revalidateAdminAndSite();
+}
+
+export async function deleteLevelAction(formData: FormData) {
+  await requireAdminSession();
+  const id = getRequiredString(formData, "id");
+
+  await prisma.level.delete({ where: { id } });
 
   revalidateAdminAndSite();
 }

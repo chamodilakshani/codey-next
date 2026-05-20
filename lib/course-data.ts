@@ -35,16 +35,44 @@ export async function getCourseBySlug(courseSlug: string) {
   });
 }
 
-export async function getLessonBySlugs(courseSlug: string, lessonSlug: string) {
+export async function getLevelsByCourseSlug(courseSlug: string) {
+  return prisma.level.findMany({
+    where: {
+      course: {
+        slug: courseSlug,
+      },
+    },
+    include: {
+      lessons: {
+        orderBy: {
+          displayOrder: "asc",
+        },
+      },
+    },
+    orderBy: {
+      displayOrder: "asc",
+    },
+  });
+}
+
+export async function getLessonBySlugs(courseSlug: string, lessonSlug: string, levelSlug?: string) {
   return prisma.lesson.findFirst({
     where: {
       slug: lessonSlug,
       course: {
         slug: courseSlug,
       },
+      ...(levelSlug
+        ? {
+            level: {
+              slug: levelSlug,
+            },
+          }
+        : {}),
     },
     include: {
       quiz: true,
+      level: true,
       course: {
         include: {
           lessons: {
