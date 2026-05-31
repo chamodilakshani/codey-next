@@ -59,6 +59,27 @@ export async function getCourseBySlug(courseSlug: string) {
   return course ? { ...course, lessons: flattenCourseLessons(course) } : null;
 }
 
+export async function getLevelsByCourseSlug(courseSlug: string) {
+  return prisma.level.findMany({
+    where: {
+      course: {
+        slug: courseSlug,
+      },
+    },
+    include: {
+      levels: {
+        orderBy: { displayOrder: "asc" },
+        include: { lessons: { orderBy: { displayOrder: "asc" } } },
+      },
+    },
+    orderBy: {
+      displayOrder: "asc",
+    },
+  });
+
+  return course ? { ...course, lessons: flattenCourseLessons(course) } : null;
+}
+
 export async function getLessonBySlugs(courseSlug: string, lessonSlug: string) {
   return prisma.lesson.findFirst({
     where: {

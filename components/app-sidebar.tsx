@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CommandIcon } from "lucide-react"
+import { ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CommandIcon, Layers } from "lucide-react"
 
 const data = {
   user: {
@@ -35,6 +35,14 @@ const data = {
       url: "/dashboard/courses",
       icon: (
         <ListIcon
+        />
+      ),
+    },
+    {
+      title: "Levels",
+      url: "/dashboard/levels",
+      icon: (
+        <Layers
         />
       ),
     },

@@ -8,6 +8,7 @@ import {
   getAgeGroupLabel,
   getCourseBySlug,
   getDifficultyLabel,
+  getLevelsByCourseSlug,
 } from "@/lib/course-data";
 
 type CoursePageProps = {
@@ -33,12 +34,17 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 export default async function CoursePage({ params }: CoursePageProps) {
   const { courseSlug } = await params;
   const course = await getCourseBySlug(courseSlug);
+  const levels = await getLevelsByCourseSlug(courseSlug);
 
   if (!course || !course.isPublished) {
     notFound();
   }
 
-  const firstLesson = course.lessons[0];
+  const courseWithLevels = { ...course, levels };
+  const levelLessons = courseWithLevels.levels.flatMap((level) => level.lessons);
+  const totalLessons = levelLessons.length || courseWithLevels.lessons.length;
+  const firstLevel = courseWithLevels.levels[0] ?? null;
+  const firstLesson = firstLevel?.lessons[0] ?? courseWithLevels.lessons[0] ?? null;
 
   return (
     <main className="min-h-full bg-background px-6 py-8 sm:px-10">
@@ -51,7 +57,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 font-medium text-secondary-foreground">
               <BookOpenCheck className="size-4" />
-              {course.lessons.length} lessons
+              {totalLessons} lessons
             </span>
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 font-medium text-muted-foreground">
               <Clock3 className="size-4" />
@@ -67,7 +73,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
           {firstLesson ? (
             <Button asChild className="mt-6">
-              <Link href={`/courses/${course.slug}/lessons/${firstLesson.slug}`}>
+              <Link
+                href={
+                  firstLevel
+                    ? `/courses/${course.slug}/levels/${firstLevel.slug}/lessons/${firstLesson.slug}`
+                    : `/courses/${course.slug}/lessons/${firstLesson.slug}`
+                }
+              >
                 Start First Lesson
               </Link>
             </Button>
@@ -115,7 +127,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             ))
           ) : (
             <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-              No lessons available for this course yet.
+              No levels or lessons available for this course yet.
             </p>
           )}
         </section>
