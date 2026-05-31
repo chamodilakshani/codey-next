@@ -292,7 +292,7 @@ export async function createLessonAction(formData: FormData) {
   await requireAdminSession();
   const lesson = await prisma.lesson.create({
     data: {
-      courseId: getRequiredString(formData, "courseId"),
+      levelId: getRequiredString(formData, "levelId"),
       title: getRequiredString(formData, "title"),
       slug: normalizeSlug(getRequiredString(formData, "slug")),
       description: getRequiredString(formData, "description"),
@@ -319,7 +319,7 @@ export async function updateLessonAction(formData: FormData) {
   await prisma.lesson.update({
     where: { id },
     data: {
-      courseId: getRequiredString(formData, "courseId"),
+      levelId: getRequiredString(formData, "levelId"),
       title: getRequiredString(formData, "title"),
       slug: normalizeSlug(getRequiredString(formData, "slug")),
       description: getRequiredString(formData, "description"),

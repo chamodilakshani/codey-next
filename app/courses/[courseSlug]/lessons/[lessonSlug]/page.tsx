@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
   }
 
   return {
-    title: `${lesson.title} | ${lesson.course.title}`,
+    title: `${lesson.title} | ${lesson.level.course.title}`,
     description: lesson.description,
   };
 }
@@ -100,7 +100,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const { courseSlug, lessonSlug } = await params;
   const lesson = await getLessonBySlugs(courseSlug, lessonSlug);
 
-  if (!lesson || !lesson.course.isPublished) {
+  if (!lesson || !lesson.level.course.isPublished) {
     notFound();
   }
 
@@ -144,6 +144,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             lessonTitle={lesson.title}
             videoUrl={lesson.videoUrl}
             gamePath={gamePath}
+            quizId={lesson.quiz?.id ?? null}
             quizTitle={lesson.quiz?.title ?? null}
             quizQuestions={quizQuestions}
             isSignedIn={isSignedIn}
@@ -155,10 +156,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
         <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm">
           <p className="text-sm font-semibold text-primary">Playlist</p>
-          <h2 className="mt-1 text-lg font-semibold">{lesson.course.title}</h2>
+          <h2 className="mt-1 text-lg font-semibold">{lesson.level.course.title}</h2>
 
           <div className="mt-4 space-y-2">
-            {lesson.course.lessons.map((item) => {
+            {lesson.level.course.levels.flatMap((level) => level.lessons).map((item) => {
               const isActive = item.slug === lesson.slug;
 
               return (

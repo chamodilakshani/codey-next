@@ -36,32 +36,30 @@ export async function getAdminDashboardData() {
     }),
     prisma.course.findMany({
       include: {
-        lessons: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            isPreview: true,
-            quiz: {
+        levels: {
+          include: {
+            lessons: {
               select: {
                 id: true,
+                title: true,
+                slug: true,
+                isPreview: true,
+                quiz: {
+                  select: {
+                    id: true,
+                  },
+                },
               },
+              orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
             },
           },
-          orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
         },
       },
       orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
     }),
     prisma.lesson.findMany({
       include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-          },
-        },
+        level: { include: { course: { select: { id: true, title: true, slug: true } } } },
         quiz: {
           select: {
             id: true,
@@ -73,20 +71,16 @@ export async function getAdminDashboardData() {
     }),
     prisma.quiz.findMany({
       include: {
-        lesson: {
-          include: {
-            course: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-          },
-        },
+        lesson: { include: { level: { include: { course: { select: { id: true, title: true } } } } } },
       },
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
     }),
   ])
+
+  const coursesWithLessons = courses.map((course) => {
+    const lessons = course.levels.flatMap((level) => level.lessons);
+    return { ...course, lessons };
+  });
 
   return {
     counts: {
@@ -102,7 +96,7 @@ export async function getAdminDashboardData() {
       publishedPostCount: user.posts.filter((post) => post.published).length,
     })),
     posts,
-    courses: courses.map((course) => ({
+    courses: coursesWithLessons.map((course) => ({
       ...course,
       ageGroupLabel: getAgeGroupLabel(course.ageGroup),
       difficultyLabel: getDifficultyLabel(course.difficulty),
@@ -120,7 +114,7 @@ export async function getAdminDashboardData() {
         label: user.name?.trim() || user.email,
         email: user.email,
       })),
-      courses: courses.map((course) => ({
+      courses: coursesWithLessons.map((course) => ({
         id: course.id,
         title: course.title,
         slug: course.slug,
@@ -128,7 +122,7 @@ export async function getAdminDashboardData() {
       lessons: lessons.map((lesson) => ({
         id: lesson.id,
         title: lesson.title,
-        courseTitle: lesson.course.title,
+        courseTitle: lesson.level.course.title,
       })),
     },
   }

@@ -5,19 +5,29 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import prisma from "@/lib/prisma";
 
 export default async function LessonsPage() {
-  const [courses, lessons] = await prisma.$transaction([
-    prisma.course.findMany({
+  const [levels, lessons] = await prisma.$transaction([
+    prisma.level.findMany({
       select: {
         id: true,
         title: true,
-      },
-      orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
-    }),
-    prisma.lesson.findMany({
-      include: {
         course: {
           select: {
             title: true,
+          },
+        },
+      },
+      orderBy: [{ courseId: "asc" }, { displayOrder: "asc" }],
+    }),
+    prisma.lesson.findMany({
+      include: {
+        level: {
+          select: {
+            title: true,
+            course: {
+              select: {
+                title: true,
+              },
+            },
           },
         },
         quiz: {
@@ -32,8 +42,9 @@ export default async function LessonsPage() {
 
   const lessonRows = lessons.map((lesson) => ({
     id: lesson.id,
-    courseId: lesson.courseId,
-    courseTitle: lesson.course.title,
+    levelId: lesson.levelId,
+    levelTitle: lesson.level.title,
+    courseTitle: lesson.level.course.title,
     title: lesson.title,
     slug: lesson.slug,
     description: lesson.description,
@@ -45,9 +56,9 @@ export default async function LessonsPage() {
     hasQuiz: Boolean(lesson.quiz),
   }));
 
-  const courseOptions = courses.map((course) => ({
-    id: course.id,
-    title: course.title,
+  const levelOptions = levels.map((level) => ({
+    id: level.id,
+    title: `${level.course.title} / ${level.title}`,
   }));
 
   return (
@@ -65,7 +76,7 @@ export default async function LessonsPage() {
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
-              <LessonsCrudTable lessons={lessonRows} courses={courseOptions} />
+              <LessonsCrudTable lessons={lessonRows} levels={levelOptions} />
             </div>
           </div>
         </div>

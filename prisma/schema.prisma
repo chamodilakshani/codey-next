@@ -48,12 +48,29 @@ model Course {
   displayOrder     Int        @default(0)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-  lessons          Lesson[]
+  levels           Level[]
+  certificates     Certificate[]
+}
+
+model Level {
+  id           String   @id @default(cuid())
+  courseId     String
+  title        String
+  slug         String
+  description  String?
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons      Lesson[]
+
+  @@unique([courseId, slug])
+  @@index([courseId, displayOrder])
 }
 
 model Lesson {
   id              String   @id @default(cuid())
-  courseId        String
+  levelId         String
   title           String
   slug            String
   description     String
@@ -64,19 +81,63 @@ model Lesson {
   isPreview       Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  level           Level    @relation(fields: [levelId], references: [id], onDelete: Cascade)
   quiz            Quiz?
 
-  @@unique([courseId, slug])
-  @@index([courseId, displayOrder])
+  @@unique([levelId, slug])
+  @@index([levelId, displayOrder])
 }
 
 model Quiz {
-  id        String   @id @default(cuid())
-  lessonId  String   @unique
+  id        String        @id @default(cuid())
+  lessonId  String        @unique
   title     String
   questions Json
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  lesson    Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  attempts  QuizAttempt[]
+}
+
+model Certificate {
+  id              String   @id @default(cuid())
+  userId          String   // Clerk user ID
+  courseId        String
+  issuedAt        DateTime @default(now())
+  certificateCode String   @unique
+  course          Course   @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([certificateCode])
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  userId    String   // Clerk user ID
+  quizId    String
+  score     Int      // Number of correct answers
+  total     Int      // Total questions
+  percent   Int      // Percentage score
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers   QuizAnswer[]
+
+  @@index([userId])
+  @@index([quizId])
+}
+
+model QuizAnswer {
+  id          String      @id @default(cuid())
+  attemptId   String
+  questionIndex Int
+  selectedOptionIndex Int
+  isCorrect   Boolean
+  question    String      // Store the question text for reference
+  options     Json        // Store options for reference
+  correctAnswerIndex Int
+  explanation String?
+  attempt     QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@index([attemptId])
 }

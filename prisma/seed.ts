@@ -286,12 +286,22 @@ async function main() {
       },
     });
 
-    await prisma.lesson.deleteMany({ where: { courseId: existing.id } });
+    await prisma.lesson.deleteMany({ where: { level: { courseId: existing.id } } });
+    await prisma.level.deleteMany({ where: { courseId: existing.id } });
+
+    const level = await prisma.level.create({
+      data: {
+        courseId: existing.id,
+        title: "Level 1",
+        slug: "level-1",
+        displayOrder: 1,
+      },
+    });
 
     for (const [index, lesson] of course.lessons.entries()) {
       const createdLesson = await prisma.lesson.create({
         data: {
-          courseId: existing.id,
+          levelId: level.id,
           title: lesson.title,
           slug: lesson.slug,
           description: lesson.description,

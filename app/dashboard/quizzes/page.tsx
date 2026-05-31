@@ -10,11 +10,7 @@ export default async function QuizzesPage() {
       select: {
         id: true,
         title: true,
-        course: {
-          select: {
-            title: true,
-          },
-        },
+        level: { select: { course: { select: { title: true } } } },
       },
       orderBy: [{ createdAt: "desc" }],
     }),
@@ -23,11 +19,7 @@ export default async function QuizzesPage() {
         lesson: {
           select: {
             title: true,
-            course: {
-              select: {
-                title: true,
-              },
-            },
+            level: { select: { course: { select: { title: true } } } },
           },
         },
       },
@@ -38,14 +30,14 @@ export default async function QuizzesPage() {
   const lessonOptions = lessons.map((lesson) => ({
     id: lesson.id,
     title: lesson.title,
-    courseTitle: lesson.course.title,
+    courseTitle: lesson.level.course.title,
   }));
 
   const quizRows = quizzes.map((quiz) => ({
     id: quiz.id,
     lessonId: quiz.lessonId,
     lessonTitle: quiz.lesson.title,
-    courseTitle: quiz.lesson.course.title,
+    courseTitle: quiz.lesson.level.course.title,
     title: quiz.title,
     questionsJson: JSON.stringify(quiz.questions, null, 2),
   }));

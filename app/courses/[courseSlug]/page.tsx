@@ -79,34 +79,39 @@ export default async function CoursePage({ params }: CoursePageProps) {
         </div>
 
         <section className="grid gap-4">
-          <h2 className="text-xl font-semibold">Lessons</h2>
+          <h2 className="text-xl font-semibold">Levels & Lessons</h2>
 
-          {course.lessons.length > 0 ? (
-            course.lessons.map((lesson) => (
-              <article
-                key={lesson.id}
-                className="rounded-2xl border border-border bg-card p-5 shadow-sm"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Lesson {lesson.displayOrder}</p>
-                    <h3 className="text-lg font-semibold">{lesson.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{lesson.description}</p>
-                  </div>
+          {course.levels.length > 0 ? (
+            course.levels.map((level) => (
+              <div key={level.id} className="grid gap-3">
+                <h3 className="text-lg font-semibold">{level.title}</h3>
+                {level.lessons.map((lesson) => (
+                  <article
+                    key={lesson.id}
+                    className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Lesson {lesson.displayOrder}</p>
+                        <h4 className="text-lg font-semibold">{lesson.title}</h4>
+                        <p className="mt-1 text-sm text-muted-foreground">{lesson.description}</p>
+                      </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">
-                      {lesson.durationMinutes} mins
-                    </span>
-                    <Button asChild variant="outline">
-                      <Link href={`/courses/${course.slug}/lessons/${lesson.slug}`}>
-                        <PlayCircle className="mr-1 size-4" />
-                        Watch
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </article>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-muted-foreground">
+                          {lesson.durationMinutes} mins
+                        </span>
+                        <Button asChild variant="outline">
+                          <Link href={`/courses/${course.slug}/lessons/${lesson.slug}`}>
+                            <PlayCircle className="mr-1 size-4" />
+                            Watch
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
             ))
           ) : (
             <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">

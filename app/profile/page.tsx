@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { SignOutButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import { BookOpenCheck, CheckCircle2, Clock3 } from "lucide-react";
+import { BookOpenCheck, CheckCircle2, Clock3, Award } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -89,11 +90,18 @@ export default async function ProfilePage() {
       id: true,
       slug: true,
       title: true,
-      lessons: {
-        select: {
-          id: true,
-          slug: true,
-          title: true,
+      levels: {
+        include: {
+          lessons: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+            },
+            orderBy: {
+              displayOrder: "asc",
+            },
+          },
         },
         orderBy: {
           displayOrder: "asc",
@@ -106,6 +114,7 @@ export default async function ProfilePage() {
   });
 
   const progressByCourse: CourseProgress[] = courses.map((course) => {
+    const lessons = course.levels.flatMap((level) => level.lessons);
     const entriesForCourse = activityEntries.filter((entry) => entry.courseSlug === course.slug);
     const completedLessonIds = new Set(
       entriesForCourse
@@ -113,10 +122,10 @@ export default async function ProfilePage() {
         .map((entry) => entry.lessonId)
     );
 
-    const completedLessons = course.lessons.filter((lesson) =>
+    const completedLessons = lessons.filter((lesson) =>
       completedLessonIds.has(lesson.id)
     ).length;
-    const totalLessons = course.lessons.length;
+    const totalLessons = lessons.length;
     const progressPercent =
       totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
@@ -135,7 +144,7 @@ export default async function ProfilePage() {
       completedLessons,
       progressPercent,
       lastVisitedAt,
-      lessons: course.lessons.map((lesson) => {
+      lessons: lessons.map((lesson) => {
         const activity = lessonEntryById.get(lesson.id);
         return {
           id: lesson.id,
@@ -167,9 +176,20 @@ export default async function ProfilePage() {
               Track lesson completion and quiz performance.
             </p>
           </div>
-          <Button asChild variant="outline">
-            <Link href="/">Back To Courses</Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <Link href="/certificate/my">
+                <Award className="mr-2 h-4 w-4" />
+                My Certificates
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/">Back To Courses</Link>
+            </Button>
+            <SignOutButton>
+              <Button variant="destructive">Logout</Button>
+            </SignOutButton>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">

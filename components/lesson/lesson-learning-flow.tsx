@@ -19,6 +19,7 @@ type LessonLearningFlowProps = {
   lessonTitle: string;
   videoUrl: string;
   gamePath: string | null;
+  quizId: string | null;
   quizTitle: string | null;
   quizQuestions: QuizQuestion[];
   isSignedIn: boolean;
@@ -130,6 +131,7 @@ export function LessonLearningFlow({
   lessonTitle,
   videoUrl,
   gamePath,
+  quizId,
   quizTitle,
   quizQuestions,
   isSignedIn,
@@ -303,13 +305,16 @@ export function LessonLearningFlow({
         </div>
       ) : null}
 
-      {quizTitle && quizQuestions.length > 0 ? (
+      {quizTitle && quizQuestions.length > 0 && quizId ? (
         canShowQuiz ? (
           <div className="mt-6">
             <LessonQuiz
+              quizId={quizId}
               title={quizTitle}
               questions={quizQuestions}
-              onSubmitted={({ percent }) => markQuizSubmitted(percent)}
+              onQuizSubmitted={(percent) => {
+                markQuizSubmitted(percent).catch(() => {});
+              }}
             />
           </div>
         ) : (

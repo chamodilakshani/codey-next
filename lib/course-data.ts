@@ -1,55 +1,90 @@
 import prisma from "@/lib/prisma";
 
+function flattenCourseLessons(course: {
+  levels: Array<{
+    lessons: Array<{
+      id: string;
+      slug: string;
+      title: string;
+      durationMinutes: number;
+      isPreview: boolean;
+      displayOrder: number;
+      description?: string;
+    }>;
+  }>;
+}) {
+  return course.levels.flatMap((level) => level.lessons);
+}
+
 export async function getPublishedCourses() {
-  return prisma.course.findMany({
+  const courses = await prisma.course.findMany({
     where: { isPublished: true },
     include: {
-      lessons: {
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          durationMinutes: true,
-          isPreview: true,
-          displayOrder: true,
-        },
-        orderBy: {
-          displayOrder: "asc",
+      levels: {
+        orderBy: { displayOrder: "asc" },
+        include: {
+          lessons: {
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              durationMinutes: true,
+              isPreview: true,
+              displayOrder: true,
+            },
+            orderBy: {
+              displayOrder: "asc",
+            },
+          },
         },
       },
     },
     orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
   });
+
+  return courses.map((course) => ({ ...course, lessons: flattenCourseLessons(course) }));
 }
 
 export async function getCourseBySlug(courseSlug: string) {
-  return prisma.course.findUnique({
+  const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
     include: {
-      lessons: {
-        orderBy: {
-          displayOrder: "asc",
-        },
+      levels: {
+        orderBy: { displayOrder: "asc" },
+        include: { lessons: { orderBy: { displayOrder: "asc" } } },
       },
     },
   });
+
+  return course ? { ...course, lessons: flattenCourseLessons(course) } : null;
 }
 
 export async function getLessonBySlugs(courseSlug: string, lessonSlug: string) {
   return prisma.lesson.findFirst({
     where: {
       slug: lessonSlug,
-      course: {
-        slug: courseSlug,
+      level: {
+        course: {
+          slug: courseSlug,
+        },
       },
     },
     include: {
       quiz: true,
-      course: {
+      level: {
         include: {
-          lessons: {
-            orderBy: {
-              displayOrder: "asc",
+          course: {
+            include: {
+              levels: {
+                orderBy: { displayOrder: "asc" },
+                include: {
+                  lessons: {
+                    orderBy: {
+                      displayOrder: "asc",
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -87,12 +122,11 @@ export function getCourseCount() {
 export function getAllcourses() {
   return prisma.course.findMany({
     include: {
-      lessons: {
-        orderBy: {
-          displayOrder: "asc",
-        },
+      levels: {
+        orderBy: { displayOrder: "asc" },
+        include: { lessons: { orderBy: { displayOrder: "asc" } } },
       },
     },
     orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
-  });
+  }).then((courses) => courses.map((course) => ({ ...course, lessons: flattenCourseLessons(course) })));
 }

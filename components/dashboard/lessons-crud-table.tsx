@@ -28,14 +28,15 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PlusIcon } from "lucide-react";
 
-type CourseOption = {
+type LevelOption = {
   id: string;
   title: string;
 };
 
 type LessonRow = {
   id: string;
-  courseId: string;
+  levelId: string;
+  levelTitle: string;
   courseTitle: string;
   title: string;
   slug: string;
@@ -54,11 +55,11 @@ const selectClassName =
 function LessonForm({
   mode,
   lesson,
-  courses,
+  levels,
 }: {
   mode: "create" | "edit";
   lesson?: LessonRow;
-  courses: CourseOption[];
+  levels: LevelOption[];
 }) {
   const action = mode === "create" ? createLessonAction : updateLessonAction;
 
@@ -66,18 +67,18 @@ function LessonForm({
     <form action={action} className="grid gap-3 overflow-y-auto px-4 pb-4">
       {lesson ? <input type="hidden" name="id" value={lesson.id} /> : null}
       <div>
-        <Label htmlFor={`${mode}-courseId-${lesson?.id ?? "new"}`}>Course</Label>
+        <Label htmlFor={`${mode}-levelId-${lesson?.id ?? "new"}`}>Level</Label>
         <select
-          id={`${mode}-courseId-${lesson?.id ?? "new"}`}
-          name="courseId"
+          id={`${mode}-levelId-${lesson?.id ?? "new"}`}
+          name="levelId"
           className={selectClassName}
-          defaultValue={lesson?.courseId}
+          defaultValue={lesson?.levelId}
           required
         >
-          <option value="">Select course</option>
-          {courses.map((course) => (
-            <option key={course.id} value={course.id}>
-              {course.title}
+          <option value="">Select level</option>
+          {levels.map((level) => (
+            <option key={level.id} value={level.id}>
+              {level.title}
             </option>
           ))}
         </select>
@@ -183,10 +184,10 @@ function LessonForm({
 
 export function LessonsCrudTable({
   lessons,
-  courses,
+  levels,
 }: {
   lessons: LessonRow[];
-  courses: CourseOption[];
+  levels: LevelOption[];
 }) {
   return (
     <div className="rounded-xl border">
@@ -209,7 +210,7 @@ export function LessonsCrudTable({
               <DrawerTitle>Create Lesson</DrawerTitle>
               <DrawerDescription>Add a new lesson record.</DrawerDescription>
             </DrawerHeader>
-            <LessonForm mode="create" courses={courses} />
+            <LessonForm mode="create" levels={levels} />
           </DrawerContent>
         </Drawer>
       </div>
@@ -219,6 +220,7 @@ export function LessonsCrudTable({
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Course</TableHead>
+            <TableHead>Level</TableHead>
             <TableHead>Preview</TableHead>
             <TableHead>Quiz</TableHead>
             <TableHead>Duration</TableHead>
@@ -233,6 +235,7 @@ export function LessonsCrudTable({
                 <div className="text-xs text-muted-foreground">{lesson.slug}</div>
               </TableCell>
               <TableCell>{lesson.courseTitle}</TableCell>
+              <TableCell>{lesson.levelTitle}</TableCell>
               <TableCell>
                 <Badge variant={lesson.isPreview ? "default" : "outline"}>
                   {lesson.isPreview ? "Yes" : "No"}
@@ -259,7 +262,7 @@ export function LessonsCrudTable({
                           Update lesson information.
                         </DrawerDescription>
                       </DrawerHeader>
-                      <LessonForm mode="edit" lesson={lesson} courses={courses} />
+                      <LessonForm mode="edit" lesson={lesson} levels={levels} />
                     </DrawerContent>
                   </Drawer>
                   <form action={deleteLessonAction}>

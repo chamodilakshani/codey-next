@@ -65,20 +65,24 @@ export async function getDashboardData() {
     await prisma.$transaction([
       prisma.course.findMany({
         include: {
-          lessons: {
-            select: {
-              id: true,
-              title: true,
-              durationMinutes: true,
-              isPreview: true,
-              createdAt: true,
-              quiz: {
+          levels: {
+            include: {
+              lessons: {
                 select: {
                   id: true,
+                  title: true,
+                  durationMinutes: true,
+                  isPreview: true,
+                  createdAt: true,
+                  quiz: {
+                    select: {
+                      id: true,
+                    },
+                  },
                 },
+                orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
               },
             },
-            orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
           },
         },
         orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
@@ -88,9 +92,15 @@ export async function getDashboardData() {
       prisma.lesson.count(),
       prisma.quiz.count(),
       prisma.lesson.count({ where: { isPreview: true } }),
+      
     ])
 
-  const courseRows: DashboardCourseRow[] = courses.map((course) => {
+  const coursesWithLessons = courses.map((course) => ({
+    ...course,
+    lessons: course.levels.flatMap((level) => level.lessons),
+  }));
+
+  const courseRows: DashboardCourseRow[] = coursesWithLessons.map((course) => {
     const quizCount = course.lessons.filter((lesson) => lesson.quiz).length
 
     return {
@@ -130,7 +140,7 @@ export async function getDashboardData() {
   let newCoursesThisMonth = 0
   let newLessonsThisMonth = 0
 
-  for (const course of courses) {
+  for (const course of coursesWithLessons) {
     if (course.createdAt >= lastThirtyDays) {
       newCoursesThisMonth += 1
     }
