@@ -18,7 +18,7 @@ function flattenCourseLessons(course: {
 
 export async function getPublishedCourses() {
   const courses = await prisma.course.findMany({
-    where: { isPublished: true },
+    where: { isPublished: true, isLocked: false },
     include: {
       levels: {
         orderBy: { displayOrder: "asc" },
@@ -138,7 +138,7 @@ export function getDifficultyLabel(difficulty: string) {
 
 export function getCourseCount() {
   return prisma.course.count({
-    where: { isPublished: true },
+    where: { isPublished: true, isLocked: false },
   });
 }
 

@@ -32,6 +32,7 @@ export default async function CoursesPage() {
     durationMinutes: course.durationMinutes,
     displayOrder: course.displayOrder,
     isPublished: course.isPublished,
+    isLocked: course.isLocked,
     lessonCount: course.levels.reduce((sum, level) => sum + level.lessons.length, 0),
   }));
 

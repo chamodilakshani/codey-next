@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { getRoleFromSessionClaims } from "@/lib/clerk-role";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = await auth();
+    const { userId, sessionClaims } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -25,6 +26,11 @@ export async function POST(req: NextRequest) {
     if (!quiz) {
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
     }
+    const role = getRoleFromSessionClaims(sessionClaims);
+    if (quiz.lesson.level.course.isLocked && role !== "admin") {
+      return NextResponse.json({ error: "Course is locked" }, { status: 403 });
+    }
+
     const courseId = quiz.lesson.level.courseId;
 
     const questions = quiz.questions as unknown as Array<{

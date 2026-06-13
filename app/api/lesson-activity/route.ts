@@ -6,6 +6,7 @@ import {
   parseLessonActivityMap,
   type LessonActivityEntry,
 } from "@/lib/clerk-role";
+import prisma from "@/lib/prisma";
 
 type LessonEvent = "visit" | "video_completed" | "game_played" | "quiz_submitted";
 
@@ -111,6 +112,30 @@ export async function POST(request: NextRequest) {
     !isValidEvent(payload.event)
   ) {
     return NextResponse.json({ message: "Invalid payload" }, { status: 400 });
+  }
+
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: payload.lessonId },
+    select: {
+      level: {
+        select: {
+          course: {
+            select: {
+              isLocked: true,
+              slug: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!lesson || lesson.level.course.slug !== payload.courseSlug) {
+    return NextResponse.json({ message: "Lesson not found" }, { status: 404 });
+  }
+
+  if (lesson.level.course.isLocked) {
+    return NextResponse.json({ message: "Course is locked" }, { status: 403 });
   }
 
   const activityMap = parseLessonActivityMap(user.privateMetadata?.lessonActivity);

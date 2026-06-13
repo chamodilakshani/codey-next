@@ -52,6 +52,19 @@ function getBoolean(formData: FormData, key: string) {
   return formData.get(key) === "on";
 }
 
+function getCourseLockedState(formData: FormData) {
+  const value = getRequiredString(formData, "lockState");
+  if (value === "locked") {
+    return true;
+  }
+
+  if (value === "unlocked") {
+    return false;
+  }
+
+  throw new Error("Invalid lockState");
+}
+
 function getOptionalString(formData: FormData, key: string) {
   const value = getString(formData, key);
   return value.length > 0 ? value : null;
@@ -250,6 +263,7 @@ export async function createCourseAction(formData: FormData) {
       durationMinutes: Math.max(1, getNumber(formData, "durationMinutes", 1)),
       displayOrder: Math.max(0, getNumber(formData, "displayOrder", 0)),
       isPublished: getBoolean(formData, "isPublished"),
+      isLocked: getCourseLockedState(formData),
     },
   });
 
@@ -274,6 +288,7 @@ export async function updateCourseAction(formData: FormData) {
       durationMinutes: Math.max(1, getNumber(formData, "durationMinutes", 1)),
       displayOrder: Math.max(0, getNumber(formData, "displayOrder", 0)),
       isPublished: getBoolean(formData, "isPublished"),
+      isLocked: getCourseLockedState(formData),
     },
   });
 

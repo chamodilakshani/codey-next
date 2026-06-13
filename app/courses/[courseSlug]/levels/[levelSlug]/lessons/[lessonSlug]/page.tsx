@@ -92,17 +92,23 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 export default async function LessonPage({ params }: LessonPageProps) {
   const { courseSlug, levelSlug, lessonSlug } = await params;
   const lesson = await getLessonBySlugs(courseSlug, lessonSlug);
+  const { userId, sessionClaims } = await auth();
+  const role = getRoleFromSessionClaims(sessionClaims);
+  const isSignedIn = Boolean(userId);
+  const isLearner = isSignedIn && role === "learner";
+  const isAdmin = isSignedIn && role === "admin";
 
-  if (!lesson || !lesson.level.course.isPublished || lesson.level.slug !== levelSlug) {
+  if (
+    !lesson ||
+    !lesson.level.course.isPublished ||
+    lesson.level.slug !== levelSlug ||
+    (lesson.level.course.isLocked && !isAdmin)
+  ) {
     notFound();
   }
 
   const quizQuestions = normalizeQuizQuestions(lesson.quiz?.questions);
   const gamePath = resolveGamePath(lesson.gameHtmlPath);
-  const { userId, sessionClaims } = await auth();
-  const role = getRoleFromSessionClaims(sessionClaims);
-  const isSignedIn = Boolean(userId);
-  const isLearner = isSignedIn && role === "learner";
 
   let initialVideoCompleted = false;
   let initialGamePlayed = false;

@@ -271,6 +271,7 @@ async function main() {
         durationMinutes: course.durationMinutes,
         displayOrder: course.displayOrder,
         isPublished: true,
+        isLocked: false,
       },
       create: {
         slug: course.slug,
@@ -283,6 +284,7 @@ async function main() {
         durationMinutes: course.durationMinutes,
         displayOrder: course.displayOrder,
         isPublished: true,
+        isLocked: false,
       },
     });
 

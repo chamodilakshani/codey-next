@@ -120,6 +120,7 @@ export default async function ProfilePage() {
     where: {
       slug: { in: trackedCourseSlugs.length > 0 ? trackedCourseSlugs : ["__none__"] },
       isPublished: true,
+      isLocked: false,
     },
     select: {
       id: true,

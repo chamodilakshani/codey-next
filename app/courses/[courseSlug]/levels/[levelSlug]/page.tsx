@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { BookOpenCheck, Clock3, PlayCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   getAgeGroupLabel,
   getDifficultyLabel,
 } from "@/lib/course-data";
+import { getRoleFromSessionClaims } from "@/lib/clerk-role";
 
 type LevelPageProps = {
   params: Promise<{ courseSlug: string; levelSlug: string }>;
@@ -36,8 +38,10 @@ export async function generateMetadata({ params }: LevelPageProps): Promise<Meta
 export default async function LevelPage({ params }: LevelPageProps) {
   const { courseSlug, levelSlug } = await params;
   const course = await getCourseBySlug(courseSlug);
+  const { userId, sessionClaims } = await auth();
+  const isAdmin = Boolean(userId) && getRoleFromSessionClaims(sessionClaims) === "admin";
 
-  if (!course || !course.isPublished) {
+  if (!course || !course.isPublished || (course.isLocked && !isAdmin)) {
     notFound();
   }
 

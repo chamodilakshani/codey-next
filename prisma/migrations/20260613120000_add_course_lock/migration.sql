@@ -1,0 +1,1 @@
+ALTER TABLE "Course" ADD COLUMN "isLocked" BOOLEAN NOT NULL DEFAULT false;

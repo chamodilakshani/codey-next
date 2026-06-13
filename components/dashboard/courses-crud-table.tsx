@@ -40,6 +40,7 @@ type CourseRow = {
   durationMinutes: number;
   displayOrder: number;
   isPublished: boolean;
+  isLocked: boolean;
   lessonCount: number;
 };
 
@@ -197,6 +198,29 @@ function CourseForm({
         />
         Published
       </label>
+      <fieldset className="grid gap-2">
+        <legend className="text-sm font-medium">Access</legend>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="radio"
+            name="lockState"
+            value="unlocked"
+            defaultChecked={!(course?.isLocked ?? false)}
+            required
+          />
+          Unlocked
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="radio"
+            name="lockState"
+            value="locked"
+            defaultChecked={course?.isLocked ?? false}
+            required
+          />
+          Locked
+        </label>
+      </fieldset>
       <div>
         <Button type="submit">
           {mode === "create" ? "Create Course" : "Save Changes"}
@@ -240,6 +264,7 @@ export function CoursesCrudTable({ courses }: { courses: CourseRow[] }) {
           <TableRow>
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Access</TableHead>
             <TableHead>Audience</TableHead>
             <TableHead>Lessons</TableHead>
             <TableHead>Order</TableHead>
@@ -256,6 +281,11 @@ export function CoursesCrudTable({ courses }: { courses: CourseRow[] }) {
               <TableCell>
                 <Badge variant={course.isPublished ? "default" : "outline"}>
                   {course.isPublished ? "Published" : "Draft"}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant={course.isLocked ? "destructive" : "outline"}>
+                  {course.isLocked ? "Locked" : "Unlocked"}
                 </Badge>
               </TableCell>
               <TableCell>

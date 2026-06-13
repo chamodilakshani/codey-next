@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { BookOpenCheck, Clock3, PlayCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import {
   getDifficultyLabel,
   getLevelsByCourseSlug,
 } from "@/lib/course-data";
+import { getRoleFromSessionClaims } from "@/lib/clerk-role";
 
 type CoursePageProps = {
   params: Promise<{ courseSlug: string }>;
@@ -35,8 +37,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const { courseSlug } = await params;
   const course = await getCourseBySlug(courseSlug);
   const levels = await getLevelsByCourseSlug(courseSlug);
+  const { userId, sessionClaims } = await auth();
+  const isAdmin = Boolean(userId) && getRoleFromSessionClaims(sessionClaims) === "admin";
 
-  if (!course || !course.isPublished) {
+  if (!course || !course.isPublished || (course.isLocked && !isAdmin)) {
     notFound();
   }
 
@@ -114,7 +118,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                           {lesson.durationMinutes} mins
                         </span>
                         <Button asChild variant="outline">
-                          <Link href={`/courses/${course.slug}/lessons/${lesson.slug}`}>
+                          <Link href={`/courses/${course.slug}/levels/${level.slug}/lessons/${lesson.slug}`}>
                             <PlayCircle className="mr-1 size-4" />
                             Watch
                           </Link>
