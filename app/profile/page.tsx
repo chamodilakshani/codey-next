@@ -2,7 +2,15 @@ import Link from "next/link";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import { BookOpenCheck, CheckCircle2, Clock3, Award } from "lucide-react";
+import {
+  ArrowLeft,
+  Award,
+  BookOpenCheck,
+  CheckCircle2,
+  Clock3,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

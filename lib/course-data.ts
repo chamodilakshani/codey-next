@@ -91,6 +91,11 @@ export async function getLessonBySlugs(courseSlug: string, lessonSlug: string) {
       quiz: true,
       level: {
         include: {
+          lessons: {
+            orderBy: {
+              displayOrder: "asc",
+            },
+          },
           course: {
             include: {
               levels: {
