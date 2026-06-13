@@ -67,17 +67,14 @@ export async function getLevelsByCourseSlug(courseSlug: string) {
       },
     },
     include: {
-      levels: {
+      lessons: {
         orderBy: { displayOrder: "asc" },
-        include: { lessons: { orderBy: { displayOrder: "asc" } } },
       },
     },
     orderBy: {
       displayOrder: "asc",
     },
   });
-
-  return course ? { ...course, lessons: flattenCourseLessons(course) } : null;
 }
 
 export async function getLessonBySlugs(courseSlug: string, lessonSlug: string) {
