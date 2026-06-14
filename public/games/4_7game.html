@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>CODEPLAY — Coral's Color Sequencer!</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+/* ── RESET + LOCK ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow:hidden}
+body{font-family:'Nunito',sans-serif;
+  background:#5de8d6;
+  color:#0a3d35;
+  height:100dvh;overflow:hidden;display:flex;flex-direction:column;
+  user-select:none;-webkit-user-select:none}
+:root{
+  --teal:#0abfa3;
+  --teal-dark:#0d6b5e;
+  --teal-light:#2dd4bf;
+  --lime:#16a34a;
+  --gold:#d97706;
+  --coral:#ef4444;
+  --purple:#7c6fe0;
+  --orange:#ea580c;
+  --surface:#ffffff;
+  --surface2:rgba(255,255,255,.85);
+  --text:#0a3d35;
+  --muted:rgba(10,50,42,.55);
+  --bdr:rgba(255,255,255,.6);
+  --mono:'Share Tech Mono',monospace;
+}
+
+/* ── SEA BG ── */
+.sea-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.sea-layer{position:absolute;inset:0;background:
+  radial-gradient(ellipse 60% 55% at 5% 5%,rgba(180,255,240,.4) 0%,transparent 55%),
+  radial-gradient(ellipse 50% 50% at 95% 90%,rgba(40,200,175,.35) 0%,transparent 55%),
+  linear-gradient(155deg,#8cf0e0 0%,#4dd6c4 35%,#2abfaa 65%,#3dd6bf 100%)}
+.sea-dots{position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,.25) 1.5px,transparent 1.5px);
+  background-size:30px 30px}
+.sea-rays{position:absolute;inset:0;
+  background:repeating-conic-gradient(from 260deg at 50% -20%,rgba(255,255,255,.022) 0deg,transparent 5deg,transparent 15deg,rgba(255,255,255,.012) 18deg,transparent 22deg);
+  animation:rayDrift 18s linear infinite alternate}
+.bbg{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),rgba(10,191,163,.15));border:1px solid rgba(255,255,255,.4);animation:bbgUp linear infinite;pointer-events:none}
+
+/* ── KEYFRAMES ── */
+@keyframes rayDrift{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@keyframes bbgUp{0%{opacity:0;transform:translateY(0)}12%{opacity:.5}88%{opacity:.25}100%{opacity:0;transform:translateY(-110vh)}}
+@keyframes bobBig{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes sonarPing{0%{transform:scale(.7);opacity:.8}100%{transform:scale(3.2);opacity:0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{0%{transform:scale(.4);opacity:0}65%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 16px rgba(10,191,163,.3)}50%{box-shadow:0 0 32px rgba(10,191,163,.6)}}
+@keyframes scPop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes confFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(540deg);opacity:0}}
+@keyframes starUp{0%{transform:scale(0) rotate(0deg);opacity:1}100%{transform:scale(1.8) rotate(180deg);opacity:0}}
+@keyframes fishSwim{0%{transform:translateX(110vw) scaleX(-1)}100%{transform:translateX(-14vw) scaleX(-1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tileReveal{0%{transform:scale(0) rotate(-20deg);opacity:0}60%{transform:scale(1.2) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes tileOk{0%{transform:scale(1)}35%{transform:scale(1.22)}65%{transform:scale(.96)}100%{transform:scale(1)}}
+@keyframes tileWrong{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes blankBlink{0%,100%{border-color:rgba(10,191,163,.35);background:rgba(255,255,255,.3)}50%{border-color:var(--teal);background:rgba(255,255,255,.55);box-shadow:0 0 10px rgba(10,191,163,.25)}}
+@keyframes tilePulse{0%,100%{box-shadow:0 0 0 0 rgba(10,191,163,0)}50%{box-shadow:0 0 0 5px rgba(10,191,163,.25)}}
+@keyframes codeScan{0%{background:rgba(255,255,255,.82)}50%{background:rgba(10,191,163,.18)}100%{background:rgba(255,255,255,.82)}}
+@keyframes qBob{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+@keyframes iPulse{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── NAV ── */
+nav{flex-shrink:0;height:52px;position:relative;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(0,0,0,.08);
+  box-shadow:0 2px 20px rgba(10,191,163,.1)}
+.logo{display:flex;align-items:center;gap:7px;font-size:.9rem;font-weight:900;color:#ff8c00;letter-spacing:.07em}
+.logo-dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(10,191,163,.5);animation:blink 2s infinite}
+.sonar{position:relative;width:20px;height:20px;flex-shrink:0}
+.sr{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(10,191,163,.35);animation:sonarPing 2.2s ease-out infinite}
+.sr2{animation-delay:.8s}
+.sd{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;border-radius:50%;background:var(--teal);box-shadow:0 0 7px var(--teal)}
+.nav-c{text-align:center}
+.nav-t{font-size:.7rem;font-weight:800;color:var(--text)}
+.nav-s{font-size:.48rem;color:var(--muted);letter-spacing:.1em}
+.back-btn{display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;border:1.5px solid rgba(10,191,163,.4);background:rgba(10,191,163,.08);color:var(--teal-dark);font-size:.66rem;font-weight:800;text-decoration:none;font-family:'Nunito',sans-serif}
+.back-btn:hover{background:rgba(10,191,163,.16)}
+.back-btn svg{width:10px;height:10px;stroke:var(--teal-dark);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── SCREENS ── */
+.screens{flex:1;min-height:0;overflow:hidden;position:relative;z-index:2;display:flex;flex-direction:column}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex;animation:fadeIn .3s ease both}
+
+/* ── BOTTOM BAR ── */
+.sbar{flex-shrink:0;height:40px;position:relative;z-index:50;display:flex;align-items:center;justify-content:center;gap:28px;
+  background:rgba(255,255,255,.96);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(0,0,0,.07);
+  box-shadow:0 -2px 16px rgba(10,191,163,.08)}
+.si{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--muted);font-weight:600}
+.sv{font-weight:900;font-size:.68rem}
+
+/* ═══════════ INTRO ═══════════ */
+.intro-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.intro-body::-webkit-scrollbar{display:none}
+.intro-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 16px 14px;gap:10px}
+.cap-big{font-size:clamp(3rem,10vw,5rem);animation:bobBig 3s ease-in-out infinite;filter:drop-shadow(0 4px 14px rgba(10,191,163,.3))}
+.g-title{font-size:clamp(1.2rem,4.5vw,1.9rem);font-weight:900;line-height:1.18;color:var(--text)}
+.g-title span{color:var(--teal-dark)}
+.g-sub{font-size:clamp(.76rem,2.5vw,.9rem);color:var(--muted);line-height:1.45;font-weight:600}
+.story-box{width:100%;background:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.9);border-radius:16px;padding:14px 15px 12px;text-align:left;position:relative;box-shadow:0 4px 20px rgba(0,60,50,.1)}
+.s-tail{position:absolute;top:-13px;left:16px;font-size:1.4rem;animation:wiggle 2.5s ease-in-out infinite}
+.s-p{font-size:clamp(.76rem,2.5vw,.88rem);line-height:1.6;color:var(--text2,#0a3d35);font-weight:600}
+.s-p b{color:var(--teal-dark)}
+.s-p .hl{background:rgba(10,191,163,.15);border-radius:4px;padding:0 5px;color:var(--teal-dark);font-weight:900}
+.how-row{display:flex;gap:8px;justify-content:center;width:100%;flex-wrap:wrap}
+.how-card{flex:1;min-width:100px;background:rgba(255,255,255,.78);border:1.5px solid rgba(255,255,255,.85);border-radius:14px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;box-shadow:0 3px 12px rgba(0,60,50,.08)}
+.how-n{font-size:.48rem;font-weight:900;color:var(--teal-dark);letter-spacing:.14em;text-transform:uppercase}
+.how-i{font-size:1.6rem;animation:float 3s ease-in-out infinite}
+.how-t{font-size:clamp(.62rem,2.1vw,.72rem);font-weight:800;color:var(--text);line-height:1.3}
+.how-s{font-size:clamp(.54rem,1.8vw,.62rem);color:var(--muted);line-height:1.3;font-weight:600}
+.play-btn{padding:14px 40px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:'Nunito',sans-serif;font-size:clamp(.9rem,3vw,1rem);font-weight:900;cursor:pointer;animation:glowPulse 2s ease-in-out infinite;box-shadow:0 4px 20px rgba(10,191,163,.4)}
+
+/* ═══════════════════════════════════════
+   GAME GRID
+═══════════════════════════════════════ */
+.game-body{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-rows:38px 46px 1fr 82px 28px;
+  gap:5px;
+  padding:7px 13px 5px;
+  overflow:hidden;
+}
+
+/* Row 1 — HUD */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.score-pill{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.85);border:1.5px solid rgba(255,255,255,.9);border-radius:9px;padding:3px 11px;box-shadow:0 2px 8px rgba(0,60,50,.08)}
+.sc-lbl{font-size:.48rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.sc-val{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--teal-dark)}
+.sc-val.pop{animation:scPop .3s ease}
+.lvl-pill{font-size:.6rem;font-weight:800;color:var(--teal-dark);background:rgba(255,255,255,.82);border:1.5px solid rgba(255,255,255,.88);border-radius:8px;padding:3px 11px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,60,50,.07)}
+.hearts{display:flex;gap:3px}
+.heart{font-size:1.1rem;transition:all .3s}
+.heart.gone{filter:grayscale(1);opacity:.25;transform:scale(.72)}
+
+/* Row 2 — Code strip */
+.code-strip{
+  background:rgba(255,255,255,.88);border:1.5px solid rgba(255,255,255,.9);border-radius:11px;
+  padding:0 11px;display:flex;align-items:center;gap:4px;
+  overflow:hidden;position:relative;flex-wrap:nowrap;
+  box-shadow:0 2px 10px rgba(0,60,50,.09)
+}
+.code-strip::after{content:'python';position:absolute;top:3px;right:9px;font-size:.4rem;color:var(--muted);letter-spacing:.1em;font-weight:700}
+.code-strip.lit{animation:codeScan .5s ease}
+.ctok{font-family:var(--mono);font-size:clamp(.58rem,1.9vw,.72rem);white-space:nowrap}
+.ckw{color:var(--purple)}.cva{color:var(--orange)}.cfn{color:var(--teal-dark)}.cst{color:var(--gold)}.ccm{color:var(--muted)}
+.i-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:20px;border-radius:5px;
+  background:rgba(234,88,12,.12);border:1.5px solid rgba(234,88,12,.38);
+  font-family:var(--mono);font-size:clamp(.6rem,2vw,.74rem);font-weight:700;
+  color:var(--orange);transition:all .2s;
+}
+.i-badge.pulse{background:rgba(234,88,12,.28);border-color:var(--orange);animation:iPulse .3s ease}
+
+/* Row 3 — Sequence area */
+.seq-area{
+  background:rgba(255,255,255,.82);border:1.5px solid rgba(255,255,255,.9);border-radius:13px;
+  display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative;
+  box-shadow:0 4px 16px rgba(0,60,50,.1)
+}
+.seq-area::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(10,191,163,.05),transparent);pointer-events:none}
+.seq-top{
+  flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:4px 11px 2px;
+}
+.seq-lbl{font-size:clamp(.46rem,1.5vw,.54rem);font-weight:800;letter-spacing:.1em;color:var(--teal-dark);text-transform:uppercase;opacity:.7}
+.seq-prog{font-family:var(--mono);font-size:clamp(.5rem,1.7vw,.6rem);font-weight:700;color:var(--lime)}
+
+.tile-row{
+  flex:1;min-height:0;
+  display:flex;align-items:center;
+  padding:3px 10px 5px;
+  gap:clamp(4px,1.2vw,8px);
+  overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;
+}
+.tile-row::-webkit-scrollbar{display:none}
+
+/* ── SEQUENCE TILE ── */
+.tile{
+  flex-shrink:0;
+  width:clamp(36px,9vw,46px);
+  height:clamp(36px,9vw,46px);
+  border-radius:10px;border:2px solid;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(.9rem,3vw,1.3rem);
+  position:relative;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,60,50,.1)
+}
+.tile::before{content:'';position:absolute;top:3px;left:4px;width:35%;height:28%;border-radius:50%;background:rgba(255,255,255,.35)}
+
+/* tile colours — lighter on light bg */
+.tc-teal  {background:rgba(10,191,163,.2);border-color:rgba(10,191,163,.6)}
+.tc-lime  {background:rgba(22,163,74,.15);border-color:rgba(22,163,74,.55)}
+.tc-gold  {background:rgba(217,119,6,.15);border-color:rgba(217,119,6,.55)}
+.tc-coral {background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.55)}
+.tc-purple{background:rgba(124,111,224,.15);border-color:rgba(124,111,224,.55)}
+.tc-orange{background:rgba(234,88,12,.15);border-color:rgba(234,88,12,.55)}
+
+.tile.revealed{animation:tileReveal .3s cubic-bezier(.34,1.56,.64,1) both}
+.tile.ok{animation:tileOk .35s ease}
+.tile.bad{animation:tileWrong .4s ease}
+.t-i{position:absolute;bottom:1px;right:2px;font-family:var(--mono);font-size:.32rem;color:rgba(234,88,12,.6);font-weight:700;line-height:1}
+
+/* BLANK tile */
+.tile.blank{
+  background:rgba(10,191,163,.08);border:2px dashed rgba(10,191,163,.45);
+  animation:blankBlink 2s ease-in-out infinite;
+  box-shadow:none;
+}
+.tile.blank.active{
+  border-color:var(--teal);background:rgba(10,191,163,.18);
+  box-shadow:0 0 14px rgba(10,191,163,.3);
+  animation:tilePulse 1s ease-in-out infinite;
+}
+.blank-q{
+  font-family:var(--mono);font-size:clamp(.8rem,3vw,1.2rem);
+  color:var(--teal-dark);font-weight:900;opacity:.6;
+  animation:qBob 1.4s ease-in-out infinite;
+}
+
+/* Row 4 — Answer choices */
+.ans-area{display:flex;flex-direction:column;gap:5px}
+.ans-lbl{text-align:center;font-size:clamp(.5rem,1.7vw,.62rem);font-weight:800;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
+.ans-row{display:flex;gap:clamp(8px,2.2vw,16px);justify-content:center;align-items:center}
+
+/* ── ANSWER TILE ── */
+.ans-tile{
+  width:clamp(54px,13vw,68px);
+  height:clamp(54px,13vw,68px);
+  border-radius:13px;border:2.5px solid;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(1.2rem,4.5vw,1.7rem);
+  position:relative;overflow:hidden;
+  cursor:pointer;transition:transform .14s,opacity .2s;
+  flex-shrink:0;
+  box-shadow:0 4px 14px rgba(0,60,50,.12)
+}
+.ans-tile::before{content:'';position:absolute;top:4px;left:5px;width:36%;height:28%;border-radius:50%;background:rgba(255,255,255,.35)}
+.ans-tile:active{transform:scale(.84)!important}
+.ans-tile:hover{transform:scale(1.07);box-shadow:0 6px 20px rgba(0,60,50,.18)}
+.ans-tile.used{opacity:.22;pointer-events:none;transform:scale(.88)!important}
+
+/* Row 5 — Tip */
+.tip-row{display:flex;justify-content:center;align-items:center}
+.tip-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.7);border:1.5px solid rgba(255,255,255,.85);border-radius:99px;padding:4px 14px;font-size:clamp(.52rem,1.8vw,.62rem);color:var(--teal-dark);font-weight:800;box-shadow:0 2px 8px rgba(0,60,50,.07)}
+
+/* ── POPUP ── */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(0,80,65,.25);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.popup{background:rgba(255,255,255,.97);border:2px solid rgba(10,191,163,.5);border-radius:20px;padding:20px 22px 18px;text-align:center;animation:popIn .38s cubic-bezier(.34,1.56,.64,1) both;max-width:300px;width:90%;box-shadow:0 8px 40px rgba(0,80,65,.2)}
+.pop-em{font-size:3rem;display:block;margin-bottom:7px;animation:wiggle .5s ease}
+.pop-title{font-size:1.05rem;font-weight:900;color:var(--teal-dark);margin-bottom:5px}
+.pop-title.bad{color:var(--coral)}
+.pop-body{font-size:.8rem;color:var(--muted);line-height:1.55;margin-bottom:12px;font-weight:600}
+.pop-code{font-family:var(--mono);font-size:.66rem;color:var(--teal-dark);background:rgba(10,191,163,.08);border:1px solid rgba(10,191,163,.25);border-radius:8px;padding:6px 10px;margin-bottom:12px;display:none;white-space:pre;text-align:left}
+.pop-btn{padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:'Nunito',sans-serif;font-size:.86rem;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(10,191,163,.35)}
+
+/* ── WIN ── */
+.win-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.win-body::-webkit-scrollbar{display:none}
+.win-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 16px 10px;gap:9px}
+.win-cap{font-size:clamp(3rem,11vw,5rem);animation:bobBig 3s ease-in-out infinite;filter:drop-shadow(0 4px 18px rgba(10,191,163,.35))}
+.win-title{font-size:clamp(1.15rem,4.5vw,1.8rem);font-weight:900;color:var(--text)}
+.win-title span{color:var(--teal-dark)}
+.win-sub{font-size:clamp(.72rem,2.5vw,.86rem);color:var(--muted);line-height:1.45;font-weight:600}
+.stars-row{font-size:clamp(1.4rem,5.5vw,2rem);letter-spacing:.1em}
+.badge-box{display:flex;flex-direction:column;align-items:center;gap:5px;background:rgba(255,255,255,.82);border:2px solid rgba(10,191,163,.45);border-radius:16px;padding:12px 26px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) .15s both;box-shadow:0 4px 20px rgba(10,191,163,.15)}
+.badge-em{font-size:clamp(1.9rem,7vw,2.8rem);filter:drop-shadow(0 0 10px rgba(10,191,163,.3))}
+.badge-nm{font-size:clamp(.76rem,2.7vw,.9rem);font-weight:900;color:var(--teal-dark);letter-spacing:.05em}
+.badge-xp{font-size:clamp(.64rem,2.2vw,.76rem);color:var(--gold);font-weight:900}
+.learn-card{width:100%;background:rgba(255,255,255,.8);border:1.5px solid rgba(255,255,255,.9);border-radius:14px;padding:11px 14px;text-align:left;box-shadow:0 3px 14px rgba(0,60,50,.09)}
+.lc-ttl{font-size:.52rem;letter-spacing:.16em;color:var(--teal-dark);text-transform:uppercase;margin-bottom:8px;font-weight:800;opacity:.7}
+.ll-list{display:flex;flex-direction:column;gap:5px}
+.ll-item{display:flex;align-items:center;gap:8px;padding:6px 9px;background:rgba(10,191,163,.07);border:1px solid rgba(10,191,163,.15);border-radius:8px;animation:slideUp .3s ease both}
+.ll-icon{font-size:1.2rem;flex-shrink:0}
+.ll-txt{flex:1;font-size:clamp(.7rem,2.5vw,.82rem);font-weight:800;color:var(--text);line-height:1.3}
+.ll-code{font-family:var(--mono);font-size:clamp(.48rem,1.6vw,.56rem);color:var(--teal-dark);background:rgba(10,191,163,.1);border:1px solid rgba(10,191,163,.25);border-radius:4px;padding:2px 6px;white-space:nowrap;font-weight:700}
+.win-btns{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;width:100%}
+.win-btn{padding:10px 20px;border-radius:10px;border:1.5px solid rgba(10,191,163,.35);background:rgba(255,255,255,.75);color:var(--teal-dark);font-family:'Nunito',sans-serif;font-size:clamp(.74rem,2.7vw,.84rem);font-weight:900;cursor:pointer;box-shadow:0 2px 10px rgba(0,60,50,.08)}
+.win-btn.pri{background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;border:none;box-shadow:0 4px 18px rgba(10,191,163,.35)}
+.conf-wrap{position:fixed;inset:0;z-index:300;pointer-events:none;overflow:hidden}
+.conf-p{position:absolute;top:-20px;border-radius:3px;animation:confFall linear forwards}
+.star-pop{position:absolute;font-size:1.3rem;animation:starUp .7s ease forwards;pointer-events:none;z-index:400}
+.jelly{position:fixed;right:3%;top:14%;font-size:1.8rem;opacity:.15;animation:float 4s ease-in-out infinite;z-index:1;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="sea-bg">
+  <div class="sea-layer"></div>
+  <div class="sea-dots"></div>
+  <div class="sea-rays"></div>
+</div>
+<div class="jelly">🪼</div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    CODEPLAY
+  </div>
+  <div class="nav-c">
+    <div class="nav-t">Coral's Color Sequencer!</div>
+    <div class="nav-s">Part 4 · Lesson 07 · Game</div>
+  </div>
+  <a href="quest4.html" class="back-btn">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </a>
+</nav>
+
+<div class="screens">
+
+<!-- INTRO -->
+<div class="screen on" id="s-intro">
+  <div class="intro-body"><div class="intro-inner">
+    <span class="cap-big">🐙</span>
+    <div class="g-title">Coral's <span>Color</span><br>Sequencer!</div>
+    <div class="g-sub">Read the loop pattern and tap the right tile to complete the sequence! 🌈</div>
+    <div class="story-box">
+      <div class="s-tail">🐙</div>
+      <p class="s-p">
+        "Hi! I'm <b>Captain Coral!</b> 🐙<br><br>
+        A Python loop repeats a <b>colour + shape pattern!</b><br>
+        Each time <span class="hl">i</span> goes up, the next tile in the pattern appears!<br><br>
+        I show you the <b>start of the pattern</b> — you tap the tile that comes <b>next!</b><br><br>
+        Watch the colours and shapes cycle — loops make them <b>repeat!</b>"
+      </p>
+    </div>
+    <div class="how-row">
+      <div class="how-card"><span class="how-n">Step 1</span><span class="how-i">👀</span><span class="how-t">Study the tiles</span><span class="how-s">See the colour + shape pattern</span></div>
+      <div class="how-card"><span class="how-n">Step 2</span><span class="how-i" style="animation-delay:.3s">🔍</span><span class="how-t">Read the code</span><span class="how-s">See which pattern loops</span></div>
+      <div class="how-card"><span class="how-n">Step 3</span><span class="how-i" style="animation-delay:.6s">👆</span><span class="how-t">Tap what's next</span><span class="how-s">Fill all the ? blanks!</span></div>
+    </div>
+    <button class="play-btn" onclick="startGame()">🎮 Start Sequencing!</button>
+  </div></div>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="s-game">
+  <div class="game-body">
+
+    <!-- Row 1: HUD -->
+    <div class="hud">
+      <div class="score-pill"><span class="sc-lbl">Score</span><span class="sc-val" id="scVal">0</span></div>
+      <div class="lvl-pill" id="lvlPill">Level 1 of 8</div>
+      <div class="hearts"><span class="heart" id="h0">❤️</span><span class="heart" id="h1">❤️</span><span class="heart" id="h2">❤️</span></div>
+    </div>
+
+    <!-- Row 2: Code strip -->
+    <div class="code-strip" id="codeStrip">
+      <span class="ctok ckw">for</span>
+      <span class="ctok cva">&nbsp;i&nbsp;</span>
+      <span class="ctok ckw">in</span>
+      <span class="ctok cfn">&nbsp;range(</span><span class="ctok cva" id="cN">?</span><span class="ctok cfn">):</span>
+      <span class="ctok ccm">&nbsp;&nbsp;# i=</span>
+      <div class="i-badge" id="iBadge">0</div>
+      <span class="ctok cst" id="cHint">&nbsp;→&nbsp;pattern</span>
+    </div>
+
+    <!-- Row 3: Sequence -->
+    <div class="seq-area">
+      <div class="seq-top">
+        <span class="seq-lbl">🔁 Loop Sequence</span>
+        <span class="seq-prog" id="seqProg">Fill the blanks!</span>
+      </div>
+      <div class="tile-row" id="tileRow"></div>
+    </div>
+
+    <!-- Row 4: Answer choices -->
+    <div class="ans-area">
+      <div class="ans-lbl" id="ansLbl">👇 Tap the correct next tile!</div>
+      <div class="ans-row" id="ansRow"></div>
+    </div>
+
+    <!-- Row 5: Tip -->
+    <div class="tip-row"><div class="tip-pill" id="tipPill">💡 Loops repeat the same colour+shape sequence!</div></div>
+
+  </div>
+</div>
+
+<!-- WIN -->
+<div class="screen" id="s-win">
+  <div class="win-body"><div class="win-inner">
+    <span class="win-cap">🐙</span>
+    <div class="win-title" id="winTitle">Pattern <span>Master!</span> 🌟</div>
+    <div class="win-sub" id="winSub">You completed every colour loop!</div>
+    <div class="stars-row" id="starsRow">⭐⭐⭐</div>
+    <div class="badge-box"><span class="badge-em">🌈</span><span class="badge-nm">Colour Coder!</span><span class="badge-xp">⚡ +90 XP Earned!</span></div>
+    <div class="learn-card">
+      <div class="lc-ttl">🌊 What You Learned About Patterns!</div>
+      <div class="ll-list">
+        <div class="ll-item" style="animation-delay:.00s"><span class="ll-icon">🔁</span><div class="ll-txt">Loops repeat a <b>colour+shape pattern</b> over and over</div><span class="ll-code">for i in range(n)</span></div>
+        <div class="ll-item" style="animation-delay:.08s"><span class="ll-icon">🌈</span><div class="ll-txt"><b>i % n</b> cycles back to 0 — so the pattern repeats!</div><span class="ll-code">i % len(cols)</span></div>
+        <div class="ll-item" style="animation-delay:.16s"><span class="ll-icon">📐</span><div class="ll-txt">Both colour AND shape can change — each i picks a new combo</div><span class="ll-code">cols[i%n]</span></div>
+        <div class="ll-item" style="animation-delay:.24s"><span class="ll-icon">🚀</span><div class="ll-txt">One loop creates <b>infinite</b> colour+shape patterns!</div><span class="ll-code">DRY code</span></div>
+      </div>
+    </div>
+    <div class="win-btns">
+      <button class="win-btn" onclick="goHome()">🏠 Home</button>
+      <button class="win-btn pri" onclick="playAgain()">🔄 Play Again!</button>
+    </div>
+  </div></div>
+</div>
+
+</div><!-- /screens -->
+
+<div class="sbar">
+  <div class="si">🎮 <span class="sv" style="color:var(--teal-dark)">Color Sequencer</span></div>
+  <div class="si">⚡ <span class="sv" style="color:var(--gold)" id="xpDisp">0 XP</span></div>
+  <div class="si">🔥 <span class="sv" style="color:#f97316" id="strDisp">—</span></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="popup">
+    <span class="pop-em" id="popEm">🎉</span>
+    <div class="pop-title" id="popTitle">Correct!</div>
+    <div class="pop-body" id="popBody"></div>
+    <div class="pop-code" id="popCode"></div>
+    <button class="pop-btn" id="popBtn">Next! 🌊</button>
+  </div>
+</div>
+<div class="conf-wrap" id="confWrap"></div>
+
+<script>
+/* ═══════════ DATA ═══════════ */
+const COLS=[
+  {id:'teal',   cls:'tc-teal'  },
+  {id:'lime',   cls:'tc-lime'  },
+  {id:'gold',   cls:'tc-gold'  },
+  {id:'coral',  cls:'tc-coral' },
+  {id:'purple', cls:'tc-purple'},
+  {id:'orange', cls:'tc-orange'},
+];
+const SHAPES=['🫧','⭐','🐙','🦀','🐠','🌊','🪸','🐚'];
+function T(ci,si){return{ci,si,col:COLS[ci],sh:SHAPES[si]}}
+
+const LV=[
+  {p:[T(0,0),T(1,1)],           show:4,bl:2,rN:6,  hint:'teal🫧 lime⭐ repeats',            msg:'The 2-tile pattern [teal🫧, lime⭐] loops endlessly!',                              code:'cols=["teal","lime"]\nfor i in range(6):\n    print(cols[i%2], shapes[i%2])'},
+  {p:[T(0,2),T(2,2),T(3,2)],    show:3,bl:3,rN:6,  hint:'same 🐙 shape, 3 colours cycle', msg:'Same shape 🐙 each time — but the colour cycles: teal→gold→coral→repeat!',        code:'for i in range(6):\n    print(cols[i%3], "🐙")'},
+  {p:[T(0,0),T(2,3),T(4,4)],    show:3,bl:3,rN:6,  hint:'colour AND shape both change',   msg:'Both colour AND shape cycle every 3 tiles!',                                       code:'for i in range(6):\n    print(colors[i%3], shapes[i%3])'},
+  {p:[T(2,5),T(3,6)],            show:4,bl:4,rN:8,  hint:'gold🌊 coral🪸 alternates',       msg:'2-tile loop: gold🌊 and coral🪸 keep alternating!',                                code:'for i in range(8):\n    print(cols[i%2], shapes[i%2])'},
+  {p:[T(0,1),T(1,1),T(2,1),T(3,1)],show:4,bl:4,rN:8,hint:'⭐ always, colour changes x4',  msg:'Same ⭐ shape, but 4 different colours cycle — range cycles through them!',        code:'for i in range(8):\n    print(cols[i%4], "⭐")'},
+  {p:[T(4,0),T(4,3),T(4,7)],    show:3,bl:3,rN:6,  hint:'purple always, shape changes',   msg:'Purple every time, but 🫧🦀🐚 shapes cycle through — same colour, different shape!', code:'for i in range(6):\n    print("purple", shapes[i%3])'},
+  {p:[T(1,4),T(5,5)],            show:3,bl:5,rN:8,  hint:'lime🐠 then orange🌊',            msg:'lime🐠 + orange🌊 — the simplest 2-tile colour+shape loop!',                       code:'for i in range(8):\n    print(cols[i%2], shapes[i%2])'},
+  {p:[T(0,2),T(2,6),T(1,7)],    show:3,bl:4,rN:7,  hint:'3 different colour+shape combos', msg:'Complex 3-tile pattern — teal🐙, gold🪸, lime🐚 cycle every 3 steps!',          code:'for i in range(7):\n    print(colors[i%3], shapes[i%3])'},
+];
+
+/* ═══════════ STATE ═══════════ */
+let lvl=0,score=0,lives=3,mistakes=0,popCb=null;
+let seq=[],blanks=[],nextB=0;
+let xp=parseInt(localStorage.getItem('seq2_xp')||'0');
+document.getElementById('xpDisp').textContent=xp+' XP';
+document.getElementById('strDisp').textContent=localStorage.getItem('streak')||'—';
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')}
+
+function startGame(){
+  lvl=0;score=0;lives=3;mistakes=0;
+  [0,1,2].forEach(i=>{const h=document.getElementById('h'+i);h.classList.remove('gone');h.textContent='❤️'});
+  document.getElementById('scVal').textContent='0';
+  show('s-game');
+  loadLevel(0);
+}
+
+function loadLevel(idx){
+  if(idx>=LV.length){endGame();return;}
+  const L=LV[idx];
+  nextB=0;
+  const total=L.show+L.bl;
+  seq=[];for(let i=0;i<total;i++) seq.push(L.p[i%L.p.length]);
+  blanks=[];for(let i=L.show;i<total;i++) blanks.push(i);
+  document.getElementById('lvlPill').textContent='Level '+(idx+1)+' of '+LV.length;
+  document.getElementById('tipPill').textContent='💡 '+L.hint;
+  document.getElementById('cN').textContent=L.rN;
+  document.getElementById('cHint').textContent=' → '+L.hint.slice(0,18);
+  document.getElementById('seqProg').textContent='Fill '+L.bl+' blank'+(L.bl>1?'s':'')+'!';
+  document.getElementById('ansLbl').textContent='👇 Tap the correct next tile!';
+  setIBadge(0);
+  buildTrack();
+  buildAnswers();
+}
+
+function buildTrack(){
+  const L=LV[lvl];
+  const row=document.getElementById('tileRow');
+  row.innerHTML='';
+  seq.forEach((t,i)=>{
+    const el=document.createElement('div');
+    if(blanks.includes(i)){
+      el.className='tile blank'+(i===blanks[0]?' active':'');
+      el.id='t'+i;
+      el.innerHTML='<span class="blank-q">?</span>';
+    } else {
+      el.className='tile '+t.col.cls+' revealed';
+      el.style.animationDelay=(i*.05)+'s';
+      el.textContent=t.sh;
+      const il=document.createElement('div');il.className='t-i';il.textContent='i='+(i%L.p.length);
+      el.appendChild(il);
+    }
+    row.appendChild(el);
+  });
+  setTimeout(()=>{
+    const fb=document.getElementById('t'+blanks[0]);
+    if(fb) fb.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  },350);
+}
+
+function buildAnswers(){
+  const L=LV[lvl];
+  const bPos=blanks[nextB];
+  const correct=seq[bPos];
+  const wrongs=makeWrongs(correct,L.p,3);
+  const opts=[{t:correct,ok:true},...wrongs.map(t=>({t,ok:false}))].sort(()=>Math.random()-.5);
+  const row=document.getElementById('ansRow');row.innerHTML='';
+  opts.forEach(o=>{
+    const el=document.createElement('button');
+    el.type='button';el.className='ans-tile '+o.t.col.cls;
+    el.textContent=o.t.sh;
+    el.onclick=()=>tap(o.t,o.ok,el);
+    row.appendChild(el);
+  });
+}
+
+function makeWrongs(correct,pattern,n){
+  const out=[];
+  for(let attempt=0;attempt<40&&out.length<n;attempt++){
+    const ci=Math.floor(Math.random()*COLS.length);
+    const si=Math.floor(Math.random()*SHAPES.length);
+    if(ci===correct.ci&&si===correct.si) continue;
+    if(out.some(w=>w.ci===ci&&w.si===si)) continue;
+    if(pattern.some(p=>p.ci===ci&&p.si===si)&&Math.random()>.35) continue;
+    out.push(T(ci,si));
+  }
+  while(out.length<n) out.push(T((correct.ci+out.length+1)%COLS.length,(correct.si+out.length+1)%SHAPES.length));
+  return out.slice(0,n);
+}
+
+function tap(tile,ok,el){
+  const L=LV[lvl];
+  const bPos=blanks[nextB];
+  const bEl=document.getElementById('t'+bPos);
+  const cs=document.getElementById('codeStrip');
+  cs.classList.remove('lit');void cs.offsetWidth;cs.classList.add('lit');
+  setIBadge(bPos%L.p.length);
+  if(ok){
+    if(bEl){
+      bEl.className='tile '+tile.col.cls+' ok';
+      bEl.innerHTML=tile.sh;
+      const il=document.createElement('div');il.className='t-i';il.textContent='i='+(bPos%L.p.length);
+      bEl.appendChild(il);
+    }
+    starBurst(el);
+    nextB++;
+    const rem=blanks.length-nextB;
+    document.getElementById('seqProg').textContent=rem>0?rem+' blank'+(rem>1?'s':'')+' left!':'All done! 🎉';
+    if(nextB>=blanks.length){
+      const pts=lives===3?150:lives===2?100:60;
+      score+=pts;
+      const sv=document.getElementById('scVal');sv.textContent=score;sv.classList.remove('pop');void sv.offsetWidth;sv.classList.add('pop');
+      confetti();
+      popCb=()=>{lvl++;loadLevel(lvl)};
+      setTimeout(()=>showPopup(true,'🎉','Pattern Complete! 🌈',L.msg+'\n\n+'+pts+' points! 🌟',L.code),350);
+    } else {
+      const nb=document.getElementById('t'+blanks[nextB]);
+      if(nb){nb.classList.add('active');nb.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})}
+      buildAnswers();
+    }
+  } else {
+    el.classList.add('used');
+    if(bEl){bEl.classList.add('bad');setTimeout(()=>bEl.classList.remove('bad'),450)}
+    lives=Math.max(0,lives-1);mistakes++;
+    [0,1,2].forEach(i=>document.getElementById('h'+i).classList.toggle('gone',i>=lives));
+    document.getElementById('ansLbl').textContent='❌ Wrong! Try the other tiles!';
+    setTimeout(()=>document.getElementById('ansLbl').textContent='👇 Tap the correct next tile!',1100);
+  }
+}
+
+function setIBadge(v){
+  const el=document.getElementById('iBadge');
+  el.textContent=v;el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');
+}
+
+function showPopup(good,emoji,title,body,code){
+  document.getElementById('popEm').textContent=emoji;
+  document.getElementById('popTitle').textContent=title;
+  document.getElementById('popTitle').className='pop-title'+(good?'':' bad');
+  document.getElementById('popBody').textContent=body;
+  const c=document.getElementById('popCode');
+  if(code){c.style.display='block';c.textContent=code}else c.style.display='none';
+  const btn=document.getElementById('popBtn');
+  btn.textContent=good?'Next Level! 🌊':'Got it! 💪';
+  const nb=btn.cloneNode(true);btn.parentNode.replaceChild(nb,btn);
+  nb.addEventListener('click',closePopup);
+  document.getElementById('overlay').classList.add('on');
+}
+function closePopup(){
+  document.getElementById('overlay').classList.remove('on');
+  if(popCb){const cb=popCb;popCb=null;cb();}
+}
+
+function endGame(){
+  xp+=90;localStorage.setItem('seq2_xp',xp);document.getElementById('xpDisp').textContent=xp+' XP';
+  const stars=mistakes===0?'⭐⭐⭐':mistakes<=4?'⭐⭐':'⭐';
+  document.getElementById('starsRow').textContent=stars;
+  const[t,s]=mistakes===0?['Pattern Master! 🌟','Perfect! Every colour loop completed! 🐙']:
+               mistakes<=4?['Great Sequencer! 🎉','All 8 patterns cracked! Well done!']:
+                            ['Good Try! 🌊','All levels done! Keep practising!'];
+  document.getElementById('winTitle').innerHTML=t.replace('! ','! <span>').replace(/$/,'</span>');
+  document.getElementById('winSub').textContent=s;
+  show('s-win');if(mistakes===0)confetti();
+}
+function playAgain(){startGame()}
+function goHome(){show('s-intro')}
+
+function starBurst(el){
+  const r=el.getBoundingClientRect();
+  ['🌈','✨','⭐'].forEach((s,i)=>{
+    const p=document.createElement('div');p.className='star-pop';p.textContent=s;
+    p.style.cssText='position:fixed;z-index:400;left:'+(r.left+r.width/2-10+(Math.random()-.5)*34)+'px;top:'+(r.top+r.height/2-10+(Math.random()-.5)*24)+'px;animation-delay:'+(i*.09)+'s';
+    document.body.appendChild(p);setTimeout(()=>p.remove(),800);
+  });
+}
+function confetti(){
+  const w=document.getElementById('confWrap');
+  const c=['#0abfa3','#16a34a','#d97706','#7c6fe0','#ef4444','#ea580c','#2dd4bf'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');p.className='conf-p';const s=Math.random()*7+4;
+    p.style.cssText='left:'+Math.random()*100+'%;width:'+s+'px;height:'+s*1.4+'px;background:'+c[~~(Math.random()*c.length)]+';border-radius:'+(Math.random()>.5?'50%':'3px')+';animation-duration:'+(Math.random()*2+1.5)+'s;animation-delay:'+(Math.random()*.8)+'s';
+    w.appendChild(p);}
+  setTimeout(()=>w.innerHTML='',4000);
+}
+(function(){
+  const bg=document.querySelector('.sea-bg');
+  for(let i=0;i<18;i++){
+    const b=document.createElement('div');b.className='bbg';const s=Math.random()*7+3;
+    b.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;bottom:'+Math.random()*18+'%;animation-duration:'+(Math.random()*10+9)+'s;animation-delay:'+(Math.random()*12)+'s;opacity:'+(Math.random()*.3+.06);
+    bg.appendChild(b);
+  }
+  const fc=document.createElement('div');fc.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden';
+  fc.innerHTML='<div style="position:absolute;font-size:1.1rem;top:64%;animation:fishSwim 26s linear infinite;opacity:.18">🐠</div><div style="position:absolute;font-size:.75rem;top:38%;animation:fishSwim 34s linear infinite 11s;opacity:.12">🦈</div>';
+  document.body.appendChild(fc);
+})();
+</script>
+</body>
+</html>
+
+
+

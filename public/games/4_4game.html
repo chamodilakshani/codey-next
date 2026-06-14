@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY — Part 4 · Lesson 04: Loop with print()</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#6de8d8;
+  --bg2:#50deca;
+  --surface:#ffffff;
+  --surface2:#f7fffe;
+  --teal:#0abfa3;
+  --teal-light:#2dd4bf;
+  --teal-dark:#0d6b5e;
+  --lime:#16a34a;
+  --coral:#ef4444;
+  --gold:#d97706;
+  --purple:#7c6fe0;
+  --orange:#ea580c;
+  --text:#0a3d35;
+  --text2:#0f5449;
+  --muted:rgba(10,50,42,.58);
+  --border:rgba(255,255,255,.6);
+  --border2:rgba(255,255,255,.35);
+  --shadow:0 6px 28px rgba(0,60,50,.15),0 1px 0 rgba(255,255,255,.8) inset;
+  --mono:'Share Tech Mono',monospace;
+  --head:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--head);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column}
+
+/* ── BACKGROUND ── */
+.sea-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sea-layer{position:absolute;inset:0;background:
+  radial-gradient(ellipse 60% 55% at 5% 5%,rgba(180,255,240,.4) 0%,transparent 55%),
+  radial-gradient(ellipse 50% 50% at 95% 90%,rgba(40,200,175,.35) 0%,transparent 55%),
+  linear-gradient(155deg,#8cf0e0 0%,#4dd6c4 35%,#2abfaa 65%,#3dd6bf 100%)}
+.sea-dots{position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,.25) 1.5px,transparent 1.5px);
+  background-size:32px 32px}
+.sea-rays{position:absolute;inset:0;
+  background:repeating-conic-gradient(from 260deg at 50% -30%,rgba(255,255,255,.025) 0deg,transparent 5deg,transparent 15deg,rgba(255,255,255,.015) 18deg,transparent 22deg);
+  animation:rayDrift 22s linear infinite alternate}
+@keyframes rayDrift{from{transform:rotate(-3deg)scale(1.1)}to{transform:rotate(3deg)scale(1.05)}}
+.bubble{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),rgba(10,191,163,.15));border:1px solid rgba(255,255,255,.4);animation:bubbleRise linear infinite}
+@keyframes bubbleRise{0%{opacity:0}10%{opacity:.6}90%{opacity:.3}100%{transform:translateY(-110vh) translateX(20px);opacity:0}}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0) rotate(-10deg);opacity:0}65%{transform:scale(1.12) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes sonarPing{0%{transform:scale(.8);opacity:.8}100%{transform:scale(3);opacity:0}}
+@keyframes jellyFloat{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-10px) scaleY(.93)}}
+@keyframes fishSwim{0%{transform:translateX(110%) scaleX(-1)}100%{transform:translateX(-20%) scaleX(-1)}}
+@keyframes shine{to{left:160%}}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 18px rgba(10,191,163,.3)}50%{box-shadow:0 0 36px rgba(10,191,163,.6)}}
+@keyframes correctGlow{0%,100%{box-shadow:0 0 6px rgba(22,163,74,.2)}50%{box-shadow:0 0 20px rgba(22,163,74,.6)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes xpPop{0%{opacity:0;transform:translateY(0) scale(.4)}45%{opacity:1;transform:translateY(-28px) scale(1.3)}100%{opacity:0;transform:translateY(-55px) scale(1)}}
+@keyframes stampIn{0%{transform:scale(2.2) rotate(-18deg);opacity:0}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+@keyframes printDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 2px 20px rgba(10,191,163,.1)}
+.logo{display:flex;align-items:center;gap:7px;font-weight:900;font-size:.95rem;color:#ff8c00;letter-spacing:.06em}
+.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(10,191,163,.5);animation:blink 2s infinite}
+.nav-sonar{position:relative;width:22px;height:22px;flex-shrink:0}
+.nsr{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(10,191,163,.38);animation:sonarPing 2.2s ease-out infinite}
+.nsr2{animation-delay:.8s}
+.nsd{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 7px var(--teal)}
+.nav-center{display:flex;align-items:center;gap:8px}
+.nav-pip{width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);animation:blink 1.4s infinite}
+.nav-tag{font-size:.53rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.nav-ttl{font-size:.7rem;font-weight:800;color:var(--text);margin-top:1px}
+.btn-back{display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:99px;border:1.5px solid rgba(10,191,163,.4);background:rgba(10,191,163,.08);color:var(--teal-dark);font-size:.7rem;font-weight:800;cursor:pointer;transition:all .2s;font-family:var(--head)}
+.btn-back:hover{border-color:var(--teal);background:rgba(10,191,163,.15);transform:translateY(-1px)}
+.btn-back svg{width:11px;height:11px;stroke:var(--teal-dark);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── HEADER ── */
+.lhdr{position:relative;z-index:2;max-width:900px;width:100%;margin:0 auto;padding:10px 20px 0;animation:fadeUp .5s ease both}
+.l-tag{display:inline-flex;align-items:center;gap:5px;border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,.55);padding:2px 10px;border-radius:99px;font-size:.54rem;letter-spacing:.13em;color:var(--teal-dark);text-transform:uppercase;margin-bottom:4px;font-weight:800}
+.l-tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal-dark);box-shadow:0 0 5px var(--teal);animation:blink 1.5s infinite}
+.l-title{font-size:clamp(.9rem,1.6vw,1.2rem);font-weight:900;color:var(--text);line-height:1.2}
+.l-title span{color:var(--teal-dark)}
+.l-sub{margin-top:3px;font-size:.66rem;color:var(--muted)}
+.l-div{margin-top:8px;height:1.5px;background:linear-gradient(90deg,rgba(255,255,255,.7),rgba(255,255,255,.3),transparent)}
+
+/* ── PAGE ── */
+.page{position:relative;z-index:2;flex:1;max-width:900px;width:100%;margin:0 auto;padding:10px 20px 50px}
+
+/* ── PROGRESS ── */
+.prog{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.7);border-radius:12px;padding:7px 14px;margin-bottom:10px;animation:fadeUp .4s .04s ease both;box-shadow:0 4px 20px rgba(0,60,50,.12)}
+.prog-lbl{font-size:.56rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;white-space:nowrap;flex-shrink:0;font-weight:700}
+.prog-track{flex:1;height:6px;background:rgba(0,80,65,.12);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal-dark),var(--teal));transition:width .6s ease;width:0%}
+.prog-stages{display:flex;gap:5px}
+.ps{width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.5);display:grid;place-items:center;font-size:.62rem;background:rgba(255,255,255,.85);transition:all .3s;flex-shrink:0}
+.ps.done{border-color:var(--lime);background:rgba(22,163,74,.1);box-shadow:0 0 8px rgba(22,163,74,.25)}
+.ps.curr{border-color:var(--teal);background:rgba(10,191,163,.18);box-shadow:0 0 10px rgba(10,191,163,.35);animation:pulse 1.4s ease-in-out infinite}
+.prog-xp{font-size:.68rem;font-weight:900;color:var(--gold);white-space:nowrap;flex-shrink:0}
+
+/* ── STAGE ── */
+.stage{display:none;animation:fadeUp .4s ease both}
+.stage.active{display:block}
+
+/* ── CARD ── */
+.card{border-radius:14px;border:1px solid rgba(255,255,255,.65);background:var(--surface);padding:14px 16px;position:relative;overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)}
+.card::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 30% at 50% 0%,rgba(10,191,163,.04),transparent)}
+.ctb{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--teal),var(--teal-light),transparent)}
+.shdr{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.sicon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--teal-dark),var(--teal));display:grid;place-items:center;font-size:.7rem;flex-shrink:0;box-shadow:0 4px 10px rgba(10,191,163,.3)}
+.stitle{font-size:.84rem;font-weight:900;color:var(--text)}
+.ssub{font-size:.62rem;color:var(--muted);margin-top:1px}
+
+/* ── SHARED COMPONENTS ── */
+.score-row{display:flex;gap:12px;margin-bottom:8px}
+.sc{font-size:.66rem;color:var(--muted);display:flex;align-items:center;gap:4px;font-weight:600}
+.sc b{font-size:.72rem;font-weight:900;color:var(--gold)}
+.qdots{display:flex;gap:5px;margin-bottom:8px}
+.qdot{width:7px;height:7px;border-radius:50%;background:rgba(10,191,163,.15);border:1.5px solid rgba(10,191,163,.28);transition:all .3s}
+.qdot.done{background:var(--lime);border-color:var(--lime);box-shadow:0 0 5px rgba(22,163,74,.4)}
+.qdot.curr{background:var(--teal);border-color:var(--teal);box-shadow:0 0 5px rgba(10,191,163,.5);animation:pulse 1s ease-in-out infinite}
+.fb{border-radius:9px;padding:9px 12px;margin-top:8px;font-size:.72rem;font-weight:700;line-height:1.45;display:none}
+.fb.show{display:block;animation:popIn .3s ease both}
+.fb.ok{background:rgba(22,163,74,.08);border:1.5px solid rgba(22,163,74,.3);color:#14532d}
+.fb.bad{background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.3);color:#991b1b}
+.opts4{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.opt{background:rgba(255,255,255,.88);border:2px solid rgba(255,255,255,.7);border-radius:10px;padding:9px 11px;cursor:pointer;transition:all .18s;font-weight:700;font-size:.72rem;color:var(--text2);display:flex;align-items:center;gap:6px;font-family:var(--head)}
+.opt:hover{border-color:var(--teal);background:rgba(10,191,163,.1);transform:translateY(-2px);box-shadow:0 4px 12px rgba(10,191,163,.15)}
+.opt.good{border-color:var(--lime);background:rgba(22,163,74,.1);color:#14532d;animation:correctGlow .7s ease-in-out 2}
+.opt.bad{border-color:var(--coral);background:rgba(239,68,68,.1);color:#991b1b;animation:wrongShake .4s ease}
+.opt.off{pointer-events:none;opacity:.5}
+.q-row{font-weight:800;font-size:.78rem;color:var(--text);margin-bottom:9px;display:flex;align-items:flex-start;gap:7px;line-height:1.35}
+.q-num{width:22px;height:22px;border-radius:50%;background:rgba(10,191,163,.15);border:1.5px solid rgba(10,191,163,.4);display:grid;place-items:center;font-size:.58rem;font-weight:900;color:var(--teal-dark);flex-shrink:0;margin-top:1px}
+.xp-floater{position:fixed;pointer-events:none;z-index:999;font-weight:900;font-size:.95rem;color:var(--gold);text-shadow:0 0 9px rgba(217,119,6,.5);animation:xpPop .85s ease forwards;font-family:var(--head)}
+.tip{display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.75);border-radius:9px;padding:8px 11px;margin-top:9px}
+.tip-i{font-size:.95rem;flex-shrink:0;animation:float 3s ease-in-out infinite}
+.tip-t{font-size:.68rem;color:var(--muted);line-height:1.45;font-weight:600}
+.tip-t b{color:var(--teal-dark)}
+.nxt{display:flex;justify-content:flex-end;margin-top:10px}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:var(--head);font-weight:900;font-size:.7rem;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .3s;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(10,191,163,.35)}
+.btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);animation:shine 2.2s linear infinite}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,191,163,.45)}
+.btn-sm{padding:6px 14px;font-size:.66rem}
+.btn-out{padding:6px 13px;border-radius:9px;border:1.5px solid rgba(10,191,163,.38);background:rgba(10,191,163,.07);color:var(--teal-dark);font-family:var(--head);font-weight:800;font-size:.66rem;cursor:pointer;transition:all .2s}
+.btn-out:hover{border-color:var(--teal);background:rgba(10,191,163,.15)}
+.btn-fin{padding:12px 28px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:var(--head);font-weight:900;font-size:.76rem;cursor:pointer;letter-spacing:.07em;text-transform:uppercase;box-shadow:0 4px 20px rgba(10,191,163,.4);animation:btnPulse 2s ease-in-out infinite;transition:all .3s;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:7px}
+.btn-fin:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(10,191,163,.55)}
+
+/* ── S0 LEARN ── */
+.learn-code-block{background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.7);border-radius:9px;padding:9px 13px;font-family:var(--mono);font-size:.74rem;line-height:1.85;margin-bottom:9px}
+.rule-row{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.65);border-radius:8px;padding:7px 11px;margin-bottom:5px}
+.rule-row:last-child{margin-bottom:0}
+.rule-badge{font-family:var(--mono);font-size:.62rem;color:var(--teal-dark);background:rgba(10,191,163,.12);border-radius:4px;padding:2px 8px;flex-shrink:0;white-space:nowrap;border:1px solid rgba(10,191,163,.25)}
+.example-strip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.8);border-radius:8px;padding:7px 11px;margin-bottom:9px}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.8);border-radius:6px;padding:3px 9px;font-size:.59rem;color:var(--teal-dark);white-space:nowrap;font-weight:700}
+
+/* ── S1 PRINT PREDICTOR ── */
+.terminal-box{background:rgba(255,255,255,.9);border:1px solid rgba(255,255,255,.7);border-radius:11px;overflow:hidden;margin-bottom:9px;box-shadow:0 2px 12px rgba(0,60,50,.08)}
+.term-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 11px;background:rgba(10,191,163,.07);border-bottom:1px solid rgba(10,191,163,.12)}
+.term-dots{display:flex;gap:4px}
+.td{width:7px;height:7px;border-radius:50%}
+.td:nth-child(1){background:#ff5f56}.td:nth-child(2){background:#ffbd2e}.td:nth-child(3){background:#27c93f}
+.term-lbl{font-family:var(--mono);font-size:.52rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;font-weight:700}
+.term-body{padding:8px 12px;min-height:55px;max-height:115px;overflow-y:auto}
+.t-empty{font-family:var(--mono);font-size:.68rem;color:var(--muted);font-style:italic;font-weight:600}
+.t-line{display:block;font-family:var(--mono);font-size:.72rem;color:var(--teal-dark);font-weight:700;padding:2px 0;animation:printDrop .25s ease both;border-bottom:1px solid rgba(10,191,163,.08)}
+.run-code{background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.7);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:.74rem;line-height:1.8;margin-bottom:8px}
+.run-actions{display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.run-btn-g{padding:6px 16px;border-radius:99px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:var(--head);font-weight:900;font-size:.7rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;box-shadow:0 3px 10px rgba(10,191,163,.3)}
+.run-btn-g:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(10,191,163,.45)}
+.run-btn-g:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ── S2 FILL THE BLANK ── */
+.ftb-code{background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.7);border-radius:9px;padding:9px 13px;font-family:var(--mono);font-size:.74rem;line-height:1.85;margin-bottom:9px;display:flex;flex-direction:column;gap:2px}
+.blank{display:inline-flex;align-items:center;justify-content:center;min-width:80px;height:26px;border:2px dashed rgba(10,191,163,.55);border-radius:6px;background:rgba(255,255,255,.4);color:var(--teal-dark);padding:0 7px;font-family:var(--mono);font-size:.72rem;transition:all .2s;cursor:pointer;font-weight:600}
+.blank.filled{border-style:solid;border-color:rgba(10,191,163,.55);background:rgba(10,191,163,.14);font-weight:800}
+.ftb-pool{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);border-radius:9px;margin-bottom:9px}
+.ftb-opt{padding:5px 12px;border-radius:99px;border:1.5px solid rgba(10,191,163,.42);background:rgba(255,255,255,.72);color:var(--teal-dark);font-family:var(--mono);font-size:.7rem;font-weight:700;cursor:pointer;transition:all .2s}
+.ftb-opt:hover{background:rgba(10,191,163,.18);border-color:var(--teal);transform:scale(1.04)}
+.ftb-opt.sel{outline:2px solid var(--teal);background:rgba(10,191,163,.22)}
+
+/* ── S3 OUTPUT MATCHER ── */
+.output-q{background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.7);border-radius:10px;padding:10px 13px;margin-bottom:9px}
+.oq-label{font-size:.58rem;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;font-weight:700}
+.oq-lines{font-family:var(--mono);font-size:.72rem;color:var(--teal-dark);line-height:1.75;font-weight:700}
+.code-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.copt{background:rgba(255,255,255,.88);border:2px solid rgba(255,255,255,.7);border-radius:10px;padding:8px 11px;cursor:pointer;transition:all .2s;font-family:var(--mono);font-size:.67rem;line-height:1.7;color:var(--text2)}
+.copt:hover{border-color:var(--teal);background:rgba(10,191,163,.1);transform:translateY(-2px);box-shadow:0 4px 12px rgba(10,191,163,.15)}
+.copt.good{border-color:var(--lime);background:rgba(22,163,74,.1);color:#14532d;animation:correctGlow .8s ease-in-out 2}
+.copt.bad{border-color:var(--coral);background:rgba(239,68,68,.09);color:#991b1b;animation:wrongShake .4s ease}
+.copt.off{pointer-events:none;opacity:.5}
+
+/* ── S4 BUILD A LOOP ── */
+.build-story{font-size:.74rem;color:var(--text2);line-height:1.55;margin-bottom:9px;font-weight:600}
+.build-story b{color:var(--teal-dark)}
+.build-frame{background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.7);border-radius:9px;padding:9px 13px;font-family:var(--mono);font-size:.74rem;line-height:1.95;margin-bottom:9px;display:flex;flex-direction:column;gap:0}
+.build-slot{display:inline-flex;align-items:center;justify-content:center;min-width:80px;height:28px;border:2px dashed rgba(10,191,163,.5);border-radius:7px;background:rgba(255,255,255,.4);color:var(--teal-dark);font-family:var(--mono);font-size:.7rem;transition:all .2s;cursor:pointer;padding:0 8px;font-weight:600}
+.build-slot.filled{border-style:solid;border-color:rgba(10,191,163,.55);background:rgba(10,191,163,.14);font-weight:800}
+.build-pool{display:flex;gap:6px;flex-wrap:wrap;padding:8px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);border-radius:9px;margin-bottom:8px}
+.bp{padding:5px 12px;border-radius:99px;border:1.5px solid rgba(10,191,163,.42);background:rgba(255,255,255,.72);color:var(--teal-dark);font-family:var(--mono);font-size:.7rem;font-weight:700;cursor:pointer;transition:all .2s}
+.bp:hover{background:rgba(10,191,163,.18);border-color:var(--teal);transform:scale(1.04)}
+.bp.sel{outline:2px solid var(--teal);background:rgba(10,191,163,.22)}
+
+/* ── S5 COMPLETE ── */
+.comp-wrap{text-align:center;padding:8px 0}
+.trophy{font-size:2.8rem;display:block;margin-bottom:8px;animation:jellyFloat 2s ease-in-out infinite}
+.comp-title{font-size:clamp(1rem,2vw,1.4rem);font-weight:900;color:var(--text);margin-bottom:4px}
+.comp-title span{color:var(--teal-dark)}
+.comp-sub{font-size:.7rem;color:var(--muted);line-height:1.5;margin-bottom:12px;font-weight:600}
+.xp-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.85);border:2px solid rgba(213,135,0,.4);border-radius:12px;padding:8px 20px;margin-bottom:12px;animation:btnPulse 2s ease-in-out infinite}
+.xp-num{font-size:1.4rem;font-weight:900;color:var(--gold)}
+.xp-lbl{font-size:.64rem;color:var(--muted);text-align:left;font-weight:700}
+.learnt{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:14px;text-align:left}
+.li{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.65);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:6px;font-size:.64rem;color:var(--text2);font-weight:600}
+.ck{color:var(--lime);font-size:.82rem;flex-shrink:0}
+.stamp{position:absolute;top:10px;right:10px;background:rgba(22,163,74,.08);border:2px solid rgba(22,163,74,.35);border-radius:6px;padding:3px 8px;font-size:.55rem;font-weight:900;color:#14532d;letter-spacing:.09em;text-transform:uppercase;transform:rotate(-8deg);animation:stampIn .5s .25s ease both;opacity:0;animation-fill-mode:forwards}
+
+.jelly{position:fixed;right:3%;top:22%;font-size:1.8rem;opacity:.18;animation:jellyFloat 4s ease-in-out infinite;z-index:1;pointer-events:none}
+
+/* ── STATS BAR ── */
+.stats{position:fixed;bottom:0;left:0;right:0;z-index:100;height:38px;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;gap:24px;box-shadow:0 -2px 16px rgba(10,191,163,.1)}
+.si{display:flex;align-items:center;gap:5px;font-size:.6rem;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.sv{font-weight:800;font-size:.62rem}
+
+@media(max-width:620px){.page,.lhdr{padding-left:12px;padding-right:12px}.opts4,.code-opts,.learnt{grid-template-columns:1fr}.prog-stages{display:none}}
+@media(max-width:400px){nav{padding:0 10px}.logo span:last-child{display:none}.nav-center{display:none}}
+</style>
+</head>
+<body>
+
+<div class="sea-bg">
+  <div class="sea-layer"></div>
+  <div class="sea-dots"></div>
+  <div class="sea-rays"></div>
+</div>
+<div class="jelly">🪼</div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span>CODEPLAY</span>
+  </div>
+  <div class="nav-center">
+    <div class="nav-pip"></div>
+    <div><div class="nav-tag">Part 4 · Lesson 04</div><div class="nav-ttl">Loop with print()</div></div>
+  </div>
+  <button class="btn-back" onclick="location.href='4_4lesson.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<div class="lhdr">
+  <div class="l-tag">Part 4 of 10 · Lesson 04</div>
+  <div class="l-title">Loop with <span>print()</span> 📢</div>
+  <div class="l-sub">Use a loop to send the same message over and over — without typing it twice!</div>
+  <div class="l-div"></div>
+</div>
+
+<div class="page">
+
+  <!-- PROGRESS -->
+  <div class="prog">
+    <span class="prog-lbl">🌊 Progress</span>
+    <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+    <div class="prog-stages">
+      <div class="ps curr" id="ps0">📖</div>
+      <div class="ps" id="ps1">▶</div>
+      <div class="ps" id="ps2">🔤</div>
+      <div class="ps" id="ps3">🧩</div>
+      <div class="ps" id="ps4">🔨</div>
+      <div class="ps" id="ps5">🏆</div>
+    </div>
+    <span class="prog-xp">⚡ <span id="xpd">0</span> XP</span>
+  </div>
+
+  <!-- ══ STAGE 0: LEARN ══ -->
+  <div class="stage active" id="s0">
+    <div class="card">
+      <div class="ctb"></div>
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+        <div class="sicon">📖</div>
+        <div><div class="stitle">Loop with print()</div><div class="ssub">Learn the 4 rules, then play! 🎮</div></div>
+      </div>
+
+      <!-- code anatomy -->
+      <div class="learn-code-block">
+        <span style="color:var(--purple)">for</span> <span style="color:var(--orange)">i</span> <span style="color:var(--purple)">in</span> <span style="color:var(--teal-dark)">range</span>(<span style="color:var(--lime)">4</span>): <span style="color:var(--muted);font-family:var(--head);font-size:.62rem">← loops 4 times</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--teal-dark)">print</span>(<span style="color:var(--gold)">"🫧 Bubble!"</span>) <span style="color:var(--muted);font-family:var(--head);font-size:.62rem">← runs 4 times!</span>
+      </div>
+
+      <!-- 4 rules -->
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:9px">
+        <div class="rule-row">
+          <span style="font-size:.88rem;flex-shrink:0">↪️</span>
+          <div style="flex:1;min-width:0">
+            <span style="font-weight:800;font-size:.7rem;color:var(--text)">Always indent 4 spaces</span>
+            <span style="color:var(--muted);font-size:.66rem;margin-left:6px;font-weight:600">print() must be inside the loop</span>
+          </div>
+          <span class="rule-badge">&nbsp;&nbsp;&nbsp;&nbsp;print("hi")</span>
+        </div>
+        <div class="rule-row">
+          <span style="font-size:.88rem;flex-shrink:0">🔤</span>
+          <div style="flex:1;min-width:0">
+            <span style="font-weight:800;font-size:.7rem;color:var(--text)">Text needs "quotes"</span>
+            <span style="color:var(--muted);font-size:.66rem;margin-left:6px;font-weight:600">single or double both work</span>
+          </div>
+          <span class="rule-badge">print("hello 🌊")</span>
+        </div>
+        <div class="rule-row">
+          <span style="font-size:.88rem;flex-shrink:0">🔢</span>
+          <div style="flex:1;min-width:0">
+            <span style="font-weight:800;font-size:.7rem;color:var(--text)">i = no quotes needed</span>
+            <span style="color:var(--muted);font-size:.66rem;margin-left:6px;font-weight:600">it's a number, not text</span>
+          </div>
+          <span class="rule-badge">print("Wave", i)</span>
+        </div>
+        <div class="rule-row">
+          <span style="font-size:.88rem;flex-shrink:0">✨</span>
+          <div style="flex:1;min-width:0">
+            <span style="font-weight:800;font-size:.7rem;color:var(--text)">f-strings mix text + i</span>
+            <span style="color:var(--muted);font-size:.66rem;margin-left:6px;font-weight:600">put f before quote, use &#123;i&#125;</span>
+          </div>
+          <span class="rule-badge">print(f"Fish &#123;i&#125;!")</span>
+        </div>
+      </div>
+
+      <!-- example strip -->
+      <div class="example-strip">
+        <span style="font-size:.92rem;flex-shrink:0">🐠</span>
+        <span style="font-size:.66rem;color:var(--muted);font-weight:600"><b style="color:var(--teal-dark)">range(1,4)</b> + <span style="font-family:var(--mono);color:var(--gold)">print(f"Fish &#123;i&#125; swims!")</span> →&nbsp;
+          <span style="font-family:var(--mono);color:var(--teal-dark)">Fish 1 swims! &nbsp; Fish 2 swims! &nbsp; Fish 3 swims!</span>
+        </span>
+      </div>
+
+      <div class="nxt"><button class="btn" onclick="goStage(1)">Play Run Predictor ▶ →</button></div>
+    </div>
+  </div>
+
+  <!-- ══ STAGE 1: PRINT PREDICTOR ══ -->
+  <div class="stage" id="s1">
+    <div class="card">
+      <div class="ctb"></div>
+      <div class="shdr"><div class="sicon">▶</div><div><div class="stitle">Run Predictor!</div><div class="ssub">Watch the loop run — then answer how many lines printed! 📺</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp1">0</b></div><div class="sc">🎯 Score: <b id="sc1">0/4</b></div></div>
+      <div class="qdots" id="d1"><div class="qdot curr"></div><div class="qdot"></div><div class="qdot"></div><div class="qdot"></div></div>
+      <div id="g1"></div>
+    </div>
+  </div>
+
+  <!-- ══ STAGE 2: FILL THE BLANK ══ -->
+  <div class="stage" id="s2">
+    <div class="card">
+      <div class="ctb"></div>
+      <div class="shdr"><div class="sicon">🔤</div><div><div class="stitle">Fill the Blank!</div><div class="ssub">Click the right code piece to complete the loop! 🧩</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp2">0</b></div><div class="sc">✅ Score: <b id="sc2">0/4</b></div></div>
+      <div id="g2"></div>
+    </div>
+  </div>
+
+  <!-- ══ STAGE 3: OUTPUT MATCHER ══ -->
+  <div class="stage" id="s3">
+    <div class="card">
+      <div class="ctb"></div>
+      <div class="shdr"><div class="sicon">🧩</div><div><div class="stitle">Match the Output!</div><div class="ssub">Pick the code that produces this output! 🖥️</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp3">0</b></div><div class="sc">✅ Score: <b id="sc3">0/3</b></div></div>
+      <div class="qdots" id="d3"><div class="qdot curr"></div><div class="qdot"></div><div class="qdot"></div></div>
+      <div id="g3"></div>
+    </div>
+  </div>
+
+  <!-- ══ STAGE 4: BUILD A LOOP ══ -->
+  <div class="stage" id="s4">
+    <div class="card">
+      <div class="ctb"></div>
+      <div class="shdr"><div class="sicon">🔨</div><div><div class="stitle">Build the Loop!</div><div class="ssub">Click pieces to build the correct print() loop! 🏗️</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp4">0</b></div><div class="sc">✅ Score: <b id="sc4">0/3</b></div></div>
+      <div id="g4"></div>
+    </div>
+  </div>
+
+  <!-- ══ STAGE 5: COMPLETE ══ -->
+  <div class="stage" id="s5">
+    <div class="card" style="position:relative">
+      <div class="ctb"></div>
+      <div class="stamp">LESSON COMPLETE!</div>
+      <div class="comp-wrap">
+        <span class="trophy">🏆</span>
+        <div class="comp-title">Print Master <span>Unlocked!</span></div>
+        <div class="comp-sub">You can use print() inside loops like a pro! You know indenting, strings, counters, and f-strings. The ocean is proud! 🌊</div>
+        <div class="xp-badge"><div class="xp-num">⚡ <span id="fxp">0</span></div><div class="xp-lbl">XP Earned<br/><small>this lesson</small></div></div>
+        <div class="learnt">
+          <div class="li"><span class="ck">✅</span> print() inside a loop</div>
+          <div class="li"><span class="ck">✅</span> Indenting correctly</div>
+          <div class="li"><span class="ck">✅</span> Strings need "quotes"</div>
+          <div class="li"><span class="ck">✅</span> Using i in print()</div>
+          <div class="li"><span class="ck">✅</span> f-strings with {i}</div>
+          <div class="li"><span class="ck">✅</span> Reading loop output 👀</div>
+        </div>
+        <button class="btn-fin" onclick="unlockAndNavigate()">Back to Quest Map</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="stats">
+  <div class="si">📍 <span class="sv" style="color:var(--teal-dark)">Part 4</span>&nbsp;<span style="color:var(--muted);font-size:.58rem">of 10</span></div>
+  <div class="si">📖 <span class="sv">Lesson 04</span>&nbsp;<span style="color:var(--muted);font-size:.58rem">of 10</span></div>
+  <div class="si">⚡ <span class="sv" style="color:var(--gold)">+120 XP</span>&nbsp;<span style="color:var(--muted);font-size:.58rem">to earn</span></div>
+  <div class="si">🔥 <span class="sv" style="color:#f97316" id="streak">—</span>&nbsp;<span style="color:var(--muted);font-size:.58rem">Streak</span></div>
+</div>
+
+<script>
+var curStage=0,totalXP=0;
+function goStage(n){document.getElementById('s'+curStage).classList.remove('active');curStage=n;document.getElementById('s'+n).classList.add('active');updateProg();window.scrollTo({top:0,behavior:'smooth'});if(n===1)initPredictor();if(n===2)initFTB();if(n===3)initMatcher();if(n===4)initBuilder();if(n===5)showComplete();}
+function updateProg(){var pct=(curStage/5)*100;document.getElementById('pfill').style.width=pct+'%';for(var i=0;i<6;i++){var el=document.getElementById('ps'+i);if(!el)continue;el.classList.remove('curr','done');if(i<curStage)el.classList.add('done');if(i===curStage)el.classList.add('curr');}document.getElementById('xpd').textContent=totalXP;}
+function addXP(amt,el){totalXP+=amt;document.getElementById('xpd').textContent=totalXP;var r=el?el.getBoundingClientRect():{left:window.innerWidth/2,top:200};var f=document.createElement('div');f.className='xp-floater';f.textContent='+'+amt+' XP ⚡';f.style.left=Math.min(r.left,window.innerWidth-110)+'px';f.style.top=r.top+'px';document.body.appendChild(f);setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f);},900);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function safeDisp(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+(function(){var bg=document.querySelector('.sea-bg');for(var i=0;i<18;i++){var b=document.createElement('div');b.className='bubble';var s=Math.random()*9+3;b.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(Math.random()*100)+'%;bottom:'+(Math.random()*30)+'%;animation-duration:'+(Math.random()*12+8)+'s;animation-delay:'+(Math.random()*14)+'s;';bg.appendChild(b);}var fc=document.createElement('div');fc.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden';fc.innerHTML='<div style="position:absolute;top:60%;font-size:1rem;opacity:.18;animation:fishSwim 24s linear infinite">🐟</div>';document.body.appendChild(fc);}());
+document.getElementById('streak').textContent=localStorage.getItem('streak')||'—';
+
+/* Code snippet color helpers for light theme */
+var KC='#7c6fe0',VC='#ea580c',FC='#0d6b5e',NC='#16a34a',GC='#d97706';
+function kw(s){return'<span style="color:'+KC+'">'+s+'</span>';}
+function vr(s){return'<span style="color:'+VC+'">'+s+'</span>';}
+function fn(s){return'<span style="color:'+FC+'">'+s+'</span>';}
+function nm(s){return'<span style="color:'+NC+'">'+s+'</span>';}
+function st(s){return'<span style="color:'+GC+'">'+s+'</span>';}
+
+/* ═══ STAGE 1 — PRINT PREDICTOR ═══ */
+var PQ=[
+  {codeHtml:kw('for')+' '+vr('i')+' '+kw('in')+' '+fn('range')+'('+nm('3')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🫧 Bubble!"')+')',msg:'🫧 Bubble!',count:3,q:'How many lines did print() output?',opts:['2','3','5','1'],correct:1,ok:'✅ Correct! range(3) runs 3 times so print() fires 3 times!',nope:'❌ range(3) runs 3 times — so 3 lines print!'},
+  {codeHtml:kw('for')+' '+vr('i')+' '+kw('in')+' '+fn('range')+'('+nm('5')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🐠 Fish!"')+')',msg:'🐠 Fish!',count:5,q:'How many times did "🐠 Fish!" appear?',opts:['4','5','6','3'],correct:1,ok:'✅ Yes! range(5) = 5 loops = 5 prints!',nope:'❌ range(5) runs 5 times — 5 lines!'},
+  {codeHtml:kw('for')+' '+vr('i')+' '+kw('in')+' '+fn('range')+'('+nm('1')+', '+nm('5')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🌊 Wave"')+', '+vr('i')+')',lines:['🌊 Wave 1','🌊 Wave 2','🌊 Wave 3','🌊 Wave 4'],count:4,q:'How many lines printed? (range starts at 1!)',opts:['5','3','4','1'],correct:2,ok:'✅ Brilliant! range(1,5) gives 1,2,3,4 — that is 4 lines!',nope:'❌ range(1,5) counts 1,2,3,4 — that is 4 numbers so 4 lines!'},
+  {codeHtml:kw('for')+' '+vr('i')+' '+kw('in')+' '+fn('range')+'('+nm('2')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🐙"')+')<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🦑"')+')',lines:['🐙','🦑','🐙','🦑'],count:4,q:'Two print() lines, loop runs 2 times. Total lines?',opts:['2','3','4','6'],correct:2,ok:'✅ Perfect! 2 prints × 2 loops = 4 total lines!',nope:'❌ Each loop run fires BOTH print() lines: 2 × 2 = 4 total lines!'}
+];
+var p1Idx=0,p1Score=0,p1Running=false;
+function initPredictor(){p1Idx=0;p1Score=0;p1Running=false;renderPredictor();}
+function renderPredictor(){
+  var dots=document.querySelectorAll('#d1 .qdot');
+  for(var d=0;d<dots.length;d++){dots[d].classList.remove('curr','done');if(d<p1Idx)dots[d].classList.add('done');if(d===p1Idx)dots[d].classList.add('curr');}
+  document.getElementById('sc1').textContent=p1Score+'/4';
+  var g=document.getElementById('g1');
+  if(p1Idx>=PQ.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.8rem;margin-bottom:6px">🎉</div><div style="font-weight:900;font-size:.84rem;color:var(--lime);margin-bottom:4px">Run Predictor Done!</div><div style="font-size:.7rem;color:var(--muted);margin-bottom:12px;font-weight:600">You scored '+p1Score+'/4!</div><button class="btn" onclick="goStage(2)">Next: Fill the Blank 🔤 →</button></div>';return;}
+  var q=PQ[p1Idx];var nums=['1️⃣','2️⃣','3️⃣','4️⃣'];var optsH='';
+  for(var i=0;i<q.opts.length;i++)optsH+='<button class="opt" onclick="ansPred('+i+')"><span style="font-size:1rem">'+nums[i]+'</span> '+q.opts[i]+' lines</button>';
+  g.innerHTML='<div class="run-code">'+q.codeHtml+'</div>'
+    +'<div class="run-actions"><button class="run-btn-g" id="rb1">▶ Run It!</button></div>'
+    +'<div class="terminal-box"><div class="term-bar"><div class="term-dots"><div class="td"></div><div class="td"></div><div class="td"></div></div><span class="term-lbl">Output</span></div>'
+    +'<div class="term-body" id="tb1"><div class="t-empty">Press ▶ Run It first!</div></div></div>'
+    +'<div class="q-row"><div class="q-num">'+(p1Idx+1)+'</div><div>'+q.q+'</div></div>'
+    +'<div class="opts4">'+optsH+'</div><div class="fb" id="pfb"></div>';
+  document.getElementById('rb1').addEventListener('click',runPred);
+}
+function runPred(){
+  if(p1Running)return;p1Running=true;
+  var q=PQ[p1Idx];var btn=document.getElementById('rb1'),tb=document.getElementById('tb1');
+  if(!btn||!tb)return;btn.disabled=true;btn.textContent='🌊 Running…';tb.innerHTML='';
+  var lines=q.lines||[];if(!lines.length)for(var j=0;j<q.count;j++)lines.push(q.msg);
+  var n=0;
+  function tick(){if(n>=lines.length){p1Running=false;btn.disabled=false;btn.textContent='▶ Run Again';return;}
+    var ln=document.createElement('span');ln.className='t-line';ln.textContent=lines[n];
+    tb.appendChild(ln);tb.scrollTop=tb.scrollHeight;n++;setTimeout(tick,280);}
+  tick();
+}
+function ansPred(idx){var q=PQ[p1Idx];var opts=document.querySelectorAll('#g1 .opt');for(var i=0;i<opts.length;i++)opts[i].classList.add('off');var fb=document.getElementById('pfb');if(idx===q.correct){opts[idx].classList.add('good');fb.className='fb show ok';fb.textContent=q.ok;p1Score++;addXP(15,opts[idx]);}else{opts[idx].classList.add('bad');opts[q.correct].classList.add('good');fb.className='fb show bad';fb.textContent=q.nope;}document.getElementById('xp1').textContent=totalXP;setTimeout(function(){p1Idx++;renderPredictor();},2300);}
+
+/* ═══ STAGE 2 — FILL THE BLANK ═══ */
+var FQ=[
+  {before:kw('for')+' '+vr('i')+' '+kw('in')+' '+fn('range')+'('+nm('4')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'(',after:')',hint:'What text should print?',answer:'"🌊 Wave!"',opts:['"🌊 Wave!"','range(4)','for i','4'],ok:'✅ Correct! Strings go in quotes inside print().',nope:'❌ Text strings need quotes: print("🌊 Wave!")'},
+  {before:kw('for')+' '+vr('i')+' '+kw('in')+' '+fn('range')+'('+nm('3')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"Fish number"')+',',after:')',hint:'How do we include the counter?',answer:'i',opts:['"i"','i','range','3'],ok:'✅ Yes! i is a variable — no quotes needed!',nope:'❌ i is a variable (a number), not text — so no quotes!'},
+  {before:kw('for')+' '+vr('i')+' '+kw('in')+' '+fn('range')+'('+nm('1')+', '+nm('4')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'(',after:')',hint:'Which f-string prints "🐠 Fish 1 swims!"?',answer:'f"🐠 Fish {i} swims!"',opts:['f"🐠 Fish {i} swims!"','"🐠 Fish i swims!"','f"🐠 Fish i swims!"','"🐠 Fish {i}"'],ok:'✅ Perfect! f-strings use {i} inside the quotes to insert the number!',nope:'❌ f-strings need: f"..." with {i} inside the curly braces!'},
+  {before:kw('for')+' '+vr('i')+' '+kw('in'),after:':<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🦑 Squid!"')+')',hint:'Which range makes it print 6 times?',answer:'range(6)',opts:['range(6)','range(5)','range(1,6)','6'],ok:'✅ Correct! range(6) runs the loop exactly 6 times!',nope:'❌ range(6) runs exactly 6 times (0,1,2,3,4,5)!'}
+];
+var f2Idx=0,f2Score=0,f2Sel=null;
+function initFTB(){f2Idx=0;f2Score=0;f2Sel=null;renderFTB();}
+function renderFTB(){
+  document.getElementById('sc2').textContent=f2Score+'/4';var g=document.getElementById('g2');
+  if(f2Idx>=FQ.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.8rem;margin-bottom:6px">🔤</div><div style="font-weight:900;font-size:.84rem;color:var(--lime);margin-bottom:4px">Fill the Blank Done!</div><div style="font-size:.7rem;color:var(--muted);margin-bottom:12px;font-weight:600">You scored '+f2Score+'/4!</div><button class="btn" onclick="goStage(3)">Next: Match the Output 🧩 →</button></div>';return;}
+  var q=FQ[f2Idx];f2Sel=null;var optsH='';
+  for(var i=0;i<q.opts.length;i++)optsH+='<div class="ftb-opt" id="fo_'+i+'" onclick="selFTB('+i+')">'+esc(q.opts[i])+'</div>';
+  g.innerHTML='<div class="q-row"><div class="q-num">'+(f2Idx+1)+'</div><div>'+q.hint+'</div></div>'
+    +'<div class="ftb-code"><span>'+q.before+'</span><div class="blank" id="ftb-blank">?? pick below</div><span>'+q.after+'</span></div>'
+    +'<div class="ftb-pool">'+optsH+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" onclick="checkFTB()">🔍 Check!</button></div>'
+    +'<div class="fb" id="ffb"></div>'
+    +'<div style="margin-top:8px;font-size:.62rem;color:var(--muted);font-weight:600">Question '+(f2Idx+1)+' of '+FQ.length+'</div>';
+}
+function selFTB(idx){var q=FQ[f2Idx];for(var i=0;i<q.opts.length;i++){var el=document.getElementById('fo_'+i);if(el)el.classList.remove('sel');}f2Sel=idx;var ch=document.getElementById('fo_'+idx);if(ch)ch.classList.add('sel');var blank=document.getElementById('ftb-blank');if(blank){blank.textContent=q.opts[idx];blank.classList.add('filled');}}
+function checkFTB(){var q=FQ[f2Idx];var res=document.getElementById('ffb');if(f2Sel===null){res.className='fb show bad';res.textContent='⚠️ Pick one of the options first!';return;}if(q.opts[f2Sel]===q.answer){res.className='fb show ok';res.innerHTML=q.ok;f2Score++;addXP(15,res);document.getElementById('sc2').textContent=f2Score+'/4';document.getElementById('xp2').textContent=totalXP;setTimeout(function(){f2Idx++;renderFTB();},2300);}else{res.className='fb show bad';res.innerHTML=q.nope+'<br><button class="btn-out" style="margin-top:6px" onclick="resetFTB()">↺ Try Again</button>';}}
+function resetFTB(){var q=FQ[f2Idx];f2Sel=null;for(var i=0;i<q.opts.length;i++){var el=document.getElementById('fo_'+i);if(el)el.classList.remove('sel');}var blank=document.getElementById('ftb-blank');if(blank){blank.textContent='?? pick below';blank.classList.remove('filled');}document.getElementById('ffb').className='fb';}
+
+/* ═══ STAGE 3 — OUTPUT MATCHER ═══ */
+var MQ=[
+  {outputLines:['🫧 Bubble!','🫧 Bubble!','🫧 Bubble!'],opts:[kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('3')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🫧 Bubble!"')+')',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('2')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🫧 Bubble!"')+')',fn('print')+'('+st('"🫧 Bubble!"')+')',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('5')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🫧 Bubble!"')+')'],correct:0,ok:'✅ Correct! range(3) prints the message exactly 3 times!',nope:'❌ We need exactly 3 lines — range(3) runs 3 times!'},
+  {outputLines:['Wave 1','Wave 2','Wave 3'],opts:[kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('3')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"Wave"')+', i)',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('1')+','+nm('4')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"Wave"')+', i)',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('3')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"Wave 3"')+')',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('4')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"Wave"')+', i)'],correct:1,ok:'✅ Yes! range(1,4) starts at 1 so i = 1,2,3!',nope:'❌ We need Wave 1,2,3 — range(1,4) starts i at 1, not 0!'},
+  {outputLines:['🐠 Fish 1 swims!','🐠 Fish 2 swims!'],opts:[kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('2')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('f"🐠 Fish {i} swims!"')+')',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('1')+','+nm('3')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('f"🐠 Fish {i} swims!"')+')',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('2')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('"🐠 Fish i swims!"')+')',kw('for')+' i '+kw('in')+' '+fn('range')+'('+nm('3')+'):<br>&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'('+st('f"🐠 Fish {i} swims!"')+')'],correct:1,ok:'✅ Brilliant! range(1,3) starts at 1 so i = 1,2!',nope:'❌ range(1,3) gives i=1,2 — the f-string f"...{i}..." includes the number!'}
+];
+var m3Idx=0,m3Score=0;
+function initMatcher(){m3Idx=0;m3Score=0;renderMatcher();}
+function renderMatcher(){
+  var dots=document.querySelectorAll('#d3 .qdot');
+  for(var d=0;d<dots.length;d++){dots[d].classList.remove('curr','done');if(d<m3Idx)dots[d].classList.add('done');if(d===m3Idx)dots[d].classList.add('curr');}
+  document.getElementById('sc3').textContent=m3Score+'/3';var g=document.getElementById('g3');
+  if(m3Idx>=MQ.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.8rem;margin-bottom:6px">🧩</div><div style="font-weight:900;font-size:.84rem;color:var(--lime);margin-bottom:4px">Matcher Done!</div><div style="font-size:.7rem;color:var(--muted);margin-bottom:12px;font-weight:600">You scored '+m3Score+'/3!</div><button class="btn" onclick="goStage(4)">Next: Build a Loop 🔨 →</button></div>';return;}
+  var q=MQ[m3Idx];var outH='';
+  for(var i=0;i<q.outputLines.length;i++)outH+='<div style="font-family:var(--mono);font-size:.74rem;color:var(--teal-dark);padding:2px 0;font-weight:700">'+esc(q.outputLines[i])+'</div>';
+  var coptsH='';for(var j=0;j<q.opts.length;j++)coptsH+='<div class="copt" onclick="ansMatcher('+j+')">'+q.opts[j]+'</div>';
+  g.innerHTML='<div class="output-q"><div class="oq-label">This code ran and produced this output:</div><div class="oq-lines">'+outH+'</div></div>'
+    +'<div style="font-weight:800;font-size:.78rem;color:var(--text);margin-bottom:7px">Which code produced it? 👇</div>'
+    +'<div class="code-opts">'+coptsH+'</div>'
+    +'<div class="fb" id="mfb"></div>'
+    +'<div style="margin-top:8px;font-size:.62rem;color:var(--muted);font-weight:600">Question '+(m3Idx+1)+' of '+MQ.length+'</div>';
+}
+function ansMatcher(idx){var q=MQ[m3Idx];var opts=document.querySelectorAll('#g3 .copt');for(var i=0;i<opts.length;i++)opts[i].classList.add('off');var fb=document.getElementById('mfb');if(idx===q.correct){opts[idx].classList.add('good');fb.className='fb show ok';fb.textContent=q.ok;m3Score++;addXP(20,opts[idx]);}else{opts[idx].classList.add('bad');opts[q.correct].classList.add('good');fb.className='fb show bad';fb.textContent=q.nope;}document.getElementById('sc3').textContent=m3Score+'/3';document.getElementById('xp3').textContent=totalXP;setTimeout(function(){m3Idx++;renderMatcher();},2400);}
+
+/* ═══ STAGE 4 — BUILD A LOOP ═══ */
+var BQ=[
+  {story:'The submarine needs to print <b>"🌊 Dive!" exactly 5 times</b>. Build the loop!',slots:[{id:'b0',label:'① range blank',hint:'how many times?',answer:'range(5)'},{id:'b1',label:'② print blank',hint:'what to print?',answer:'"🌊 Dive!"'}],prefix0:kw('for')+' '+vr('i')+' '+kw('in')+' ',suffix0:':',prefix1:'&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'(',suffix1:')',pool:['range(5)','range(4)','range(6)','"🌊 Dive!"','"i"','5'],ok:'✅ Perfect! range(5) runs 5 times and "🌊 Dive!" is the text to print!',nope:'❌ Slot 1 needs range(5) for 5 repeats. Slot 2 needs "🌊 Dive!" (with quotes) for the message.'},
+  {story:'Print <b>"Fish number"</b> followed by the counter <b>i</b>, looping <b>3 times</b>.',slots:[{id:'c0',label:'① range blank',hint:'loop range',answer:'range(3)'},{id:'c1',label:'② print blank',hint:'what to print?',answer:'"Fish number", i'}],prefix0:kw('for')+' '+vr('i')+' '+kw('in')+' ',suffix0:':',prefix1:'&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'(',suffix1:')',pool:['range(3)','range(4)','"Fish number", i','"Fish number i"','i, "Fish"','range(1,3)'],ok:'✅ Brilliant! range(3) loops 3 times. print("Fish number", i) puts them side by side!',nope:'❌ Slot 1 needs range(3) for 3 loops. Slot 2 needs "Fish number", i — the comma joins them!'},
+  {story:'Use an <b>f-string</b> to print "🐬 Dolphin 1!", "🐬 Dolphin 2!", "🐬 Dolphin 3!"',slots:[{id:'d0',label:'① range blank',hint:'range for 1, 2, 3',answer:'range(1,4)'},{id:'d1',label:'② print blank',hint:'f-string message',answer:'f"🐬 Dolphin {i}!"'}],prefix0:kw('for')+' '+vr('i')+' '+kw('in')+' ',suffix0:':',prefix1:'&nbsp;&nbsp;&nbsp;&nbsp;'+fn('print')+'(',suffix1:')',pool:['range(1,4)','range(3)','f"🐬 Dolphin {i}!"','"🐬 Dolphin i!"','f"🐬 Dolphin i!"','range(1,3)'],ok:'✅ Amazing! range(1,4) gives i = 1,2,3 and f"🐬 Dolphin {i}!" slots the number right in!',nope:'❌ Slot 1 needs range(1,4) to get 1,2,3. Slot 2 needs f"🐬 Dolphin {i}!" — the {i} inserts the number!'}
+];
+var b4Idx=0,b4Score=0,b4ActiveSlot=-1,b4Answers=['',''];
+function initBuilder(){b4Idx=0;b4Score=0;renderBuilder();}
+function renderBuilder(){
+  document.getElementById('sc4').textContent=b4Score+'/3';var g=document.getElementById('g4');
+  if(b4Idx>=BQ.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.8rem;margin-bottom:6px">🔨</div><div style="font-weight:900;font-size:.84rem;color:var(--lime);margin-bottom:4px">Builder Done!</div><div style="font-size:.7rem;color:var(--muted);margin-bottom:12px;font-weight:600">You scored '+b4Score+'/3!</div><button class="btn" onclick="goStage(5)">See Results! →</button></div>';return;}
+  var q=BQ[b4Idx];b4ActiveSlot=-1;b4Answers=['',''];
+  var poolH='';for(var i=0;i<q.pool.length;i++)poolH+='<button class="bp" id="bp_'+i+'" onclick="placeBuild('+i+')">'+safeDisp(q.pool[i])+'</button>';
+  g.innerHTML='<div class="build-story">'+q.story+'</div>'
+    +'<div style="font-size:.7rem;color:var(--teal-dark);font-weight:800;margin-bottom:6px">1️⃣ Click a blank → 2️⃣ Click a block to fill it</div>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px">'
+    +'<div class="build-slot" id="'+q.slots[0].id+'" onclick="activateSlot(0)">'+safeDisp(q.slots[0].hint)+'</div>'
+    +'<div class="build-slot" id="'+q.slots[1].id+'" onclick="activateSlot(1)">'+safeDisp(q.slots[1].hint)+'</div>'
+    +'</div>'
+    +'<div class="build-frame">'
+    +'<div style="margin-bottom:4px"><span>'+q.prefix0+'</span><span class="build-slot-preview" id="prev0" style="display:inline;font-family:var(--mono);color:var(--teal-dark);font-weight:800">???</span><span>'+q.suffix0+'</span></div>'
+    +'<div><span>'+q.prefix1+'</span><span class="build-slot-preview" id="prev1" style="display:inline;font-family:var(--mono);color:var(--gold);font-weight:800">???</span><span>'+q.suffix1+'</span></div>'
+    +'</div>'
+    +'<div style="font-size:.7rem;color:var(--muted);margin-bottom:6px;font-weight:700">🧩 Pick a block:</div>'
+    +'<div class="build-pool">'+poolH+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"><button class="btn btn-sm" onclick="checkBuild()">🔍 Check!</button><button class="btn-out" onclick="resetBuild()">↺ Reset</button></div>'
+    +'<div class="fb" id="bfb"></div>'
+    +'<div style="margin-top:8px;font-size:.62rem;color:var(--muted);font-weight:600">Question '+(b4Idx+1)+' of '+BQ.length+'</div>';
+}
+function activateSlot(idx){var q=BQ[b4Idx];b4ActiveSlot=idx;for(var s=0;s<q.slots.length;s++){var el=document.getElementById(q.slots[s].id);if(!el)continue;if(s===idx){el.style.borderColor='var(--teal)';el.style.background='rgba(10,191,163,.2)';el.style.color=var_('--teal-dark');}else{el.style.borderColor='';el.style.background='';el.style.color='';}}
+}
+function var_(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#0d6b5e';}
+function placeBuild(poolIdx){
+  if(b4ActiveSlot===-1){var res=document.getElementById('bfb');if(res){res.className='fb show bad';res.textContent='⚠️ First click a blank (Slot 1 or Slot 2) to choose where to place it!';}return;}
+  var q=BQ[b4Idx];var val=q.pool[poolIdx];b4Answers[b4ActiveSlot]=val;
+  var slotEl=document.getElementById(q.slots[b4ActiveSlot].id);
+  if(slotEl){slotEl.textContent=val;slotEl.classList.add('filled');slotEl.style.borderColor='rgba(10,191,163,.55)';slotEl.style.background='rgba(10,191,163,.15)';slotEl.style.color='var(--teal-dark)';}
+  var prev=document.getElementById('prev'+b4ActiveSlot);if(prev)prev.textContent=val;
+  var allBp=document.querySelectorAll('#g4 .bp');for(var i=0;i<allBp.length;i++)allBp[i].classList.remove('sel');
+  var bp=document.getElementById('bp_'+poolIdx);if(bp)bp.classList.add('sel');
+  var fb=document.getElementById('bfb');if(fb)fb.className='fb';
+  b4ActiveSlot=-1;
+  var q2=BQ[b4Idx];for(var s=0;s<q2.slots.length;s++){var sEl=document.getElementById(q2.slots[s].id);if(sEl&&b4Answers[s]){sEl.style.borderColor='rgba(10,191,163,.5)';sEl.style.background='rgba(10,191,163,.12)';}else if(sEl){sEl.style.borderColor='';sEl.style.background='';}}
+}
+function resetBuild(){var q=BQ[b4Idx];b4Answers=['',''];b4ActiveSlot=-1;for(var s=0;s<q.slots.length;s++){var sl=document.getElementById(q.slots[s].id);if(sl){sl.textContent=q.slots[s].hint;sl.classList.remove('filled');sl.style.borderColor='';sl.style.background='';sl.style.color='';}}var p0=document.getElementById('prev0'),p1=document.getElementById('prev1');if(p0)p0.textContent='???';if(p1)p1.textContent='???';var allBp=document.querySelectorAll('#g4 .bp');for(var i=0;i<allBp.length;i++)allBp[i].classList.remove('sel');document.getElementById('bfb').className='fb';}
+function checkBuild(){var q=BQ[b4Idx];var res=document.getElementById('bfb');if(!b4Answers[0]||!b4Answers[1]){res.className='fb show bad';res.textContent='⚠️ Fill both blanks first! Click a blank, then click a block.';return;}var correct=(b4Answers[0]===q.slots[0].answer)&&(b4Answers[1]===q.slots[1].answer);if(correct){res.className='fb show ok';res.innerHTML=q.ok;b4Score++;addXP(20,res);document.getElementById('sc4').textContent=b4Score+'/3';document.getElementById('xp4').textContent=totalXP;setTimeout(function(){b4Idx++;renderBuilder();},2500);}else{var hint='';if(b4Answers[0]!==q.slots[0].answer)hint+='Slot ① needs <b>'+safeDisp(q.slots[0].answer)+'</b>. ';if(b4Answers[1]!==q.slots[1].answer)hint+='Slot ② needs <b>'+safeDisp(q.slots[1].answer)+'</b>.';res.className='fb show bad';res.innerHTML='❌ Not quite! '+hint+'<br><button class="btn-out" style="margin-top:6px" onclick="resetBuild()">↺ Try Again</button>';}}
+
+function showComplete(){document.getElementById('fxp').textContent=totalXP;localStorage.setItem('p4_lesson04Completed','yes');var cur=parseInt(localStorage.getItem('part4_progress'))||1;if(cur<5)localStorage.setItem('part4_progress','5');}
+function unlockAndNavigate(){showComplete();setTimeout(function(){location.href='quest4.html';},100);}
+updateProg();
+</script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY — Part 4 · Lesson 03</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#e8f9f7;
+  --bg2:#d2f3ef;
+  --surface:#ffffff;
+  --surface2:#f0fbf9;
+  --teal:#0abfa3;
+  --teal-light:#4dd6c3;
+  --teal-dark:#079e88;
+  --lime:#22c55e;
+  --coral:#f87171;
+  --gold:#f59e0b;
+  --purple:#7c6fe0;
+  --orange:#f97316;
+  --text:#0d3d36;
+  --text2:#1a5c52;
+  --muted:rgba(13,61,54,.52);
+  --border:rgba(10,191,163,.22);
+  --border2:rgba(10,191,163,.14);
+  --shadow:0 2px 16px rgba(10,191,163,.13);
+  --shadow-lg:0 8px 32px rgba(10,191,163,.18);
+  --mono:'Share Tech Mono',monospace;
+  --head:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--head);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column}
+
+/* Light ocean background */
+.sea-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sea-layer{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 10%,rgba(10,191,163,.12) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 60% at 85% 80%,rgba(4,168,144,.10) 0%,transparent 60%),
+    radial-gradient(ellipse 80% 40% at 50% 100%,rgba(10,191,163,.08) 0%,transparent 55%),
+    linear-gradient(180deg,#e8f9f7 0%,#d8f5f1 50%,#e0f8f4 100%)}
+.sea-rays{position:absolute;inset:0;
+  background:repeating-conic-gradient(from 260deg at 50% -30%,rgba(10,191,163,.025) 0deg,transparent 5deg,transparent 15deg,rgba(10,191,163,.015) 18deg,transparent 22deg);
+  animation:rayDrift 22s linear infinite alternate}
+@keyframes rayDrift{from{transform:rotate(-3deg)scale(1.1)}to{transform:rotate(3deg)scale(1.05)}}
+
+.bubble{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),rgba(10,191,163,.15));border:1px solid rgba(10,191,163,.25);animation:bubbleRise linear infinite}
+@keyframes bubbleRise{0%{opacity:0}10%{opacity:.6}90%{opacity:.3}100%{transform:translateY(-110vh) translateX(20px);opacity:0}}
+
+/* Subtle dots pattern */
+.sea-dots{position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(10,191,163,.12) 1px,transparent 1px);
+  background-size:32px 32px}
+
+.scan{display:none}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0) rotate(-10deg);opacity:0}65%{transform:scale(1.1) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes sonarPing{0%{transform:scale(.8);opacity:.8}100%{transform:scale(3);opacity:0}}
+@keyframes jellyFloat{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-8px) scaleY(.93)}}
+@keyframes fishSwim{0%{transform:translateX(120%) scaleX(-1)}100%{transform:translateX(-20%) scaleX(-1)}}
+@keyframes shine{to{left:160%}}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 18px rgba(10,191,163,.3)}50%{box-shadow:0 0 36px rgba(10,191,163,.6)}}
+@keyframes waveIn{from{transform:translateX(-12px) scale(.7);opacity:0}to{transform:translateX(0) scale(1);opacity:1}}
+@keyframes correctGlow{0%,100%{box-shadow:0 0 6px rgba(34,197,94,.2)}50%{box-shadow:0 0 20px rgba(34,197,94,.6)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes xpPop{0%{opacity:0;transform:translateY(0) scale(.4)}45%{opacity:1;transform:translateY(-24px) scale(1.3)}100%{opacity:0;transform:translateY(-50px) scale(1)}}
+@keyframes stampIn{0%{transform:scale(2) rotate(-18deg);opacity:0}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+@keyframes countBounce{0%{transform:scale(1)}35%{transform:scale(1.4)}65%{transform:scale(.92)}100%{transform:scale(1)}}
+@keyframes waveRoll{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.03)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  background:rgba(255,255,255,.88);backdrop-filter:blur(20px);
+  border-bottom:1.5px solid rgba(10,191,163,.18);
+  box-shadow:0 2px 20px rgba(10,191,163,.1)}
+.logo{display:flex;align-items:center;gap:7px;font-weight:900;font-size:.95rem;color:#ff8c00;letter-spacing:.06em}
+.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(10,191,163,.5);animation:blink 2s infinite}
+.nav-sonar{position:relative;width:22px;height:22px;flex-shrink:0}
+.nsr{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(10,191,163,.35);animation:sonarPing 2.2s ease-out infinite}
+.nsr2{animation-delay:.8s}
+.nsd{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 7px var(--teal)}
+.nav-center{display:flex;align-items:center;gap:8px}
+.nav-pip{width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);animation:blink 1.4s infinite}
+.nav-tag{font-size:.53rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.nav-ttl{font-size:.7rem;font-weight:800;color:var(--text);margin-top:1px}
+.btn-back{display:flex;align-items:center;gap:5px;padding:6px 14px;border-radius:99px;border:1.5px solid rgba(10,191,163,.4);background:rgba(10,191,163,.08);color:var(--teal-dark);font-size:.7rem;font-weight:800;cursor:pointer;transition:all .2s;font-family:var(--head)}
+.btn-back:hover{border-color:var(--teal);background:rgba(10,191,163,.15);transform:translateY(-1px)}
+.btn-back svg{width:11px;height:11px;stroke:var(--teal-dark);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* LESSON HEADER */
+.lhdr{position:relative;z-index:2;max-width:860px;width:100%;margin:0 auto;padding:10px 20px 0;animation:fadeUp .5s ease both}
+.l-tag{display:inline-flex;align-items:center;gap:5px;border:1.5px solid rgba(10,191,163,.35);background:rgba(10,191,163,.1);padding:2px 10px;border-radius:99px;font-size:.54rem;letter-spacing:.13em;color:var(--teal-dark);text-transform:uppercase;margin-bottom:4px;font-weight:800}
+.l-tag::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--teal);box-shadow:0 0 5px var(--teal);animation:blink 1.5s infinite}
+.l-title{font-size:clamp(.9rem,1.6vw,1.2rem);font-weight:900;color:var(--text);line-height:1.2}
+.l-title span{color:var(--teal)}
+.l-sub{margin-top:3px;font-size:.66rem;color:var(--muted)}
+.l-div{margin-top:8px;height:1.5px;background:linear-gradient(90deg,rgba(10,191,163,.4),rgba(10,191,163,.15),transparent)}
+
+.page{position:relative;z-index:2;flex:1;max-width:860px;width:100%;margin:0 auto;padding:10px 20px 50px}
+
+/* PROGRESS */
+.prog{display:flex;align-items:center;gap:9px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:7px 14px;margin-bottom:10px;animation:fadeUp .4s .04s ease both;box-shadow:var(--shadow)}
+.prog-lbl{font-size:.56rem;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;white-space:nowrap;flex-shrink:0;font-weight:700}
+.prog-track{flex:1;height:6px;background:rgba(10,191,163,.12);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal),var(--teal-light));transition:width .6s ease}
+.prog-stages{display:flex;gap:5px}
+.ps{width:26px;height:26px;border-radius:50%;border:2px solid rgba(10,191,163,.25);display:grid;place-items:center;font-size:.58rem;background:var(--surface2);transition:all .3s;flex-shrink:0}
+.ps.done{border-color:var(--lime);background:rgba(34,197,94,.1);box-shadow:0 0 8px rgba(34,197,94,.25)}
+.ps.curr{border-color:var(--teal);background:rgba(10,191,163,.15);box-shadow:0 0 10px rgba(10,191,163,.35);animation:pulse 1.4s ease-in-out infinite}
+.prog-xp{font-size:.68rem;font-weight:900;color:var(--gold);white-space:nowrap;flex-shrink:0}
+
+.stage{display:none;animation:fadeUp .4s ease both}
+.stage.active{display:block}
+
+/* CARD */
+.card{border-radius:14px;border:1.5px solid var(--border);background:var(--surface);padding:14px 16px;position:relative;overflow:hidden;margin-bottom:10px;box-shadow:var(--shadow)}
+.card::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 30% at 50% 0%,rgba(10,191,163,.04),transparent)}
+.ctb{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--teal),var(--teal-light),transparent)}
+.shdr{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.sicon{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--teal-light));display:grid;place-items:center;font-size:.7rem;flex-shrink:0;box-shadow:0 4px 10px rgba(10,191,163,.3)}
+.stitle{font-size:.84rem;font-weight:900;color:var(--text)}
+.ssub{font-size:.62rem;color:var(--muted);margin-top:1px}
+.score-row{display:flex;gap:12px;margin-bottom:8px}
+.sc{font-size:.66rem;color:var(--muted);display:flex;align-items:center;gap:4px;font-weight:600}
+.sc b{font-size:.72rem;font-weight:900;color:var(--gold)}
+.qdots{display:flex;gap:5px;margin-bottom:8px}
+.qdot{width:7px;height:7px;border-radius:50%;background:rgba(10,191,163,.15);border:1.5px solid rgba(10,191,163,.25);transition:all .3s}
+.qdot.done{background:var(--lime);border-color:var(--lime);box-shadow:0 0 5px rgba(34,197,94,.4)}
+.qdot.curr{background:var(--teal);border-color:var(--teal);box-shadow:0 0 5px rgba(10,191,163,.5);animation:pulse 1s ease-in-out infinite}
+.fb{border-radius:9px;padding:9px 12px;margin-top:8px;font-size:.72rem;font-weight:700;line-height:1.4;display:none}
+.fb.show{display:block;animation:popIn .3s ease both}
+.fb.ok{background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.3);color:#166534}
+.fb.bad{background:rgba(248,113,113,.08);border:1.5px solid rgba(248,113,113,.3);color:#991b1b}
+.opts4{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.opt{background:var(--surface2);border:2px solid rgba(10,191,163,.22);border-radius:10px;padding:9px 11px;cursor:pointer;transition:all .18s;font-weight:700;font-size:.72rem;color:var(--text2);display:flex;align-items:center;gap:6px;font-family:var(--head)}
+.opt:hover{border-color:var(--teal);background:rgba(10,191,163,.1);transform:translateY(-2px);box-shadow:0 4px 12px rgba(10,191,163,.15)}
+.opt.good{border-color:var(--lime);background:rgba(34,197,94,.1);color:#166534;animation:correctGlow .7s ease-in-out 2}
+.opt.bad{border-color:var(--coral);background:rgba(248,113,113,.1);color:#991b1b;animation:wrongShake .35s ease}
+.opt.off{pointer-events:none;opacity:.5}
+.q-row{font-weight:800;font-size:.78rem;color:var(--text);margin-bottom:9px;display:flex;align-items:flex-start;gap:7px;line-height:1.35}
+.q-num{width:22px;height:22px;border-radius:50%;background:rgba(10,191,163,.15);border:1.5px solid rgba(10,191,163,.4);display:grid;place-items:center;font-size:.58rem;font-weight:900;color:var(--teal-dark);flex-shrink:0;margin-top:1px}
+.xp-floater{position:fixed;pointer-events:none;z-index:999;font-weight:900;font-size:.95rem;color:var(--gold);text-shadow:0 0 9px rgba(245,158,11,.5);animation:xpPop .85s ease forwards;font-family:var(--head)}
+.nxt{display:flex;justify-content:flex-end;margin-top:10px}
+
+/* BUTTONS */
+.btn{padding:9px 20px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:var(--head);font-weight:900;font-size:.7rem;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;transition:all .3s;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:5px;box-shadow:0 4px 14px rgba(10,191,163,.35)}
+.btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:shine 2.2s linear infinite}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(10,191,163,.45)}
+.btn-sm{padding:6px 14px;font-size:.66rem}
+.btn-out{padding:6px 13px;border-radius:9px;border:1.5px solid rgba(10,191,163,.35);background:rgba(10,191,163,.07);color:var(--teal-dark);font-family:var(--head);font-weight:800;font-size:.66rem;cursor:pointer;transition:all .2s}
+.btn-out:hover{border-color:var(--teal);background:rgba(10,191,163,.14)}
+.btn-fin{padding:12px 28px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:var(--head);font-weight:900;font-size:.76rem;cursor:pointer;letter-spacing:.07em;text-transform:uppercase;box-shadow:0 4px 20px rgba(10,191,163,.4);animation:btnPulse 2s ease-in-out infinite;transition:all .3s;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:7px}
+.btn-fin:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(10,191,163,.55)}
+
+/* S0 LEARN */
+.anat{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;margin-bottom:9px;font-family:var(--mono);font-size:.7rem;line-height:1.85}
+.ak{color:var(--purple)}.av{color:var(--orange)}.af{color:var(--teal-dark)}.an{color:var(--lime)}.ac{color:var(--muted);font-style:italic;font-family:var(--head);font-size:.6rem;margin-left:5px}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.badge{display:inline-flex;align-items:center;gap:4px;background:rgba(10,191,163,.1);border:1.5px solid rgba(10,191,163,.28);border-radius:6px;padding:3px 9px;font-size:.59rem;color:var(--teal-dark);white-space:nowrap;font-weight:700}
+.rg{display:flex;flex-direction:column;gap:5px;margin-bottom:9px}
+.rc{display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:9px;padding:7px 10px;border:1.5px solid var(--border2)}
+.rc-code{font-family:var(--mono);font-size:.68rem;color:var(--teal-dark);font-weight:700;white-space:nowrap;flex-shrink:0;min-width:120px}
+.rc-desc{font-size:.62rem;color:var(--muted);flex:1;min-width:0;font-weight:600}
+.chips{display:flex;gap:4px;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 4px;border-radius:5px;font-family:var(--mono);font-size:.62rem;font-weight:700;border:1.5px solid rgba(10,191,163,.4);background:rgba(10,191,163,.1);color:var(--teal-dark)}
+.chip.p{border-color:rgba(124,111,224,.4);background:rgba(124,111,224,.1);color:var(--purple)}
+.tip{display:flex;align-items:flex-start;gap:7px;background:rgba(10,191,163,.07);border:1.5px solid rgba(10,191,163,.2);border-radius:9px;padding:8px 11px;margin-bottom:9px}
+.tip-icon{font-size:.9rem;flex-shrink:0}
+.tip-txt{font-size:.64rem;color:var(--muted);line-height:1.45;font-weight:600}
+.tip-txt b{color:var(--teal-dark)}
+
+/* S1 WAVE */
+.arena{background:var(--surface2);border:1.5px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:9px}
+.w-screen{min-height:88px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;padding:12px 14px;
+  background:linear-gradient(180deg,rgba(10,191,163,.07),rgba(10,191,163,.03));
+  border-bottom:1.5px solid rgba(10,191,163,.12);position:relative;overflow:hidden}
+.wbg{position:absolute;bottom:0;left:0;right:0;height:24px;background:repeating-linear-gradient(90deg,rgba(10,191,163,.06) 0,rgba(10,191,163,.06) 40px,transparent 40px,transparent 80px);animation:waveRoll 3s ease-in-out infinite}
+.wcr{font-size:1.7rem;animation:waveIn .22s ease both;filter:drop-shadow(0 2px 4px rgba(10,191,163,.2));position:relative;z-index:1}
+.w-empty{font-size:.72rem;color:var(--muted);font-style:italic;z-index:1;position:relative;font-weight:600}
+.w-bar{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--surface);flex-wrap:wrap}
+.w-code{font-family:var(--mono);font-size:.7rem;flex:1;color:var(--text2);min-width:0}
+.run-btn{padding:6px 15px;border-radius:99px;border:none;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-family:var(--head);font-weight:900;font-size:.66rem;cursor:pointer;transition:all .2s;letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0;box-shadow:0 3px 10px rgba(10,191,163,.3)}
+.run-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(10,191,163,.45)}
+.run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.w-counter{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;border-top:1px solid var(--border2);font-size:.64rem;color:var(--muted);font-weight:600}
+.cnt-badge{font-family:var(--mono);font-size:.82rem;font-weight:900;color:var(--teal-dark)}
+
+/* S2 DECODER */
+.dec-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:9px}
+.dec-code{font-family:var(--mono);font-size:.76rem;color:var(--teal-dark);margin-bottom:7px;font-weight:700}
+.dec-lbl{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:700}
+.num-pool{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;background:rgba(10,191,163,.06);border:1.5px dashed rgba(10,191,163,.28);border-radius:9px;margin-bottom:7px;min-height:36px}
+.nc{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 7px;border-radius:7px;font-family:var(--mono);font-size:.72rem;font-weight:700;cursor:pointer;transition:all .2s;border:1.5px solid rgba(10,191,163,.4);background:rgba(10,191,163,.1);color:var(--teal-dark);user-select:none;animation:popIn .18s ease both}
+.nc:hover{transform:scale(1.1);box-shadow:0 2px 8px rgba(10,191,163,.2)}
+.nc.used{opacity:.3;pointer-events:none}
+.nc.sel{outline:2.5px solid var(--teal);transform:scale(1.08);box-shadow:0 0 10px rgba(10,191,163,.3)}
+.ans-row{display:flex;gap:6px;flex-wrap:wrap;min-height:34px}
+.aslot{width:34px;height:34px;border:2px dashed rgba(10,191,163,.38);border-radius:8px;background:rgba(10,191,163,.05);display:grid;place-items:center;font-family:var(--mono);font-size:.72rem;color:var(--muted);cursor:pointer;transition:all .2s}
+.aslot:hover{border-color:var(--teal);background:rgba(10,191,163,.12)}
+.aslot.filled{border-style:solid;border-color:rgba(10,191,163,.5);background:rgba(10,191,163,.12);color:var(--teal-dark);font-weight:700}
+.aslot.good{border-color:var(--lime);background:rgba(34,197,94,.1);color:#166534}
+.aslot.bad{border-color:var(--coral);background:rgba(248,113,113,.1);color:#991b1b;animation:wrongShake .35s ease}
+
+/* S3 WRITER */
+.wr-story{font-size:.72rem;color:var(--text2);line-height:1.55;margin-bottom:7px;font-weight:600}
+.wr-story b{color:var(--teal-dark)}
+.wr-code-frame{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:.72rem;line-height:2;margin-bottom:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.blank{display:inline-flex;align-items:center;justify-content:center;min-width:80px;height:26px;border:2px dashed rgba(10,191,163,.4);border-radius:6px;background:rgba(10,191,163,.06);color:var(--teal-dark);padding:0 7px;font-family:var(--mono);font-size:.7rem;transition:all .2s;font-weight:600}
+.blank.filled{border-style:solid;border-color:rgba(10,191,163,.55);background:rgba(10,191,163,.14);font-weight:800}
+.wr-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;padding:9px;background:rgba(10,191,163,.05);border:1.5px solid var(--border2);border-radius:9px}
+.wo{padding:5px 12px;border-radius:99px;border:1.5px solid rgba(10,191,163,.3);background:rgba(10,191,163,.08);color:var(--teal-dark);font-family:var(--mono);font-size:.68rem;font-weight:700;cursor:pointer;transition:all .2s}
+.wo:hover{background:rgba(10,191,163,.18);border-color:var(--teal);transform:scale(1.04)}
+.wo.sel{outline:2px solid var(--teal);background:rgba(10,191,163,.22)}
+
+/* S4 TAP */
+.tap-code{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:9px 12px;font-family:var(--mono);font-size:.72rem;line-height:1.7;margin-bottom:9px;color:var(--text2)}
+.tap-grid{display:flex;gap:6px;flex-wrap:wrap;padding:10px;background:rgba(10,191,163,.05);border:1.5px solid var(--border2);border-radius:10px;margin-bottom:9px;min-height:48px}
+.tcell{width:38px;height:38px;border-radius:9px;border:1.5px solid rgba(10,191,163,.25);background:var(--surface);display:grid;place-items:center;font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;user-select:none}
+.tcell:hover{border-color:var(--teal);background:rgba(10,191,163,.1);transform:scale(1.08);color:var(--teal-dark);box-shadow:0 3px 10px rgba(10,191,163,.2)}
+.tcell.lit{border-color:var(--teal);background:rgba(10,191,163,.18);color:var(--teal-dark);box-shadow:0 0 10px rgba(10,191,163,.3);animation:popIn .16s ease both}
+.tcell.good{border-color:var(--lime);background:rgba(34,197,94,.1);color:#166534}
+.tcell.bad{border-color:var(--coral);background:rgba(248,113,113,.1);color:#991b1b;animation:wrongShake .35s ease}
+
+/* S5 COMPLETE */
+.comp-wrap{text-align:center;padding:8px 0}
+.trophy{font-size:2.6rem;display:block;margin-bottom:8px;animation:jellyFloat 2s ease-in-out infinite}
+.comp-title{font-size:clamp(.95rem,1.8vw,1.25rem);font-weight:900;color:var(--text);margin-bottom:4px}
+.comp-title span{color:var(--teal)}
+.comp-sub{font-size:.68rem;color:var(--muted);line-height:1.5;margin-bottom:12px;font-weight:600}
+.xp-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,.08);border:2px solid rgba(245,158,11,.35);border-radius:12px;padding:8px 20px;margin-bottom:12px;animation:btnPulse 2s ease-in-out infinite}
+.xp-num{font-size:1.3rem;font-weight:900;color:var(--gold)}
+.xp-lbl{font-size:.64rem;color:var(--muted);text-align:left;font-weight:700}
+.learnt{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:14px;text-align:left}
+.li{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:6px;font-size:.64rem;color:var(--text2);font-weight:600}
+.ck{color:var(--lime);font-size:.8rem;flex-shrink:0}
+.stamp{position:absolute;top:10px;right:10px;background:rgba(34,197,94,.08);border:2px solid rgba(34,197,94,.35);border-radius:6px;padding:3px 8px;font-size:.55rem;font-weight:900;color:#166534;letter-spacing:.09em;text-transform:uppercase;transform:rotate(-8deg);animation:stampIn .5s .25s ease both;opacity:0;animation-fill-mode:forwards}
+
+/* FLOATING JELLY */
+.jelly{position:fixed;right:3%;top:22%;font-size:1.8rem;opacity:.18;animation:jellyFloat 4s ease-in-out infinite;z-index:1;pointer-events:none}
+
+/* BOTTOM STATS */
+.stats{position:fixed;bottom:0;left:0;right:0;z-index:100;height:38px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-top:1.5px solid rgba(10,191,163,.18);display:flex;align-items:center;justify-content:center;gap:24px;box-shadow:0 -2px 16px rgba(10,191,163,.1)}
+.si{display:flex;align-items:center;gap:5px;font-size:.6rem;letter-spacing:.04em;color:var(--muted);font-weight:600}
+.sv{font-weight:800;font-size:.62rem}
+
+/* DIVE IN badge-style button shown in quest */
+.dive-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:99px;background:linear-gradient(135deg,var(--teal-dark),var(--teal));color:#fff;font-weight:900;font-size:.7rem;box-shadow:0 4px 14px rgba(10,191,163,.35);cursor:pointer;border:none;font-family:var(--head);letter-spacing:.04em}
+
+@media(max-width:560px){.page,.lhdr{padding-left:12px;padding-right:12px}.opts4,.learnt{grid-template-columns:1fr}.prog-stages{display:none}}
+@media(max-width:380px){nav{padding:0 10px}.logo span:last-child{display:none}.nav-center{display:none}}
+</style>
+</head>
+<body>
+<div class="sea-bg">
+  <div class="sea-layer"></div>
+  <div class="sea-dots"></div>
+  <div class="sea-rays"></div>
+</div>
+<div class="jelly">🪼</div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span>CODEPLAY</span>
+  </div>
+  <div class="nav-center">
+    <div class="nav-pip"></div>
+    <div>
+      <div class="nav-tag">Part 4 · Lesson 03</div>
+      <div class="nav-ttl">For Loop — Count Repeats</div>
+    </div>
+  </div>
+  <button class="btn-back" onclick="location.href='4_3lesson.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<div class="lhdr">
+  <div class="l-tag">Part 4 of 10 · Lesson 03</div>
+  <div class="l-title">For Loop — <span>Count Repeats</span> 🔢</div>
+  <div class="l-sub">Tell the ocean how many times to repeat — watch the code count every wave! 🌊</div>
+  <div class="l-div"></div>
+</div>
+
+<div class="page">
+  <div class="prog">
+    <span class="prog-lbl">🌊 Progress</span>
+    <div class="prog-track"><div class="prog-fill" id="pfill"></div></div>
+    <div class="prog-stages">
+      <div class="ps curr" id="ps0">📖</div>
+      <div class="ps" id="ps1">🌊</div>
+      <div class="ps" id="ps2">🔢</div>
+      <div class="ps" id="ps3">✍️</div>
+      <div class="ps" id="ps4">🎯</div>
+      <div class="ps" id="ps5">🏆</div>
+    </div>
+    <span class="prog-xp">⚡ <span id="xpd">0</span> XP</span>
+  </div>
+
+  <!-- S0 LEARN -->
+  <div class="stage active" id="s0">
+    <div class="card">
+      <div class="ctb"></div>
+      <div class="shdr">
+        <div class="sicon">📖</div>
+        <div><div class="stitle">How range() Works</div><div class="ssub">Learn it, then crush 4 games! 🎮</div></div>
+      </div>
+      <div class="anat">
+        <span class="ak">for</span> <span class="av">i</span> <span class="ak">in</span> <span class="af">range</span>(<span class="an">5</span>):<span class="ac">← runs 5 times!</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="af">print</span>(<span style="color:var(--gold)">"🐠 Wave #"</span>, <span class="av">i</span>)<span class="ac">← i = 0,1,2,3,4</span>
+      </div>
+      <div class="badges">
+        <span class="badge">🔑 <b>for</b> starts loop</span>
+        <span class="badge">🔢 <b>i</b> = counter</span>
+        <span class="badge">📡 <b>range(n)</b> = n times</span>
+        <span class="badge">➡️ indented = repeats</span>
+      </div>
+      <div class="rg">
+        <div class="rc"><span class="rc-code">range(5)</span><span class="rc-desc">0 up to <b>not including 5</b></span><div class="chips"><span class="chip">0</span><span class="chip">1</span><span class="chip">2</span><span class="chip">3</span><span class="chip">4</span></div></div>
+        <div class="rc"><span class="rc-code">range(2, 6)</span><span class="rc-desc">Start 2, stop <b>before 6</b></span><div class="chips"><span class="chip">2</span><span class="chip">3</span><span class="chip">4</span><span class="chip">5</span></div></div>
+        <div class="rc"><span class="rc-code">range(0, 10, 2)</span><span class="rc-desc">Step 2 — <b>even numbers!</b></span><div class="chips"><span class="chip">0</span><span class="chip">2</span><span class="chip">4</span><span class="chip">6</span><span class="chip">8</span></div></div>
+        <div class="rc"><span class="rc-code">range(3, 0, -1)</span><span class="rc-desc">Step -1 — <b>backwards!</b></span><div class="chips"><span class="chip p">3</span><span class="chip p">2</span><span class="chip p">1</span></div></div>
+      </div>
+      <div class="tip">
+        <span class="tip-icon">🤿</span>
+        <span class="tip-txt"><b>Key rule:</b> range(n) starts at 0 and gives n numbers. range(5) = 0,1,2,3,4. The stop number is never included!</span>
+      </div>
+      <div class="nxt"><button class="btn" onclick="goStage(1)">Play Wave Counter 🌊 →</button></div>
+    </div>
+  </div>
+
+  <!-- S1 -->
+  <div class="stage" id="s1">
+    <div class="card"><div class="ctb"></div>
+      <div class="shdr"><div class="sicon">🌊</div><div><div class="stitle">Wave Counter!</div><div class="ssub">Run the loop — count the sea creatures! 🐠</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp1">0</b></div><div class="sc">🎯 Score: <b id="sc1">0/4</b></div></div>
+      <div class="qdots" id="wdots"><div class="qdot curr"></div><div class="qdot"></div><div class="qdot"></div><div class="qdot"></div></div>
+      <div id="wg"></div>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="stage" id="s2">
+    <div class="card"><div class="ctb"></div>
+      <div class="shdr"><div class="sicon">🔢</div><div><div class="stitle">Range Decoder!</div><div class="ssub">Click numbers range() produces, in order! 🧩</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp2">0</b></div><div class="sc">✅ Done: <b id="sc2">0/4</b></div></div>
+      <div id="rg"></div>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="stage" id="s3">
+    <div class="card"><div class="ctb"></div>
+      <div class="shdr"><div class="sicon">✍️</div><div><div class="stitle">Write the Range!</div><div class="ssub">Pick the correct range() for each task! 🖊️</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp3">0</b></div><div class="sc">✅ Score: <b id="sc3">0/3</b></div></div>
+      <div id="wrg"></div>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="stage" id="s4">
+    <div class="card"><div class="ctb"></div>
+      <div class="shdr"><div class="sicon">🎯</div><div><div class="stitle">Tap the i Values!</div><div class="ssub">Select every number that i would be! 🎯</div></div></div>
+      <div class="score-row"><div class="sc">⚡ XP: <b id="xp4">0</b></div><div class="sc">✅ Score: <b id="sc4">0/3</b></div></div>
+      <div id="tg"></div>
+    </div>
+  </div>
+
+  <!-- S5 COMPLETE -->
+  <div class="stage" id="s5">
+    <div class="card" style="position:relative"><div class="ctb"></div>
+      <div class="stamp">LESSON COMPLETE!</div>
+      <div class="comp-wrap">
+        <span class="trophy">🏆</span>
+        <div class="comp-title">Loop Master <span>Unlocked!</span></div>
+        <div class="comp-sub">You know range(), the variable i, start/stop/step — proved it with 4 games! 🌊</div>
+        <div class="xp-badge"><div class="xp-num">⚡ <span id="fxp">0</span></div><div class="xp-lbl">XP Earned<br/><small>this lesson</small></div></div>
+        <div class="learnt">
+          <div class="li"><span class="ck">✅</span> for loops with range()</div>
+          <div class="li"><span class="ck">✅</span> The variable <code style="color:var(--orange);font-family:var(--mono)">i</code></div>
+          <div class="li"><span class="ck">✅</span> range(start,stop,step)</div>
+          <div class="li"><span class="ck">✅</span> Counting backwards</div>
+          <div class="li"><span class="ck">✅</span> Reading loop output</div>
+          <div class="li"><span class="ck">✅</span> Writing your own range()!</div>
+        </div>
+        <button class="btn-fin" onclick="unlockAndNavigate()">Back to Quest Map</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="si">📍 <span class="sv" style="color:var(--teal-dark)">Part 4</span></div>
+  <div class="si">📖 <span class="sv">Lesson 03</span></div>
+  <div class="si">⚡ <span class="sv" style="color:var(--gold)">+120 XP</span></div>
+  <div class="si">🔥 <span class="sv" style="color:#f97316" id="streak">—</span></div>
+</div>
+
+<script>
+var curStage=0,totalXP=0;
+function goStage(n){document.getElementById('s'+curStage).classList.remove('active');curStage=n;document.getElementById('s'+n).classList.add('active');updateProg();window.scrollTo({top:0,behavior:'smooth'});if(n===1)initWave();if(n===2)initDecoder();if(n===3)initWriter();if(n===4)initTap();if(n===5)showComplete();}
+function updateProg(){var pct=(curStage/5)*100;document.getElementById('pfill').style.width=pct+'%';for(var i=0;i<6;i++){var el=document.getElementById('ps'+i);if(!el)continue;el.classList.remove('curr','done');if(i<curStage)el.classList.add('done');if(i===curStage)el.classList.add('curr');}document.getElementById('xpd').textContent=totalXP;}
+function addXP(amt,el){totalXP+=amt;document.getElementById('xpd').textContent=totalXP;var r=el?el.getBoundingClientRect():{left:window.innerWidth/2,top:200};var f=document.createElement('div');f.className='xp-floater';f.textContent='+'+amt+' XP ⚡';f.style.left=Math.min(r.left,window.innerWidth-100)+'px';f.style.top=r.top+'px';document.body.appendChild(f);setTimeout(function(){if(f.parentNode)f.parentNode.removeChild(f);},880);}
+(function(){var bg=document.querySelector('.sea-bg');for(var i=0;i<18;i++){var b=document.createElement('div');b.className='bubble';var s=Math.random()*8+3;b.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(Math.random()*100)+'%;bottom:'+(Math.random()*30)+'%;animation-duration:'+(Math.random()*12+8)+'s;animation-delay:'+(Math.random()*14)+'s;';bg.appendChild(b);}var fc=document.createElement('div');fc.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden';fc.innerHTML='<div style="position:absolute;top:55%;font-size:1rem;opacity:.18;animation:fishSwim 24s linear infinite">🐟</div>';document.body.appendChild(fc);}());
+document.getElementById('streak').textContent=localStorage.getItem('streak')||'—';
+
+var WQ=[
+  {html:'<span style="color:#7c6fe0">for</span> <span style="color:#f97316">i</span> <span style="color:#7c6fe0">in</span> <span style="color:#0abfa3">range</span>(<span style="color:#22c55e">4</span>):',count:4,creature:'🐠',q:'How many 🐠 clownfish swim past?',opts:['3','4','5','1'],correct:1,ok:'✅ Correct! range(4) loops 4 times!',nope:'❌ range(4) runs 4 times: 0,1,2,3 = 4 fish!'},
+  {html:'<span style="color:#7c6fe0">for</span> <span style="color:#f97316">i</span> <span style="color:#7c6fe0">in</span> <span style="color:#0abfa3">range</span>(<span style="color:#22c55e">2</span>, <span style="color:#22c55e">7</span>):',count:5,creature:'🦀',q:'How many 🦀 crabs scuttle across?',opts:['2','7','5','9'],correct:2,ok:'✅ Yes! range(2,7) = 2,3,4,5,6 — 5 crabs!',nope:'❌ range(2,7) goes 2,3,4,5,6 = 5 crabs!'},
+  {html:'<span style="color:#7c6fe0">for</span> <span style="color:#f97316">i</span> <span style="color:#7c6fe0">in</span> <span style="color:#0abfa3">range</span>(<span style="color:#22c55e">0</span>, <span style="color:#22c55e">10</span>, <span style="color:#22c55e">2</span>):',count:5,creature:'🐙',q:'How many 🐙 octopuses? (step=2)',opts:['10','5','2','8'],correct:1,ok:'✅ Amazing! range(0,10,2) = 0,2,4,6,8 — 5!',nope:'❌ range(0,10,2): 0,2,4,6,8 = 5 numbers!'},
+  {html:'<span style="color:#7c6fe0">for</span> <span style="color:#f97316">i</span> <span style="color:#7c6fe0">in</span> <span style="color:#0abfa3">range</span>(<span style="color:#22c55e">3</span>, <span style="color:#22c55e">0</span>, <span style="color:#22c55e">-1</span>):',count:3,creature:'🦑',q:'How many 🦑 squid? (backwards!)',opts:['0','3','1','4'],correct:1,ok:'✅ Brilliant! range(3,0,-1) = 3,2,1 — 3 squid!',nope:'❌ range(3,0,-1) counts 3,2,1 = 3 squid!'}
+];
+var wIdx=0,wScore=0,wRunning=false;
+function initWave(){wIdx=0;wScore=0;wRunning=false;renderWave();}
+function renderWave(){
+  var dots=document.querySelectorAll('#wdots .qdot');
+  for(var d=0;d<dots.length;d++){dots[d].classList.remove('curr','done');if(d<wIdx)dots[d].classList.add('done');if(d===wIdx)dots[d].classList.add('curr');}
+  document.getElementById('sc1').textContent=wScore+'/4';
+  var g=document.getElementById('wg');
+  if(wIdx>=WQ.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.7rem;margin-bottom:6px">🎉</div><div style="font-weight:900;font-size:.82rem;color:var(--lime);margin-bottom:4px">Wave Counter Done!</div><div style="font-size:.68rem;color:var(--muted);margin-bottom:12px;font-weight:600">You scored '+wScore+'/4!</div><button class="btn" onclick="goStage(2)">Next: Range Decoder 🔢 →</button></div>';return;}
+  var q=WQ[wIdx];var optsH='';var nums=['1️⃣','2️⃣','3️⃣','4️⃣'];
+  for(var i=0;i<q.opts.length;i++)optsH+='<button class="opt" onclick="ansWave('+i+')"><span style="font-size:.88rem">'+nums[i]+'</span> '+q.opts[i]+' times</button>';
+  g.innerHTML='<div class="arena"><div class="w-screen" id="wscr"><span class="w-empty">Press ▶ Run!</span><div class="wbg"></div></div><div class="w-bar"><div class="w-code">'+q.html+'</div><button class="run-btn" id="rbtn" onclick="runWave()">▶ Run</button></div><div class="w-counter"><span>Creatures: <span class="cnt-badge" id="wcnt">0</span></span><span style="font-weight:600">Watch!</span></div></div><div class="q-row"><div class="q-num">'+(wIdx+1)+'</div><div>'+q.q+'</div></div><div class="opts4">'+optsH+'</div><div class="fb" id="wfb"></div>';
+}
+function runWave(){
+  if(wRunning)return;wRunning=true;
+  var q=WQ[wIdx];var btn=document.getElementById('rbtn'),scr=document.getElementById('wscr'),cnt=document.getElementById('wcnt');
+  if(!btn||!scr||!cnt)return;
+  btn.disabled=true;btn.textContent='🌊 Running…';scr.innerHTML='<div class="wbg"></div>';
+  var n=0;
+  function tick(){if(n>=q.count){wRunning=false;btn.disabled=false;btn.textContent='▶ Run Again';return;}
+    var el=document.createElement('div');el.className='wcr';el.style.animationDelay=(n*0.04)+'s';el.textContent=q.creature;
+    var bg=scr.querySelector('.wbg');if(bg)scr.insertBefore(el,bg);else scr.appendChild(el);
+    cnt.textContent=n+1;cnt.style.animation='none';void cnt.offsetWidth;cnt.style.animation='countBounce .28s ease';
+    n++;setTimeout(tick,280);}
+  tick();
+}
+function ansWave(idx){var q=WQ[wIdx];var opts=document.querySelectorAll('#wg .opt');for(var i=0;i<opts.length;i++)opts[i].classList.add('off');var fb=document.getElementById('wfb');if(idx===q.correct){opts[idx].classList.add('good');fb.className='fb show ok';fb.textContent=q.ok;wScore++;addXP(15,opts[idx]);}else{opts[idx].classList.add('bad');opts[q.correct].classList.add('good');fb.className='fb show bad';fb.textContent=q.nope;}document.getElementById('xp1').textContent=totalXP;setTimeout(function(){wIdx++;renderWave();},2200);}
+
+var DQ=[{code:'range(4)',answer:[0,1,2,3],pool:[0,1,2,3,5,6]},{code:'range(2, 6)',answer:[2,3,4,5],pool:[1,2,3,4,5,6,7]},{code:'range(0, 10, 3)',answer:[0,3,6,9],pool:[0,2,3,4,6,7,9,10]},{code:'range(4, 1, -1)',answer:[4,3,2],pool:[1,2,3,4,5,6]}];
+var dIdx=0,dScore=0,dAnswers=[],dSel=null;
+function initDecoder(){dIdx=0;dScore=0;renderDecoder();}
+function renderDecoder(){
+  document.getElementById('sc2').textContent=dScore+'/4';var g=document.getElementById('rg');
+  if(dIdx>=DQ.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.7rem;margin-bottom:6px">🔢</div><div style="font-weight:900;font-size:.82rem;color:var(--lime);margin-bottom:4px">Decoder Done!</div><div style="font-size:.68rem;color:var(--muted);margin-bottom:12px;font-weight:600">You solved '+dScore+'/4!</div><button class="btn" onclick="goStage(3)">Next: Write the Range ✍️ →</button></div>';return;}
+  var q=DQ[dIdx];dAnswers=[];for(var i=0;i<q.answer.length;i++)dAnswers.push(null);dSel=null;
+  var shuf=q.pool.slice().sort(function(){return Math.random()-.5;});
+  var pH='';for(var j=0;j<shuf.length;j++){var n=shuf[j];pH+='<div class="nc" id="nc'+n+'" onclick="pickNum('+n+')">'+n+'</div>';}
+  var sH='';for(var k=0;k<q.answer.length;k++)sH+='<div class="aslot" id="as'+k+'" onclick="placeNum('+k+')">?</div>';
+  g.innerHTML='<div class="dec-box"><div class="dec-code">🔢 <span style="color:var(--teal-dark);font-family:var(--mono)">'+q.code+'</span> produces:</div><div class="dec-lbl">① Select number → ② Click slot to place</div><div class="num-pool" id="npool">'+pH+'</div><div class="dec-lbl">Your answer (in order):</div><div class="ans-row">'+sH+'</div><div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap"><button class="btn btn-sm" onclick="checkDecoder()">🔍 Check!</button><button class="btn-out" onclick="clearDecoder()">↺ Clear</button></div><div class="fb" id="dfb"></div></div><div style="margin-top:5px;font-size:.6rem;color:var(--muted);font-weight:600">Q '+(dIdx+1)+' of '+DQ.length+'</div>';
+}
+function pickNum(n){var chips=document.querySelectorAll('.nc');for(var i=0;i<chips.length;i++)chips[i].classList.remove('sel');if(dSel===n){dSel=null;return;}dSel=n;var el=document.getElementById('nc'+n);if(el)el.classList.add('sel');}
+function placeNum(idx){if(dSel===null)return;dAnswers[idx]=dSel;var slot=document.getElementById('as'+idx);if(slot){slot.textContent=dSel;slot.classList.add('filled');}var chip=document.getElementById('nc'+dSel);if(chip){chip.classList.add('used');chip.classList.remove('sel');}dSel=null;}
+function clearDecoder(){var q=DQ[dIdx];dAnswers=[];for(var i=0;i<q.answer.length;i++)dAnswers.push(null);var slots=document.querySelectorAll('.aslot');for(var j=0;j<slots.length;j++){slots[j].textContent='?';slots[j].classList.remove('filled','good','bad');}var chips=document.querySelectorAll('.nc');for(var k=0;k<chips.length;k++)chips[k].classList.remove('used','sel');var fb=document.getElementById('dfb');if(fb)fb.className='fb';dSel=null;}
+function checkDecoder(){var q=DQ[dIdx];var res=document.getElementById('dfb');var allF=true;for(var i=0;i<dAnswers.length;i++){if(dAnswers[i]===null){allF=false;break;}}if(!allF){res.className='fb show bad';res.textContent='⚠️ Fill all slots first!';return;}var ok=true;for(var j=0;j<dAnswers.length;j++){if(dAnswers[j]!==q.answer[j]){ok=false;break;}}if(ok){var sl=document.querySelectorAll('.aslot');for(var s=0;s<sl.length;s++)sl[s].classList.add('good');res.className='fb show ok';res.innerHTML='✅ Perfect! '+q.code+' → ['+q.answer.join(', ')+']';dScore++;addXP(15,res);document.getElementById('sc2').textContent=dScore+'/4';document.getElementById('xp2').textContent=totalXP;setTimeout(function(){dIdx++;renderDecoder();},2200);}else{for(var k=0;k<dAnswers.length;k++){var sl2=document.getElementById('as'+k);if(sl2)sl2.classList.add(dAnswers[k]===q.answer[k]?'good':'bad');}res.className='fb show bad';res.innerHTML='❌ Not quite! '+q.code+' → ['+q.answer.join(', ')+']';setTimeout(function(){clearDecoder();},1500);}}
+
+var WR=[{story:'A sea turtle lays <b>6 eggs</b>. Write a loop that runs exactly <b>6 times</b>.',answer:'range(6)',opts:['range(6)','range(7)','range(5)','range(1,6)'],ok:'✅ Correct! range(6) runs 6 times.',nope:'❌ Use range(6) for exactly 6 times!'},{story:'A submarine marks depths <b>100, 200, 300, 400m</b>. Which range?',answer:'range(100,500,100)',opts:['range(100,500,100)','range(100,400,50)','range(0,400,100)','range(100,400)'],ok:'✅ Amazing! range(100,500,100) = 100,200,300,400!',nope:'❌ start=100, stop before 500, step=100!'},{story:'A dolphin counts down <b>3, 2, 1</b> before a big jump!',answer:'range(3,0,-1)',opts:['range(3,0,-1)','range(1,4)','range(3)','range(0,3,-1)'],ok:'✅ Awesome! range(3,0,-1) = 3,2,1!',nope:'❌ Use range(3, 0, -1) to count backwards!'}];
+var wrIdx=0,wrScore=0,wrSel=null;
+function initWriter(){wrIdx=0;wrScore=0;renderWriter();}
+function renderWriter(){
+  document.getElementById('sc3').textContent=wrScore+'/3';var g=document.getElementById('wrg');
+  if(wrIdx>=WR.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.7rem;margin-bottom:6px">✍️</div><div style="font-weight:900;font-size:.82rem;color:var(--lime);margin-bottom:4px">Writer Done!</div><div style="font-size:.68rem;color:var(--muted);margin-bottom:12px;font-weight:600">You scored '+wrScore+'/3!</div><button class="btn" onclick="goStage(4)">Next: Tap i Values 🎯 →</button></div>';return;}
+  var q=WR[wrIdx];wrSel=null;
+  var opH='';for(var i=0;i<q.opts.length;i++)opH+='<div class="wo" id="wo_'+i+'" onclick="selWr('+i+')">'+q.opts[i]+'</div>';
+  g.innerHTML='<div class="wr-story">'+q.story+'</div><div class="wr-code-frame"><span style="color:var(--purple)">for</span>&nbsp;<span style="color:var(--orange)">i</span>&nbsp;<span style="color:var(--purple)">in</span>&nbsp;<div class="blank" id="wblank">?? pick below</div><span style="color:var(--muted)">:</span></div><div class="wr-opts">'+opH+'</div><div style="display:flex;gap:7px"><button class="btn btn-sm" onclick="checkWriter()">🔍 Check!</button></div><div class="fb" id="wrfb"></div><div style="margin-top:5px;font-size:.6rem;color:var(--muted);font-weight:600">Q '+(wrIdx+1)+' of '+WR.length+'</div>';
+}
+function selWr(idx){var q=WR[wrIdx];for(var i=0;i<q.opts.length;i++){var el=document.getElementById('wo_'+i);if(el)el.classList.remove('sel');}wrSel=q.opts[idx];var ch=document.getElementById('wo_'+idx);if(ch)ch.classList.add('sel');var bl=document.getElementById('wblank');if(bl){bl.textContent=wrSel;bl.classList.add('filled');}}
+function checkWriter(){var q=WR[wrIdx];var res=document.getElementById('wrfb');if(!wrSel){res.className='fb show bad';res.textContent='⚠️ Pick an option first!';return;}if(wrSel===q.answer){res.className='fb show ok';res.innerHTML=q.ok;wrScore++;addXP(20,res);document.getElementById('sc3').textContent=wrScore+'/3';document.getElementById('xp3').textContent=totalXP;setTimeout(function(){wrIdx++;renderWriter();},2200);}else{res.className='fb show bad';res.innerHTML=q.nope+'<br><button class="btn-out" style="margin-top:5px" onclick="resetWriter()">↺ Try Again</button>';}}
+function resetWriter(){var q=WR[wrIdx];wrSel=null;for(var i=0;i<q.opts.length;i++){var el=document.getElementById('wo_'+i);if(el)el.classList.remove('sel');}var bl=document.getElementById('wblank');if(bl){bl.textContent='?? pick below';bl.classList.remove('filled');}var res=document.getElementById('wrfb');if(res)res.className='fb';}
+
+var TQ=[{html:'<span style="color:#7c6fe0">for</span> <span style="color:#f97316">i</span> <span style="color:#7c6fe0">in</span> <span style="color:#0abfa3">range</span>(<span style="color:#22c55e">4</span>):',correct:[0,1,2,3],pool:[0,1,2,3,4,5],ok:'✅ Perfect! range(4) → i = 0,1,2,3',nope:'❌ range(4) → i = 0,1,2,3'},{html:'<span style="color:#7c6fe0">for</span> <span style="color:#f97316">i</span> <span style="color:#7c6fe0">in</span> <span style="color:#0abfa3">range</span>(<span style="color:#22c55e">3</span>, <span style="color:#22c55e">7</span>):',correct:[3,4,5,6],pool:[1,2,3,4,5,6,7,8],ok:'✅ Yes! range(3,7) → i = 3,4,5,6',nope:'❌ range(3,7) → i = 3,4,5,6'},{html:'<span style="color:#7c6fe0">for</span> <span style="color:#f97316">i</span> <span style="color:#7c6fe0">in</span> <span style="color:#0abfa3">range</span>(<span style="color:#22c55e">0</span>, <span style="color:#22c55e">8</span>, <span style="color:#22c55e">2</span>):',correct:[0,2,4,6],pool:[0,1,2,3,4,5,6,7,8],ok:'✅ Brilliant! range(0,8,2) → i = 0,2,4,6',nope:'❌ range(0,8,2) steps by 2 → i = 0,2,4,6'}];
+var tIdx=0,tScore=0,tTapped={};
+function initTap(){tIdx=0;tScore=0;renderTap();}
+function renderTap(){
+  document.getElementById('sc4').textContent=tScore+'/3';var g=document.getElementById('tg');
+  if(tIdx>=TQ.length){g.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-size:1.7rem;margin-bottom:6px">🎯</div><div style="font-weight:900;font-size:.82rem;color:var(--lime);margin-bottom:4px">Challenge Done!</div><div style="font-size:.68rem;color:var(--muted);margin-bottom:12px;font-weight:600">You got '+tScore+'/3!</div><button class="btn" onclick="goStage(5)">See Results! →</button></div>';return;}
+  var q=TQ[tIdx];tTapped={};var shuf=q.pool.slice().sort(function(){return Math.random()-.5;});
+  var cH='';for(var i=0;i<shuf.length;i++){var n=shuf[i];cH+='<div class="tcell" id="tc'+n+'" onclick="tapCell('+n+')">'+n+'</div>';}
+  g.innerHTML='<div class="tap-code">'+q.html+'</div><div style="font-size:.66rem;color:var(--muted);margin-bottom:6px;font-weight:700">Tap every value <span style="color:var(--orange)">i</span> would be:</div><div class="tap-grid">'+cH+'</div><div style="font-size:.62rem;color:var(--muted);margin-bottom:5px;font-weight:700">Selected:</div><div id="tsel" style="display:flex;gap:5px;flex-wrap:wrap;min-height:24px;margin-bottom:7px"></div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:7px"><button class="btn btn-sm" onclick="checkTap()">🔍 Check!</button><button class="btn-out" onclick="clearTap()">↺ Clear</button></div><div class="fb" id="tfb"></div><div style="margin-top:4px;font-size:.6rem;color:var(--muted);font-weight:600">Q '+(tIdx+1)+' of '+TQ.length+'</div>';
+}
+function tapCell(n){if(tTapped[n]){delete tTapped[n];var c=document.getElementById('tc'+n);if(c)c.classList.remove('lit');}else{tTapped[n]=true;var c=document.getElementById('tc'+n);if(c)c.classList.add('lit');}var sel=document.getElementById('tsel');if(sel){var keys=[];for(var k in tTapped)keys.push(Number(k));keys.sort(function(a,b){return a-b;});var html='';for(var i=0;i<keys.length;i++)html+='<span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 5px;border-radius:5px;font-family:var(--mono);font-size:.66rem;font-weight:700;border:1.5px solid rgba(10,191,163,.45);background:rgba(10,191,163,.12);color:var(--teal-dark)">'+keys[i]+'</span>';sel.innerHTML=html;}}
+function clearTap(){tTapped={};var cells=document.querySelectorAll('.tcell');for(var i=0;i<cells.length;i++)cells[i].classList.remove('lit','good','bad');var sel=document.getElementById('tsel');if(sel)sel.innerHTML='';var fb=document.getElementById('tfb');if(fb)fb.className='fb';}
+function checkTap(){var q=TQ[tIdx];var res=document.getElementById('tfb');var ta=[];for(var k in tTapped)ta.push(Number(k));ta.sort(function(a,b){return a-b;});if(ta.length===0){res.className='fb show bad';res.textContent='⚠️ Tap some values first!';return;}var cs=q.correct.slice().sort(function(a,b){return a-b;});var ok=JSON.stringify(ta)===JSON.stringify(cs);for(var i=0;i<q.pool.length;i++){var n=q.pool[i];var c=document.getElementById('tc'+n);if(!c)continue;var inC=q.correct.indexOf(n)!==-1;var wasTapped=!!tTapped[n];if(inC&&wasTapped)c.classList.add('good');else if(wasTapped)c.classList.add('bad');}if(ok){res.className='fb show ok';res.innerHTML=q.ok;tScore++;addXP(20,res);document.getElementById('sc4').textContent=tScore+'/3';document.getElementById('xp4').textContent=totalXP;setTimeout(function(){tIdx++;renderTap();},2200);}else{res.className='fb show bad';res.innerHTML=q.nope;setTimeout(function(){clearTap();var fb=document.getElementById('tfb');if(fb)fb.className='fb';},1600);}}
+
+function showComplete(){document.getElementById('fxp').textContent=totalXP;localStorage.setItem('p4_lesson03Completed','yes');var cur=parseInt(localStorage.getItem('part4_progress'))||1;if(cur<4)localStorage.setItem('part4_progress','4');}
+function unlockAndNavigate(){showComplete();setTimeout(function(){location.href='quest4.html';},100);}
+updateProg();
+</script>
+</body>
+</html>
+
+
+

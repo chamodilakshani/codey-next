@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY · Code Chef 🍳</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#F5EFE0;
+  --brown:#4A2E14;
+  --brown2:#6B3F1A;
+  --orange:#C85A1A;
+  --orange2:#A84310;
+  --gold:#8B6914;
+  --gold-light:#D4A840;
+  --teal:#2A7A6A;
+  --red:#C0392B;
+  --green:#3A6B2A;
+  --green-lt:#5A9A4A;
+  --text:#2C1A08;
+  --muted:rgba(44,26,8,.52);
+  --fossil:#8B7355;
+  --card:rgba(255,248,232,.88);
+  --card-border:rgba(139,99,40,.22);
+  --mono:'Share Tech Mono',monospace;
+  --head:'Nunito',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--head);
+  background:linear-gradient(180deg,#F7F0DC 0%,#F0E8C8 18%,#EDE0B8 55%,#DBC888 100%);
+  background-attachment:fixed;
+  color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+}
+
+/* PARTICLES */
+#cvs{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.55}
+.neb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(120px)}
+.neb1{width:800px;height:800px;top:-200px;left:-200px;background:radial-gradient(circle,rgba(100,160,60,.16),transparent 65%);animation:nb1 32s ease-in-out infinite alternate}
+.neb2{width:600px;height:600px;bottom:-100px;right:-100px;background:radial-gradient(circle,rgba(180,120,30,.12),transparent 65%);animation:nb2 26s ease-in-out infinite alternate-reverse}
+@keyframes nb1{to{transform:translate(40px,30px)scale(1.1)}}
+@keyframes nb2{to{transform:translate(-40px,30px)scale(1.1)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.5)}70%{transform:scale(1.15)}100%{opacity:1;transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes cookBubble{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes shine{to{left:160%}}
+@keyframes confettiFall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@keyframes fadeOut{to{opacity:0;transform:translateY(-10px)}}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;height:60px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 28px;
+  background:rgba(42,22,8,.97);
+  backdrop-filter:blur(18px);
+  border-bottom:2px solid rgba(180,130,40,.35);
+  box-shadow:0 2px 16px rgba(0,0,0,.18);
+}
+.logo{display:flex;align-items:center;gap:8px;font-weight:900;font-size:1.2rem;color:#D4A840;letter-spacing:.08em}
+.nav-score{display:flex;align-items:center;gap:18px}
+.score-chip{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(212,168,64,.1);border:1px solid rgba(212,168,64,.3);
+  border-radius:99px;padding:5px 14px;font-size:.85rem;font-weight:700;color:#D4A840;
+}
+.life-chip{display:flex;align-items:center;gap:5px;font-size:.85rem;font-weight:700;color:#C0392B}
+.btn-back{
+  display:flex;align-items:center;gap:7px;padding:7px 18px;border-radius:99px;
+  border:1px solid rgba(212,168,64,.35);background:rgba(212,168,64,.08);
+  color:#D4A840;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--head);
+}
+.btn-back:hover{border-color:rgba(212,168,64,.65);background:rgba(212,168,64,.15)}
+
+/* MAIN LAYOUT */
+.game-wrap{
+  position:relative;z-index:2;max-width:860px;margin:0 auto;
+  padding:24px 20px 80px;animation:fadeUp .5s ease both;
+}
+
+/* INTRO SCREEN */
+#intro{text-align:center;padding:40px 20px}
+.intro-emoji{font-size:5rem;animation:bounce 2s ease-in-out infinite;display:block;margin-bottom:16px}
+.intro-title{
+  font-size:clamp(2rem,5vw,3rem);font-weight:900;
+  color:var(--brown);text-shadow:0 2px 8px rgba(74,46,20,.2);margin-bottom:10px;
+}
+.intro-sub{
+  font-size:1.05rem;color:var(--muted);max-width:500px;
+  margin:0 auto 30px;line-height:1.6;
+}
+.intro-how{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px;text-align:left}
+.how-card{
+  background:var(--card);border:1.5px solid var(--card-border);
+  border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;
+  box-shadow:0 3px 14px rgba(74,46,20,.07);
+}
+.how-icon{font-size:1.8rem}
+.how-title{font-size:.8rem;font-weight:900;color:var(--gold);letter-spacing:.05em}
+.how-text{font-size:.78rem;color:var(--muted);line-height:1.45}
+.btn-start{
+  display:inline-flex;align-items:center;gap:10px;padding:16px 48px;
+  border-radius:16px;border:none;
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  color:#F7F0DC;font-family:var(--head);font-size:1rem;font-weight:900;
+  cursor:pointer;letter-spacing:.06em;position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(200,90,26,.32);transition:transform .2s;
+}
+.btn-start::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);animation:shine 2s linear infinite}
+.btn-start:hover{transform:translateY(-3px)}
+
+/* GAME SCREEN */
+#game{display:none}
+.progress-bar-wrap{margin-bottom:18px}
+.prog-label{
+  display:flex;justify-content:space-between;
+  font-size:.72rem;color:var(--muted);letter-spacing:.12em;
+  margin-bottom:6px;text-transform:uppercase;
+}
+.prog-track{height:6px;background:rgba(74,46,20,.12);border-radius:99px;overflow:hidden;border:1px solid rgba(139,99,40,.15)}
+.prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--orange),var(--gold-light));transition:width .5s ease}
+
+/* KITCHEN SCENE */
+.kitchen-scene{
+  background:var(--card);
+  border:1.5px solid var(--card-border);
+  border-radius:20px;padding:24px;margin-bottom:18px;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 24px rgba(74,46,20,.09);
+}
+.kitchen-scene::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold-light),transparent)}
+
+.recipe-card{
+  background:rgba(212,168,64,.07);border:1.5px solid rgba(139,105,20,.22);
+  border-radius:14px;padding:16px 20px;margin-bottom:20px;
+  display:flex;align-items:center;gap:16px;
+}
+.recipe-pot{font-size:2.8rem;animation:cookBubble 1.8s ease-in-out infinite;flex-shrink:0}
+.recipe-label{font-size:.62rem;letter-spacing:.2em;color:var(--fossil);text-transform:uppercase;margin-bottom:5px;font-weight:800}
+.recipe-text{font-size:1.05rem;font-weight:700;color:var(--brown);line-height:1.4}
+.recipe-code{
+  font-family:var(--mono);font-size:.9rem;margin-top:8px;
+  color:rgba(240,225,195,.92);background:rgba(42,22,8,.85);
+  border-radius:8px;padding:8px 12px;display:inline-block;
+}
+.recipe-code .ck{color:#e88a6a}
+.recipe-code .cstr{color:#D4A840}
+.recipe-code .cop{color:#6bbcb0}
+.recipe-code .cvar{color:#e8b870;opacity:.9}
+.recipe-code .cnum{color:#8ec47a}
+
+.q-label{font-size:.65rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;font-weight:800}
+.q-text{font-size:1.15rem;font-weight:800;color:var(--brown);margin-bottom:18px;line-height:1.4}
+
+/* INGREDIENT CHOICES */
+.ingredients-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:560px){.ingredients-grid{grid-template-columns:repeat(4,1fr)}}
+.ing-btn{
+  background:rgba(255,248,232,.75);
+  border:1.5px solid rgba(139,99,40,.18);
+  border-radius:16px;padding:16px 10px;cursor:pointer;transition:all .22s;
+  text-align:center;font-family:var(--head);color:var(--text);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  position:relative;overflow:hidden;
+  box-shadow:0 2px 8px rgba(74,46,20,.06);
+}
+.ing-btn:hover{border-color:rgba(139,105,20,.5);background:rgba(212,168,64,.1);transform:translateY(-3px);box-shadow:0 6px 18px rgba(74,46,20,.1)}
+.ing-btn.selected-correct{border-color:var(--green);background:rgba(58,107,42,.1);animation:popIn .4s ease both}
+.ing-btn.selected-wrong{border-color:var(--red);background:rgba(192,57,43,.08);animation:shake .4s ease}
+.ing-btn.disabled{pointer-events:none;opacity:.4}
+.ing-btn.reveal-correct{border-color:var(--green)!important;background:rgba(58,107,42,.1)!important;opacity:1!important}
+.ing-emoji{font-size:2.4rem;line-height:1}
+.ing-label{font-size:.8rem;font-weight:700;letter-spacing:.04em;color:var(--brown)}
+.ing-code{font-family:var(--mono);font-size:.7rem;color:var(--gold);opacity:.75;margin-top:2px}
+
+/* FEEDBACK */
+.feedback-box{border-radius:14px;padding:16px 20px;margin-top:14px;display:flex;align-items:flex-start;gap:14px;animation:fadeUp .3s ease}
+.feedback-box.correct{background:rgba(58,107,42,.08);border:1.5px solid rgba(58,107,42,.3)}
+.feedback-box.wrong  {background:rgba(192,57,43,.07);border:1.5px solid rgba(192,57,43,.25)}
+.fb-icon{font-size:1.6rem;flex-shrink:0}
+.fb-title{font-size:.95rem;font-weight:900;margin-bottom:4px}
+.fb-title.correct{color:var(--green)}
+.fb-title.wrong  {color:var(--red)}
+.fb-text{font-size:.82rem;color:var(--muted);line-height:1.5}
+.fb-code{
+  font-family:var(--mono);font-size:.75rem;
+  background:rgba(42,22,8,.82);border-radius:6px;
+  padding:7px 10px;margin-top:8px;color:rgba(240,225,195,.75);line-height:1.8;
+}
+.btn-next-q{
+  margin-top:14px;padding:12px 32px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  color:#F7F0DC;font-family:var(--head);font-size:.82rem;font-weight:900;
+  cursor:pointer;letter-spacing:.06em;box-shadow:0 3px 16px rgba(200,90,26,.28);transition:transform .2s;
+}
+.btn-next-q:hover{transform:translateY(-2px)}
+
+/* COMBO STREAK */
+.combo-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;min-height:26px}
+.combo-star{font-size:1.1rem;transition:all .3s}
+.combo-star.lit{filter:drop-shadow(0 0 6px rgba(212,168,64,.8))}
+.combo-label{font-size:.72rem;color:var(--muted);font-weight:700}
+
+/* RESULT SCREEN */
+#result{display:none;text-align:center;padding:30px 20px;animation:fadeUp .5s ease}
+.result-emoji{font-size:5rem;margin-bottom:10px;display:block}
+.result-title{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:900;color:var(--brown);margin-bottom:8px}
+.result-sub{font-size:1rem;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.result-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;
+  max-width:420px;margin-left:auto;margin-right:auto;
+}
+.rstat{
+  background:var(--card);border:1.5px solid var(--card-border);
+  border-radius:14px;padding:14px 10px;
+  box-shadow:0 2px 10px rgba(74,46,20,.07);
+}
+.rstat-val{font-size:1.8rem;font-weight:900;color:var(--gold)}
+.rstat-label{font-size:.68rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+.result-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-replay{
+  padding:13px 30px;border-radius:12px;
+  border:1.5px solid rgba(139,99,40,.3);background:rgba(139,99,40,.07);
+  color:var(--brown);font-family:var(--head);font-size:.85rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-replay:hover{border-color:rgba(139,99,40,.55);background:rgba(139,99,40,.13)}
+.btn-continue{
+  padding:13px 30px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  color:#F7F0DC;font-family:var(--head);font-size:.85rem;font-weight:900;
+  cursor:pointer;box-shadow:0 3px 18px rgba(200,90,26,.28);transition:transform .2s;
+}
+.btn-continue:hover{transform:translateY(-2px)}
+
+/* CONFETTI */
+.confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;top:-10px;pointer-events:none;z-index:999;animation:confettiFall 2.5s ease-in forwards}
+
+/* XP TOAST */
+.xp-toast{
+  position:fixed;top:80px;right:24px;
+  background:rgba(212,168,64,.14);border:1px solid rgba(139,105,20,.4);
+  border-radius:12px;padding:10px 20px;
+  color:var(--gold-light);font-weight:900;font-size:.9rem;
+  z-index:200;animation:fadeUp .3s ease,fadeOut 1s ease 1.5s forwards;
+  pointer-events:none;box-shadow:0 2px 12px rgba(74,46,20,.1);
+}
+
+/* STATS BAR */
+.stats-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;height:50px;
+  background:rgba(42,22,8,.97);
+  backdrop-filter:blur(18px);
+  border-top:2px solid rgba(180,130,40,.3);
+  display:flex;align-items:center;justify-content:center;gap:44px;
+  box-shadow:0 -2px 12px rgba(0,0,0,.12);
+}
+.sitem{display:flex;align-items:center;gap:7px;font-size:.78rem;letter-spacing:.07em;color:rgba(240,225,195,.55)}
+.sval{font-family:var(--head);font-weight:700;font-size:.8rem}
+</style>
+</head>
+<body>
+<canvas id="cvs"></canvas>
+<div class="neb neb1"></div>
+<div class="neb neb2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo"><span style="font-size:1.3rem">🦕</span><span>CODEPLAY</span></div>
+  <div class="nav-score">
+    <div class="score-chip">⚡ <span id="navScore">0</span> XP</div>
+    <div class="life-chip" id="lifeChip">❤️❤️❤️</div>
+  </div>
+  <button class="btn-back" onclick="location.href='3_8lesson.html'">← Back</button>
+</nav>
+
+<div class="game-wrap">
+
+<!-- INTRO -->
+<div id="intro">
+  <span class="intro-emoji">🍳</span>
+  <div class="intro-title">Code Chef!</div>
+  <div class="intro-sub">You're a magical code chef! Pick the right ingredients to make the code recipe work. Each ingredient is a value — choose the one that makes the <strong style="color:var(--gold-light)">if</strong> condition cook up correctly!</div>
+  <div class="intro-how">
+    <div class="how-card">
+      <div class="how-icon">📜</div>
+      <div class="how-title">Read the Recipe</div>
+      <div class="how-text">Each recipe is a code condition. Figure out what it needs!</div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">🥕</div>
+      <div class="how-title">Pick an Ingredient</div>
+      <div class="how-text">Tap the ingredient (answer) that makes the condition TRUE.</div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">⭐</div>
+      <div class="how-title">Build a Streak</div>
+      <div class="how-text">3 correct in a row earns bonus XP. Don't break the streak!</div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">🏆</div>
+      <div class="how-title">Earn XP</div>
+      <div class="how-text">Score 80% or more to unlock the next lesson!</div>
+    </div>
+  </div>
+  <button class="btn-start" onclick="startGame()">🍳 START COOKING!</button>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <div class="progress-bar-wrap">
+    <div class="prog-label">
+      <span>Question <span id="qNum">1</span> of <span id="qTotal">8</span></span>
+      <span id="qPct">0%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="combo-bar" id="comboBar">
+    <span class="combo-star" id="s1">⭐</span>
+    <span class="combo-star" id="s2">⭐</span>
+    <span class="combo-star" id="s3">⭐</span>
+    <span class="combo-label" id="comboLabel">Build a 3-streak for bonus XP!</span>
+  </div>
+
+  <div class="kitchen-scene" id="kitchenScene">
+    <div class="recipe-card">
+      <div class="recipe-pot" id="potEmoji">🍲</div>
+      <div class="recipe-right">
+        <div class="recipe-label">🍳 Today's Recipe</div>
+        <div class="recipe-text" id="recipeText">Loading...</div>
+        <div class="recipe-code" id="recipeCode"></div>
+      </div>
+    </div>
+    <div class="q-label">👇 Which ingredient makes this TRUE?</div>
+    <div class="q-text" id="qText"></div>
+    <div class="ingredients-grid" id="ingredientsGrid"></div>
+    <div id="feedbackBox"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result">
+  <span class="result-emoji" id="resultEmoji">🏆</span>
+  <div class="result-title" id="resultTitle">Amazing Chef!</div>
+  <div class="result-sub" id="resultSub">You mastered if/else conditions!</div>
+  <div class="result-stats">
+    <div class="rstat"><div class="rstat-val" id="rScore">0</div><div class="rstat-label">Score</div></div>
+    <div class="rstat"><div class="rstat-val" id="rXP">0</div><div class="rstat-label">XP Earned</div></div>
+    <div class="rstat"><div class="rstat-val" id="rStreak">0</div><div class="rstat-label">Best Streak</div></div>
+  </div>
+  <div class="result-btns">
+    <button class="btn-replay" onclick="startGame()">🔄 Cook Again!</button>
+    <button class="btn-continue" id="continueBtn" onclick="location.href='3_9lesson.html'">Next Lesson 🦕</button>
+  </div>
+</div>
+
+</div><!-- /game-wrap -->
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="sitem">📍 <span class="sval" style="color:#D4A840">Part 3</span></div>
+  <div class="sitem">🎮 <span class="sval" style="color:#F7F0DC">Lesson 08</span> <span style="color:rgba(240,225,195,.3);font-size:.7rem">&nbsp;Game</span></div>
+  <div class="sitem">⚡ <span class="sval" style="color:#D4A840" id="totalXP">0</span> <span style="color:rgba(240,225,195,.3);font-size:.7rem">&nbsp;XP</span></div>
+</div>
+
+<script>
+/* ── Particles — warm golden motes ── */
+const cvs=document.getElementById('cvs'),ctx=cvs.getContext('2d');let stars=[];
+function resize(){
+  cvs.width=innerWidth;cvs.height=innerHeight;
+  stars=Array.from({length:180},()=>({
+    x:Math.random()*cvs.width,y:Math.random()*cvs.height,
+    r:Math.random()*1.4+.2,a:Math.random(),
+    da:(Math.random()-.5)*.004,spd:Math.random()*.07+.02,
+    gold:Math.random()>.6,green:Math.random()>.82
+  }));
+}
+window.addEventListener('resize',resize);resize();
+function drawStars(){
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  stars.forEach(s=>{
+    s.a=Math.max(.03,Math.min(1,s.a+s.da));
+    if(s.a<=.03||s.a>=1)s.da*=-1;
+    s.y-=s.spd;if(s.y<0){s.y=cvs.height;s.x=Math.random()*cvs.width;}
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=s.green
+      ?`rgba(58,107,42,${s.a*.28})`
+      :s.gold
+        ?`rgba(212,168,64,${s.a*.35})`
+        :`rgba(139,99,40,${s.a*.22})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* ── QUESTIONS ── */
+const QUESTIONS = [
+  {
+    pot:"🍲", recipe:"Chef needs score to be 10 to open the treasure chest!",
+    code:`<span class="ck">if</span> score <span class="cop">==</span> <span class="cnum">10</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"Chest opens! 🎁"</span>)`,
+    question:'What value should <span style="color:var(--gold-light);font-family:var(--mono)">score</span> be to get the treasure?',
+    choices:[
+      {emoji:"🥕",label:"5",code:'score = 5',correct:false},
+      {emoji:"🍄",label:"10",code:'score = 10',correct:true},
+      {emoji:"🧅",label:"3",code:'score = 3',correct:false},
+      {emoji:"🌽",label:"99",code:'score = 99',correct:false},
+    ],
+    explain:'score == 10 means score must EQUAL 10. The == checks if two things are the same!'
+  },
+  {
+    pot:"🥘", recipe:"The magic door opens only if the password is correct!",
+    code:`<span class="ck">if</span> password <span class="cop">==</span> <span class="cstr">"open"</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"Door opens! 🚪"</span>)`,
+    question:'What should the player type as the <span style="color:var(--gold-light);font-family:var(--mono)">password</span>?',
+    choices:[
+      {emoji:"🗝️",label:'"open"',code:'password = "open"',correct:true},
+      {emoji:"🔐",label:'"close"',code:'password = "close"',correct:false},
+      {emoji:"🔑",label:'"hello"',code:'password = "hello"',correct:false},
+      {emoji:"🚪",label:'"door"',code:'password = "door"',correct:false},
+    ],
+    explain:'password == "open" checks if password equals the word "open". Strings need quotation marks!'
+  },
+  {
+    pot:"🍜", recipe:"The dragon only roars if it's angry!",
+    code:`<span class="ck">if</span> mood <span class="cop">==</span> <span class="cstr">"angry"</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"ROARRR! 🐉"</span>)`,
+    question:'What should <span style="color:var(--gold-light);font-family:var(--mono)">mood</span> be for the dragon to ROAR?',
+    choices:[
+      {emoji:"😴",label:'"sleepy"',code:'mood = "sleepy"',correct:false},
+      {emoji:"😊",label:'"happy"',code:'mood = "happy"',correct:false},
+      {emoji:"😡",label:'"angry"',code:'mood = "angry"',correct:true},
+      {emoji:"😢",label:'"sad"',code:'mood = "sad"',correct:false},
+    ],
+    explain:'mood == "angry" — we need mood to equal "angry" exactly. Even one different letter won\'t work!'
+  },
+  {
+    pot:"🫕", recipe:"The spaceship launches only if there are exactly 3 astronauts!",
+    code:`<span class="ck">if</span> astronauts <span class="cop">==</span> <span class="cnum">3</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"Blast off! 🚀"</span>)`,
+    question:'How many <span style="color:var(--gold-light);font-family:var(--mono)">astronauts</span> are needed for launch?',
+    choices:[
+      {emoji:"👨‍🚀",label:"1",code:'astronauts = 1',correct:false},
+      {emoji:"👨‍👩‍👦",label:"2",code:'astronauts = 2',correct:false},
+      {emoji:"🚀",label:"3",code:'astronauts = 3',correct:true},
+      {emoji:"🌟",label:"10",code:'astronauts = 10',correct:false},
+    ],
+    explain:'astronauts == 3 means we need exactly 3! Not 2, not 4 — just 3 for launch!'
+  },
+  {
+    pot:"🍛", recipe:"Give a party hat only to players with more than 5 stars!",
+    code:`<span class="ck">if</span> stars <span class="cop">></span> <span class="cnum">5</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"Party hat for you! 🎉"</span>)`,
+    question:'Which <span style="color:var(--gold-light);font-family:var(--mono)">stars</span> score gets the party hat?',
+    choices:[
+      {emoji:"⭐",label:"3 stars",code:'stars = 3',correct:false},
+      {emoji:"⭐⭐",label:"5 stars",code:'stars = 5',correct:false},
+      {emoji:"🌟",label:"7 stars",code:'stars = 7',correct:true},
+      {emoji:"💫",label:"1 star",code:'stars = 1',correct:false},
+    ],
+    explain:'stars > 5 means MORE than 5. So 5 itself doesn\'t count — we need 6, 7, 8... 7 works!'
+  },
+  {
+    pot:"🥗", recipe:"The magic plant grows if it has at least 10 water drops!",
+    code:`<span class="ck">if</span> water <span class="cop">>=</span> <span class="cnum">10</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"Plant grows! 🌱"</span>)`,
+    question:'Which amount of <span style="color:var(--gold-light);font-family:var(--mono)">water</span> makes the plant grow?',
+    choices:[
+      {emoji:"💧",label:"5 drops",code:'water = 5',correct:false},
+      {emoji:"💦",label:"9 drops",code:'water = 9',correct:false},
+      {emoji:"🌊",label:"10 drops",code:'water = 10',correct:true},
+      {emoji:"🫧",label:"0 drops",code:'water = 0',correct:false},
+    ],
+    explain:'>= means "greater than OR equal to". So 10 works! So does 11, 12... but 9 is just too little!'
+  },
+  {
+    pot:"🍱", recipe:"The robot says hello only if its battery is NOT dead!",
+    code:`<span class="ck">if</span> battery <span class="cop">!=</span> <span class="cnum">0</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"Hello! 🤖"</span>)`,
+    question:'Which <span style="color:var(--gold-light);font-family:var(--mono)">battery</span> level makes the robot say hello?',
+    choices:[
+      {emoji:"💀",label:"Empty (0)",code:'battery = 0',correct:false},
+      {emoji:"🔋",label:"Half (50)",code:'battery = 50',correct:true},
+      {emoji:"🪫",label:"Zero (0)",code:'battery = 0',correct:false},
+      {emoji:"⚡",label:"Full (100)",code:'battery = 100',correct:true},
+    ],
+    explain:'!= means "NOT equal to". battery != 0 means battery is anything except 0. Both 50 and 100 work! But the game counts the first correct one you pick.'
+  },
+  {
+    pot:"🎂", recipe:"Bake the cake if the temperature is less than 200 degrees!",
+    code:`<span class="ck">if</span> temp <span class="cop"><</span> <span class="cnum">200</span>:<br>&nbsp;&nbsp;<span class="ck">print</span>(<span class="cstr">"Cake is perfect! 🎂"</span>)`,
+    question:'Which <span style="color:var(--gold-light);font-family:var(--mono)">temp</span>erature bakes a perfect cake?',
+    choices:[
+      {emoji:"🌡️",label:"200°",code:'temp = 200',correct:false},
+      {emoji:"🔥",label:"300°",code:'temp = 300',correct:false},
+      {emoji:"✅",label:"180°",code:'temp = 180',correct:true},
+      {emoji:"💥",label:"500°",code:'temp = 500',correct:false},
+    ],
+    explain:'temp < 200 means LESS THAN 200. 200 itself is too hot — we need 199 or less. 180 is just right!'
+  }
+];
+
+let qIdx=0, score=0, lives=3, streak=0, bestStreak=0, totalXP=0, answered=false;
+const TOTAL=QUESTIONS.length;
+
+function startGame(){
+  qIdx=0;score=0;lives=3;streak=0;bestStreak=0;totalXP=0;answered=false;
+  document.getElementById('intro').style.display='none';
+  document.getElementById('result').style.display='none';
+  document.getElementById('game').style.display='block';
+  updateNav();
+  loadQuestion();
+}
+
+function loadQuestion(){
+  answered=false;
+  const q=QUESTIONS[qIdx];
+  document.getElementById('qNum').textContent=qIdx+1;
+  document.getElementById('qTotal').textContent=TOTAL;
+  const pct=Math.round((qIdx/TOTAL)*100);
+  document.getElementById('qPct').textContent=pct+'%';
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('potEmoji').textContent=q.pot;
+  document.getElementById('recipeText').textContent=q.recipe;
+  document.getElementById('recipeCode').innerHTML=q.code;
+  document.getElementById('qText').innerHTML=q.question;
+  document.getElementById('feedbackBox').innerHTML='';
+  updateCombo();
+
+  const grid=document.getElementById('ingredientsGrid');
+  grid.innerHTML='';
+  q.choices.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='ing-btn';
+    btn.innerHTML=`<div class="ing-emoji">${c.emoji}</div><div class="ing-label">${c.label}</div><div class="ing-code">${c.code}</div>`;
+    btn.onclick=()=>pickAnswer(i,c.correct,q);
+    grid.appendChild(btn);
+  });
+}
+
+function pickAnswer(idx, correct, q){
+  if(answered)return;
+  answered=true;
+  const btns=document.querySelectorAll('.ing-btn');
+  btns.forEach(b=>b.classList.add('disabled'));
+  btns[idx].classList.remove('disabled');
+
+  if(correct){
+    btns[idx].classList.add('selected-correct');
+    score++;
+    streak++;
+    if(streak>bestStreak)bestStreak=streak;
+    let xp=10;
+    if(streak>=3){xp=20;showXPToast('+20 XP 🔥 STREAK BONUS!');}
+    else{showXPToast('+10 XP ⭐');}
+    totalXP+=xp;
+    showFeedback(true,q.explain);
+    updateCombo();
+    spawnConfetti();
+  } else {
+    btns[idx].classList.add('selected-wrong');
+    streak=0;
+    lives--;
+    updateCombo();
+    q.choices.forEach((c,i)=>{
+      if(c.correct)btns[i].classList.add('reveal-correct');
+    });
+    showFeedback(false,q.explain);
+    updateNav();
+    if(lives<=0){setTimeout(showResult,1800);return;}
+  }
+  updateNav();
+}
+
+function showFeedback(correct,explain){
+  const box=document.getElementById('feedbackBox');
+  const icon=correct?'🎉':'😬';
+  const cls=correct?'correct':'wrong';
+  const title=correct?['Great job!','Nailed it!','Perfect!','You got it! 🍳'][Math.floor(Math.random()*4)]:'Not quite...';
+  box.innerHTML=`<div class="feedback-box ${cls}"><div class="fb-icon">${icon}</div><div><div class="fb-title ${cls}">${title}</div><div class="fb-text">${explain}</div></div></div>`;
+
+  const nextBtn=document.createElement('button');
+  nextBtn.className='btn-next-q';
+  nextBtn.textContent= qIdx+1<TOTAL ? '🍳 Next Recipe →' : '🏆 See Results!';
+  nextBtn.onclick=()=>{
+    qIdx++;
+    if(qIdx>=TOTAL){showResult();}
+    else{loadQuestion();}
+  };
+  box.appendChild(nextBtn);
+}
+
+function updateCombo(){
+  for(let i=1;i<=3;i++){
+    const s=document.getElementById('s'+i);
+    if(streak>=i){s.classList.add('lit');s.style.filter='drop-shadow(0 0 6px rgba(212,168,64,.8))';}
+    else{s.classList.remove('lit');s.style.filter='';}
+  }
+  const lbl=document.getElementById('comboLabel');
+  if(streak>=3){lbl.textContent='🔥 ON FIRE! +20 XP per answer!';}
+  else{lbl.textContent=['Build a 3-streak for bonus XP!','2 more for BONUS XP!','1 more for BONUS XP!'][streak]||'';}
+}
+
+function updateNav(){
+  document.getElementById('navScore').textContent=totalXP;
+  document.getElementById('totalXP').textContent=totalXP;
+  const hearts=['','❤️','❤️❤️','❤️❤️❤️'][Math.max(0,lives)]||'💀';
+  document.getElementById('lifeChip').textContent=hearts;
+}
+
+function showResult(){
+  document.getElementById('game').style.display='none';
+  document.getElementById('result').style.display='block';
+  const pct=Math.round((score/TOTAL)*100);
+  const passed=pct>=70;
+  document.getElementById('resultEmoji').textContent=pct>=90?'🏆':pct>=70?'🎉':'😅';
+  document.getElementById('resultTitle').textContent=pct>=90?'Master Chef!':pct>=70?'Great Chef!':'Keep Practising!';
+  document.getElementById('resultSub').textContent=pct>=90?'You totally nailed if/else conditions! Every dish was perfect! 🍳':pct>=70?'You understand conditions really well! A few more practises and you\'ll be a master!':'Conditions can be tricky! Watch the lesson again and try once more!';
+  document.getElementById('rScore').textContent=score+'/'+TOTAL;
+  document.getElementById('rXP').textContent=totalXP+' XP';
+  document.getElementById('rStreak').textContent='🔥'+bestStreak;
+
+  if(passed){
+    localStorage.setItem('p3_lesson08GamePassed','yes');
+    const cur=parseInt(localStorage.getItem('part3_progress'))||1;
+    if(cur<9)localStorage.setItem('part3_progress','9');
+    totalXP+=90;
+    updateNav();
+    showXPToast('+90 XP Lesson Complete! 🦕');
+    setTimeout(spawnConfetti,200);
+    setTimeout(spawnConfetti,600);
+    setTimeout(spawnConfetti,1000);
+  }
+  document.getElementById('continueBtn').style.opacity=passed?'1':'.35';
+  document.getElementById('continueBtn').style.pointerEvents=passed?'auto':'none';
+}
+
+function showXPToast(msg){
+  const t=document.createElement('div');
+  t.className='xp-toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+function spawnConfetti(){
+  const colors=['#D4A840','#C85A1A','#3A6B2A','#8B7355','#2A7A6A','#F7F0DC','#5A9A4A'];
+  for(let i=0;i<28;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    p.style.width=(Math.random()*8+5)+'px';
+    p.style.height=(Math.random()*8+5)+'px';
+    p.style.borderRadius=Math.random()>.5?'50%':'2px';
+    p.style.animationDuration=(Math.random()*1.5+1.5)+'s';
+    p.style.animationDelay=(Math.random()*.5)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),3000);
+  }
+}
+</script>
+</body>
+</html>
+
+
+

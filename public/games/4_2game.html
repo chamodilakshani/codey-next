@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY — Part 4 · Lesson 02: What Is a Loop? (Alt)</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Share+Tech+Mono&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#e8f8f8;--bg2:#d4f4f4;--surface:rgba(255,255,255,0.80);--surface2:rgba(255,255,255,0.96);
+  --border:rgba(0,180,190,0.22);--teal:#007a8a;--teal2:#00a8b8;--teal-glow:rgba(0,180,200,0.45);
+  --biolime:#0a8f55;--biolime-glow:rgba(10,143,85,0.4);--biolime-soft:#c8f5e0;
+  --coral:#c0334a;--coral-soft:#fde0e6;--gold:#8a6200;--gold-soft:#fff0c0;
+  --purple:#7040b8;--purple-soft:#ede0ff;--orange:#a04820;--blue:#005f8a;
+  --text:#062828;--text2:#0a3838;--muted:#2a6868;--muted2:rgba(6,40,40,0.5);
+  --mono:'Share Tech Mono',monospace;--head:'Plus Jakarta Sans','Nunito',sans-serif;--body:'Plus Jakarta Sans','Nunito',sans-serif;
+  --shadow-sm:0 1px 5px rgba(0,100,120,0.1),0 1px 3px rgba(0,100,120,0.07);
+  --shadow-md:0 4px 20px rgba(0,100,120,0.13),0 2px 7px rgba(0,100,120,0.08);
+  --shadow-lg:0 10px 44px rgba(0,100,120,0.16),0 4px 14px rgba(0,100,120,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column}
+
+/* ── BG ── */
+.sea-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sea-layer{position:absolute;inset:0;background:
+  radial-gradient(ellipse 80% 55% at 15% 8%,rgba(0,200,220,0.28) 0%,transparent 60%),
+  radial-gradient(ellipse 65% 75% at 82% 80%,rgba(0,200,160,0.2) 0%,transparent 58%),
+  radial-gradient(ellipse 55% 45% at 50% 42%,rgba(120,250,230,0.12) 0%,transparent 55%),
+  linear-gradient(180deg,#d8f4f4 0%,#caf0f0 28%,#d0f4f0 58%,#dcf8f4 100%)}
+.sea-rays{position:absolute;inset:0;
+  background:repeating-conic-gradient(from 258deg at 50% -18%,rgba(0,180,200,0.045) 0deg,transparent 3.5deg,transparent 11deg,rgba(0,180,180,0.03) 15deg,transparent 19deg);
+  animation:rayDrift 20s linear infinite alternate}
+.caustics{position:absolute;inset:0;
+  background:repeating-radial-gradient(ellipse 120px 80px at 25% 70%,rgba(0,200,200,0.07) 0%,transparent 60%),
+             repeating-radial-gradient(ellipse 90px 60px at 70% 40%,rgba(0,200,180,0.06) 0%,transparent 50%);
+  animation:causticShift 8s ease-in-out infinite alternate}
+.scan-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,150,160,0.012) 2px,rgba(0,150,160,0.012) 4px)}
+
+/* ── KEYFRAMES ── */
+@keyframes rayDrift{from{transform:rotate(-2.5deg) scale(1.08)}to{transform:rotate(2.5deg) scale(1.04)}}
+@keyframes causticShift{0%{transform:scale(1) translate(0,0)}100%{transform:scale(1.06) translate(8px,-6px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shine{to{left:160%}}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 20px rgba(0,160,180,0.35)}50%{box-shadow:0 0 42px rgba(0,160,180,0.65)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes sonarPing{0%{transform:scale(.8);opacity:1}100%{transform:scale(3);opacity:0}}
+@keyframes jellyFloat{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-12px) scaleY(.92)}}
+@keyframes fishSwim{0%{transform:translateX(120%) scaleX(-1)}100%{transform:translateX(-20%) scaleX(-1)}}
+@keyframes popIn{0%{transform:scale(0) rotate(-10deg);opacity:0}70%{transform:scale(1.15) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes correctGlow{0%,100%{box-shadow:0 0 16px rgba(10,143,85,0.35)}50%{box-shadow:0 0 44px rgba(10,143,85,0.75)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes xpPop{0%{opacity:0;transform:translateY(0) scale(.5)}40%{opacity:1;transform:translateY(-30px) scale(1.3)}100%{opacity:0;transform:translateY(-60px) scale(1)}}
+@keyframes stampIn{0%{transform:scale(2) rotate(-15deg);opacity:0}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+@keyframes subPatrol{0%{left:10%}50%{left:78%}100%{left:10%}}
+@keyframes bubbleUp{0%{opacity:0;transform:translateY(0)}10%{opacity:.8}100%{opacity:0;transform:translateY(-90px)}}
+@keyframes burstIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes radarSweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes pingOut{0%{transform:scale(0);opacity:.8}100%{transform:scale(2.5);opacity:0}}
+@keyframes slideRight{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes tickBounce{0%{transform:scale(0) rotate(-20deg)}70%{transform:scale(1.3) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes codeGlitch{0%,100%{transform:translateX(0)}50%{transform:translateX(-2px)}}
+@keyframes swim2{0%,100%{transform:translateX(0) rotate(-3deg)}50%{transform:translateX(10px) rotate(3deg)}}
+@keyframes bio{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:.7;transform:scale(1)}}
+
+/* ── BUBBLES ── */
+.bubble{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.72),rgba(0,200,210,.16));border:1px solid rgba(0,180,200,.35);animation:bubbleRise linear infinite}
+@keyframes bubbleRise{0%{opacity:0;transform:translateY(0)}10%{opacity:.8}90%{opacity:.4}100%{opacity:0;transform:translateY(-110vh) translateX(28px)}}
+.bio{position:fixed;border-radius:50%;pointer-events:none;animation:bio ease-in-out infinite}
+.jelly{position:fixed;right:5%;top:20%;font-size:2.4rem;opacity:.22;animation:jellyFloat 4s ease-in-out infinite;z-index:1;pointer-events:none}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;
+  background:rgba(255,255,255,0.92);backdrop-filter:blur(22px);border-bottom:1.5px solid rgba(0,180,190,0.18);box-shadow:0 1px 18px rgba(0,120,130,0.08)}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:900;font-size:1.3rem;
+  background:linear-gradient(135deg,var(--teal2),var(--biolime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.08em}
+.nav-sonar{position:relative;width:32px;height:32px;flex-shrink:0}
+.nav-sonar-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(0,180,190,.35);animation:sonarPing 2.2s ease-out infinite}
+.nav-sonar-ring2{animation-delay:.8s}
+.nav-sonar-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;border-radius:50%;background:var(--teal2);box-shadow:0 0 10px var(--teal2)}
+.nav-center{display:flex;align-items:center;gap:12px}
+.nav-pip{width:6px;height:6px;border-radius:50%;background:var(--teal2);box-shadow:0 0 10px var(--teal2);animation:blink 1.4s infinite}
+.nav-lesson-tag{font-family:var(--head);font-size:.6rem;letter-spacing:.18em;color:var(--muted2);text-transform:uppercase;font-weight:700}
+.nav-lesson-title{font-family:var(--head);font-size:.8rem;font-weight:700;color:var(--text);letter-spacing:.04em;margin-top:2px}
+.btn-back{display:flex;align-items:center;gap:8px;padding:9px 22px;border-radius:99px;border:1.5px solid rgba(0,160,180,.3);background:rgba(0,160,180,.06);color:var(--teal);font-family:var(--body);font-size:.85rem;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:all .2s}
+.btn-back:hover{border-color:rgba(0,160,180,.65);background:rgba(0,160,180,.12)}
+.btn-back svg{width:14px;height:14px;stroke:var(--teal);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── HEADER ── */
+.lesson-header{position:relative;z-index:2;max-width:1060px;width:100%;margin:0 auto;padding:24px 24px 0;animation:fadeUp .6s ease both}
+.lesson-eyebrow{margin-bottom:10px}
+.lesson-part-tag{display:inline-flex;align-items:center;gap:7px;border:1.5px solid rgba(0,160,180,.42);background:rgba(0,160,180,.09);padding:3px 14px;border-radius:99px;font-size:.65rem;letter-spacing:.2em;color:var(--teal);text-transform:uppercase;font-weight:700}
+.lesson-part-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--teal2);box-shadow:0 0 8px var(--teal2);animation:blink 1.5s infinite}
+.lesson-title{font-family:var(--head);font-size:clamp(1.5rem,3vw,2.3rem);font-weight:900;
+  background:linear-gradient(135deg,var(--teal),var(--biolime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.04em;line-height:1.1}
+.lesson-sub{margin-top:8px;font-size:.95rem;color:var(--muted);font-weight:500}
+.lesson-divider{margin-top:24px;height:1.5px;background:linear-gradient(90deg,rgba(0,160,180,.4),rgba(10,143,85,.22),transparent)}
+
+.page-wrap{position:relative;z-index:2;flex:1;max-width:1060px;width:100%;margin:0 auto;padding:24px 24px 10px}
+
+/* ── PROGRESS ── */
+.game-progress-bar{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.85);border:1.5px solid rgba(0,160,180,.18);border-radius:16px;padding:16px 24px;margin-bottom:16px;animation:fadeUp .6s .05s ease both;box-shadow:var(--shadow-sm)}
+.gp-label{font-size:.7rem;letter-spacing:.18em;color:var(--muted2);text-transform:uppercase;white-space:nowrap;flex-shrink:0;font-weight:700}
+.gp-track{flex:1;height:10px;background:rgba(0,120,130,.1);border-radius:99px;overflow:hidden}
+.gp-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--teal2),var(--biolime));transition:width .6s ease;width:0%}
+.gp-stages{display:flex;gap:8px;align-items:center}
+.gp-stage{width:32px;height:32px;border-radius:50%;border:2px solid rgba(0,160,180,.2);display:grid;place-items:center;font-size:.8rem;background:rgba(255,255,255,.9);transition:all .3s;flex-shrink:0;box-shadow:var(--shadow-sm)}
+.gp-stage.done{border-color:var(--biolime);background:rgba(10,143,85,.1);box-shadow:0 0 10px rgba(10,143,85,.25)}
+.gp-stage.current{border-color:var(--teal2);background:rgba(0,160,180,.12);box-shadow:0 0 14px rgba(0,160,180,.38);animation:pulse 1.4s ease-in-out infinite}
+.gp-xp{font-family:var(--head);font-size:.82rem;font-weight:800;color:var(--gold);white-space:nowrap;flex-shrink:0}
+
+/* ── STAGE ── */
+.stage{display:none;animation:fadeUp .5s ease both}
+.stage.active{display:block}
+
+/* ── CARD ── */
+.card{border-radius:20px;border:1.5px solid rgba(0,160,180,.16);background:var(--surface);backdrop-filter:blur(14px);padding:20px 24px;position:relative;overflow:hidden;margin-bottom:20px;box-shadow:var(--shadow-md);width: 60%;margin-left: 300px;margin-bottom: 100px;}
+.card::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 35% at 50% 0%,rgba(0,180,200,.06),transparent)}
+.card-top-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--teal2),var(--biolime),transparent)}
+
+.stage-header{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.stage-num{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--teal2),var(--biolime));display:grid;place-items:center;font-size:.9rem;flex-shrink:0;box-shadow:0 0 18px rgba(0,160,180,.35)}
+.stage-title{font-family:var(--head);font-size:1.3rem;font-weight:900;color:var(--text);letter-spacing:.02em}
+.stage-sub{font-size:.85rem;color:var(--muted);margin-top:2px;font-weight:500}
+
+/* ── BUTTONS ── */
+.btn-primary{padding:12px 28px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--teal2),var(--teal));color:#fff;font-family:var(--head);font-size:.75rem;font-weight:900;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;box-shadow:var(--shadow-md);transition:all .3s;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px}
+.btn-primary::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.2s linear infinite}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 32px rgba(0,160,180,.6)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{padding:11px 22px;border-radius:12px;border:1.5px solid rgba(0,160,180,.3);background:rgba(0,160,180,.07);color:var(--teal);font-family:var(--head);font-size:.78rem;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .2s}
+.btn-secondary:hover{border-color:rgba(0,160,180,.6);background:rgba(0,160,180,.14)}
+.btn-next-lesson{padding:16px 36px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--teal2),var(--teal));color:#fff;font-family:var(--head);font-size:.82rem;font-weight:900;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 0 28px rgba(0,160,180,.38);animation:btnPulse 2s ease-in-out infinite;transition:all .3s;position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px}
+.btn-next-lesson:hover{transform:translateY(-2px);box-shadow:0 6px 36px rgba(0,160,180,.7)}
+
+/* ── OCEAN HINT ── */
+.ocean-hint{display:flex;align-items:flex-start;gap:12px;background:rgba(0,100,160,.06);border:1.5px solid rgba(0,100,160,.2);border-radius:12px;padding:14px 18px;margin-top:14px}
+.oh-icon{font-size:1.3rem;flex-shrink:0;animation:float 3s ease-in-out infinite}
+.oh-text{font-size:.83rem;color:var(--muted);line-height:1.5;font-weight:500}
+.oh-text b{color:var(--teal)}
+.code-kw{color:var(--purple);font-weight:700}
+.code-fn{color:var(--teal)}
+.code-str{color:var(--gold)}
+.code-num{color:var(--biolime);font-weight:600}
+.code-var{color:var(--orange)}
+.code-cm{color:var(--muted2);font-style:italic}
+
+/* ── XP FLOATER ── */
+.xp-floater{position:fixed;pointer-events:none;z-index:999;font-family:var(--head);font-size:1.2rem;font-weight:900;color:var(--gold);text-shadow:0 0 10px rgba(138,98,0,.5);animation:xpPop .9s ease forwards}
+
+/* ── FEEDBACK ── */
+.fb{border-radius:12px;padding:14px 18px;margin-top:14px;font-size:.88rem;font-weight:700;line-height:1.5;display:none}
+.fb.show{display:block;animation:popIn .4s ease both}
+.fb.ok{background:rgba(10,143,85,.08);border:1.5px solid rgba(10,143,85,.3);color:var(--biolime)}
+.fb.nope{background:rgba(192,51,74,.06);border:1.5px solid rgba(192,51,74,.28);color:var(--coral)}
+
+/* ═══════════════════════════════════
+   STAGE 0: LEARN — SUBMARINE VISUAL
+═══════════════════════════════════ */
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.intro-concept{background:rgba(0,160,180,.06);border:1.5px solid rgba(0,160,180,.2);border-radius:14px;padding:18px;display:flex;align-items:flex-start;gap:12px;transition:all .25s}
+.intro-concept:hover{border-color:rgba(0,160,180,.48);background:rgba(0,160,180,.1);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.ic-emoji{font-size:2rem;flex-shrink:0;animation:float 3s ease-in-out infinite}
+.ic-title{font-family:var(--head);font-size:.88rem;font-weight:800;color:var(--teal);margin-bottom:5px}
+.ic-text{font-size:.82rem;color:var(--muted);line-height:1.5;font-weight:500}
+
+/* Sub patrol track */
+.sub-track-wrap{background:linear-gradient(180deg,rgba(0,140,170,.08),rgba(0,80,120,.06));border:1.5px solid rgba(0,160,180,.22);border-radius:16px;padding:20px;margin:20px 0;position:relative;overflow:hidden}
+.sub-track-label{font-size:.62rem;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase;font-weight:700;margin-bottom:12px}
+.sub-ocean{height:70px;position:relative;border-radius:10px;background:linear-gradient(180deg,rgba(0,180,210,.1),rgba(0,100,150,.08))}
+.sub-emoji{position:absolute;top:50%;transform:translateY(-50%);font-size:1.8rem;animation:subPatrol 5s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(0,160,180,.5))}
+.sub-trail{position:absolute;top:50%;height:2px;background:linear-gradient(90deg,transparent,rgba(0,180,200,.35),transparent);width:60%;left:15%;transform:translateY(-50%)}
+.code-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(112,64,184,.09);border:1.5px solid rgba(112,64,184,.25);border-radius:8px;padding:3px 12px;font-family:var(--mono);font-size:.78rem;color:var(--purple);margin:2px 3px}
+.compare-row{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;margin-top:4px}
+.no-loop-box{background:rgba(192,51,74,.05);border:1.5px solid rgba(192,51,74,.25);border-radius:14px;padding:18px 20px}
+.yes-loop-box{background:rgba(10,143,85,.05);border:1.5px solid rgba(10,143,85,.22);border-radius:14px;padding:18px 20px}
+.box-label{font-family:var(--head);font-size:.62rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+.nl-label{color:var(--coral)}.yl-label{color:var(--biolime)}
+.code-line{font-family:var(--mono);font-size:.78rem;color:var(--muted);padding:3px 0;display:flex;align-items:center;gap:8px}
+.code-line.rep{color:var(--coral)}.code-line.lp{color:var(--biolime)}
+.magic-arrow{display:flex;align-items:center;justify-content:center;font-size:1.6rem;animation:float 2s ease-in-out infinite}
+.shrink-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(10,143,85,.1);border:1.5px solid rgba(10,143,85,.3);border-radius:8px;padding:4px 12px;font-family:var(--head);font-size:.7rem;font-weight:700;color:var(--biolime)}
+
+/* ═══════════════════════════════════
+   STAGE 1: SUBMARINE RUNNER
+   Click RUN to animate loop iterations
+═══════════════════════════════════ */
+.runner-arena{background:linear-gradient(180deg,rgba(0,150,180,.07),rgba(0,80,120,.06));border:2px solid rgba(0,160,180,.18);border-radius:16px;padding:24px;margin-bottom:0px;position:relative;overflow:hidden}
+.runner-code{background:rgba(230,248,250,.85);border:1.5px solid rgba(0,160,180,.16);border-radius:12px;padding:14px 18px;margin-bottom:20px;font-family:var(--mono);font-size:.82rem;line-height:1.9}
+.runner-code .hl-line{background:rgba(0,160,180,.12);border-left:3px solid var(--teal2);padding:1px 4px;border-radius:0 4px 4px 0;transition:background .3s}
+.runner-code .hl-line.active{background:rgba(0,160,180,.28);animation:codeGlitch .15s ease}
+.ocean-display{height:110px;border-radius:12px;background:linear-gradient(180deg,rgba(0,180,210,.08),rgba(0,100,150,.06));border:1.5px solid rgba(0,160,180,.15);position:relative;overflow:hidden;display:flex;align-items:center;padding:0 14px;gap:6px}
+.fish-spawn{font-size:1.8rem;animation:burstIn .35s ease both;filter:drop-shadow(0 0 6px rgba(0,160,180,.4))}
+.iteration-counter{position:absolute;top:10px;right:14px;font-family:var(--head);font-size:.7rem;font-weight:800;color:var(--teal);background:rgba(255,255,255,.85);border:1.5px solid rgba(0,160,180,.22);border-radius:8px;padding:3px 10px}
+.run-controls{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.run-btn{padding:13px 30px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--biolime),#06b06a);color:#fff;font-family:var(--head);font-size:.82rem;font-weight:900;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:all .25s;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 18px rgba(10,143,85,.35)}
+.run-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 24px rgba(10,143,85,.5)}
+.run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.run-label{font-size:.8rem;color:var(--muted);font-weight:600}
+.runner-q{font-family:var(--head);font-size:1rem;font-weight:800;color:var(--text);margin-bottom:14px}
+.runner-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.runner-opt{background:rgba(255,255,255,.9);border:2px solid rgba(0,160,180,.2);border-radius:12px;padding:14px 8px;cursor:pointer;text-align:center;font-family:var(--head);font-size:1rem;font-weight:800;color:var(--text);transition:all .22s;box-shadow:var(--shadow-sm)}
+.runner-opt:hover{border-color:rgba(0,160,180,.6);background:rgba(0,160,180,.09);transform:translateY(-2px)}
+.runner-opt.correct{border-color:var(--biolime);background:rgba(10,143,85,.1);color:var(--biolime);animation:correctGlow 1s ease-in-out 2}
+.runner-opt.wrong{border-color:var(--coral);background:rgba(192,51,74,.08);color:var(--coral);animation:wrongShake .6s ease}
+.runner-opt.disabled{pointer-events:none;opacity:.5}
+.runner-qprogress{display:flex;gap:6px;margin-bottom:16px}
+.rqp-dot{width:10px;height:10px;border-radius:50%;background:rgba(0,120,130,.1);border:1.5px solid rgba(0,160,180,.2);transition:all .3s}
+.rqp-dot.done{background:var(--biolime);border-color:var(--biolime)}
+.rqp-dot.cur{background:var(--teal2);border-color:var(--teal2);animation:pulse 1s ease-in-out infinite}
+
+/* ═══════════════════════════════════
+   STAGE 2: CODE SCRAMBLE
+   Drag/click lines into correct order
+═══════════════════════════════════ */
+.scramble-desc{font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:18px;font-weight:500}
+.scramble-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px}
+.scramble-pool-title{font-size:.62rem;letter-spacing:.16em;color:var(--muted2);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.scramble-pool{min-height:80px;display:flex;flex-direction:column;gap:8px}
+.scramble-editor{background:rgba(230,248,250,.8);border:1.5px solid rgba(0,160,180,.18);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:2px;min-height:100px}
+.scramble-slot{height:38px;border:2px dashed rgba(0,160,180,.25);border-radius:8px;display:flex;align-items:center;padding:0 12px;font-family:var(--mono);font-size:.8rem;color:var(--muted2);font-style:italic;transition:all .2s;background:rgba(0,160,180,.03)}
+.scramble-slot.filled{border-style:solid;border-color:rgba(0,160,180,.3);background:rgba(0,160,180,.06);font-style:normal}
+.scramble-slot:hover{border-color:rgba(0,160,180,.5);background:rgba(0,160,180,.08)}
+.code-tile{background:rgba(255,255,255,.92);border:2px solid rgba(0,160,180,.25);border-radius:10px;padding:9px 14px;cursor:pointer;font-family:var(--mono);font-size:.82rem;font-weight:600;color:var(--text2);transition:all .22s;user-select:none;display:flex;align-items:center;gap:8px;animation:burstIn .3s ease both;box-shadow:var(--shadow-sm);white-space:nowrap}
+.code-tile:hover{border-color:rgba(0,160,180,.65);background:rgba(0,160,180,.09);transform:scale(1.03) translateY(-1px)}
+.code-tile.picked{outline:2.5px solid var(--teal2);background:rgba(0,160,180,.14);transform:scale(1.05)}
+.code-tile.correct-t{border-color:var(--biolime);background:rgba(10,143,85,.09);color:var(--biolime)}
+.code-tile.wrong-t{border-color:var(--coral);background:rgba(192,51,74,.07);color:var(--coral)}
+.scr-check-btn{padding:13px 28px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--teal2),var(--teal));color:#fff;font-family:var(--head);font-size:.82rem;font-weight:900;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:all .25s;display:inline-flex;align-items:center;gap:8px;box-shadow:var(--shadow-md)}
+.scr-check-btn:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,160,180,.45)}
+.scr-progress{display:flex;gap:8px;margin-bottom:16px;align-items:center;font-size:.8rem;color:var(--muted);font-weight:600}
+.scr-dot{width:10px;height:10px;border-radius:50%;background:rgba(0,120,130,.12);border:1.5px solid rgba(0,160,180,.22);transition:all .3s}
+.scr-dot.done{background:var(--biolime);border-color:var(--biolime)}
+.scr-dot.cur{background:var(--teal2);border-color:var(--teal2);animation:pulse 1s ease-in-out infinite}
+
+/* ═══════════════════════════════════
+   STAGE 3: OUTPUT ORACLE
+   Predict the print sequence
+═══════════════════════════════════ */
+.oracle-desc{font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:18px;font-weight:500}
+.oracle-code{background:rgba(230,248,250,.85);border:1.5px solid rgba(0,160,180,.18);border-radius:12px;padding:14px 18px;margin-bottom:18px;font-family:var(--mono);font-size:.82rem;line-height:1.85}
+.oracle-q{font-family:var(--head);font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:10px}
+.oracle-sequence{display:flex;gap:8px;flex-wrap:wrap;min-height:58px;align-items:center;padding:12px 16px;border:2px dashed rgba(0,160,180,.28);border-radius:12px;background:rgba(0,160,180,.03);margin-bottom:14px;transition:all .2s}
+.oracle-sequence.active{border-color:var(--teal2);background:rgba(0,160,180,.07)}
+.seq-chip{background:rgba(255,255,255,.95);border:2px solid rgba(0,160,180,.3);border-radius:10px;padding:8px 14px;font-size:1.2rem;cursor:pointer;transition:all .18s;animation:burstIn .25s ease both;box-shadow:var(--shadow-sm)}
+.seq-chip:hover{border-color:rgba(0,160,180,.6);transform:scale(1.08)}
+.seq-chip.added{border-color:var(--teal2);background:rgba(0,160,180,.1)}
+.placed-chip{background:rgba(0,160,180,.1);border:1.5px solid rgba(0,160,180,.35);border-radius:8px;padding:6px 12px;font-size:1.1rem;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all .18s;font-family:var(--mono);font-size:.85rem}
+.placed-chip:hover{background:rgba(192,51,74,.08);border-color:var(--coral)}
+.oracle-pool{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.oracle-pool-label{font-size:.62rem;letter-spacing:.15em;color:var(--muted2);text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.oracle-counter{font-size:.78rem;color:var(--muted);font-weight:600;margin-bottom:8px}
+.oracle-progress{display:flex;gap:6px;margin-bottom:16px}
+.oracle-dot{width:10px;height:10px;border-radius:50%;background:rgba(0,120,130,.1);border:1.5px solid rgba(0,160,180,.2);transition:all .3s}
+.oracle-dot.done{background:var(--biolime);border-color:var(--biolime)}
+.oracle-dot.cur{background:var(--teal2);border-color:var(--teal2);animation:pulse 1s ease-in-out infinite}
+
+/* ═══════════════════════════════════
+   STAGE 4: BUG HUNT
+   Find the bug in broken loop code
+═══════════════════════════════════ */
+.bug-desc{font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:18px;font-weight:500}
+.bug-progress{display:flex;gap:6px;margin-bottom:16px;align-items:center;font-size:.8rem;color:var(--muted);font-weight:600}
+.bugq-dot{width:10px;height:10px;border-radius:50%;background:rgba(0,120,130,.1);border:1.5px solid rgba(0,160,180,.2);transition:all .3s}
+.bugq-dot.done{background:var(--biolime);border-color:var(--biolime)}
+.bugq-dot.cur{background:var(--teal2);border-color:var(--teal2);animation:pulse 1s ease-in-out infinite}
+.bug-arena{background:rgba(230,248,250,.8);border:1.5px solid rgba(0,160,180,.18);border-radius:14px;padding:18px 20px;margin-bottom:18px;font-family:var(--mono);font-size:.84rem;line-height:1;position:relative}
+.bug-line{display:flex;align-items:center;gap:0;padding:4px 0;min-height:38px}
+.bug-ln{width:24px;font-size:.65rem;color:rgba(6,40,40,.2);text-align:right;flex-shrink:0;margin-right:12px}
+.bug-token{display:inline-block;padding:5px 10px;border-radius:7px;cursor:pointer;transition:all .2s;border:2px solid transparent;font-family:var(--mono);font-size:.82rem;white-space:nowrap}
+.bug-token:hover{border-color:rgba(0,160,180,.5);background:rgba(0,160,180,.09);transform:scale(1.05)}
+.bug-token.selected{border-color:var(--teal2);background:rgba(0,160,180,.14);transform:scale(1.07)}
+.bug-token.correct-bug{border-color:var(--biolime)!important;background:rgba(10,143,85,.12)!important;animation:correctGlow 1s ease-in-out 2}
+.bug-token.wrong-bug{border-color:var(--coral)!important;background:rgba(192,51,74,.08)!important;animation:wrongShake .6s ease}
+.bug-q-label{font-family:var(--head);font-size:1rem;font-weight:800;color:var(--text);margin-bottom:6px}
+.bug-q-sub{font-size:.85rem;color:var(--muted);margin-bottom:14px;font-weight:500}
+.bug-score-row{display:flex;align-items:center;gap:18px;margin-bottom:16px}
+.bug-score-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);font-weight:600}
+.bug-score-item b{font-family:var(--head);font-size:.95rem;font-weight:800;color:var(--gold)}
+
+/* ── COMPLETE ── */
+.complete-center{text-align:center;padding:20px 0}
+.trophy{font-size:4rem;animation:jellyFloat 2s ease-in-out infinite;display:block;margin-bottom:16px}
+.complete-title{font-family:var(--head);font-size:clamp(1.5rem,3vw,2.2rem);font-weight:900;
+  background:linear-gradient(135deg,var(--gold),var(--biolime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.complete-sub{font-size:.95rem;color:var(--muted);line-height:1.6;margin-bottom:28px;font-weight:500}
+.xp-earned{display:inline-flex;align-items:center;gap:10px;background:rgba(138,98,0,.08);border:2px solid rgba(138,98,0,.32);border-radius:16px;padding:14px 28px;margin-bottom:28px;animation:btnPulse 2s ease-in-out infinite}
+.xp-earned-num{font-family:var(--head);font-size:2rem;font-weight:900;color:var(--gold)}
+.xp-earned-label{font-size:.85rem;color:var(--muted);text-align:left;font-weight:600}
+.learnt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;text-align:left}
+.learnt-item{background:rgba(0,160,180,.06);border:1.5px solid rgba(0,160,180,.18);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--muted);font-weight:600}
+.learnt-item .check{color:var(--biolime);font-size:1.1rem;flex-shrink:0}
+.stamp{position:absolute;top:20px;right:20px;background:rgba(10,143,85,.09);border:2.5px solid rgba(10,143,85,.38);border-radius:12px;padding:8px 16px;font-family:var(--head);font-size:.72rem;font-weight:900;color:var(--biolime);letter-spacing:.12em;text-transform:uppercase;transform:rotate(-8deg);animation:stampIn .5s .3s ease both;opacity:0;animation-fill-mode:forwards}
+
+/* ── STATS BAR ── */
+.stats-bar{position:fixed;bottom:0;left:0;right:0;z-index:100;height:50px;background:rgba(255,255,255,.94);backdrop-filter:blur(22px);border-top:1.5px solid rgba(0,160,180,.16);display:flex;align-items:center;justify-content:center;gap:44px;box-shadow:0 -1px 16px rgba(0,120,130,.08)}
+.sitem{display:flex;align-items:center;gap:7px;font-size:.78rem;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.sval{font-family:var(--head);font-weight:700;font-size:.8rem}
+
+@media(max-width:760px){.page-wrap,.lesson-header{padding-left:16px;padding-right:16px}.intro-grid,.scramble-wrap,.learnt-grid{grid-template-columns:1fr}.compare-row{grid-template-columns:1fr;gap:10px}.magic-arrow{transform:rotate(90deg)}.runner-opts{grid-template-columns:1fr 1fr}.oracle-pool{gap:8px}}
+@media(max-width:500px){nav{padding:0 16px}.logo span:last-child{display:none}.nav-center{display:none}.gp-stages{display:none}}
+</style>
+</head>
+<body>
+
+<div class="sea-bg"><div class="sea-layer"></div><div class="sea-rays"></div><div class="caustics"></div></div>
+<div class="scan-overlay"></div>
+<div class="jelly">🪼</div>
+
+<nav>
+  <div class="logo">
+    <div class="nav-sonar"><div class="nav-sonar-ring"></div><div class="nav-sonar-ring nav-sonar-ring2"></div><div class="nav-sonar-dot"></div></div>
+    <span>CODEPLAY</span>
+  </div>
+  <div class="nav-center">
+    <div class="nav-pip"></div>
+    <div><div class="nav-lesson-tag">Part 4 · Lesson 02</div><div class="nav-lesson-title">What Is a Loop?</div></div>
+  </div>
+  <button class="btn-back" onclick="location.href='4_2lesson.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Lessons
+  </button>
+</nav>
+
+<div class="lesson-header">
+  <div class="lesson-eyebrow"><div class="lesson-part-tag">Part 4 of 10 · Lesson 02</div></div>
+  <div class="lesson-title">What Is a Loop?</div>
+  <div class="lesson-sub">A loop tells your code to repeat an action — so you never write the same thing twice! 🔄</div>
+  <div class="lesson-divider"></div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- PROGRESS -->
+  <div class="game-progress-bar">
+    <span class="gp-label">🌊 Progress</span>
+    <div class="gp-track"><div class="gp-fill" id="gpFill"></div></div>
+    <div class="gp-stages">
+      <div class="gp-stage current" id="st0" title="Learn">📖</div>
+      <div class="gp-stage" id="st1" title="Run the Loop">▶️</div>
+      <div class="gp-stage" id="st2" title="Code Scramble">🧩</div>
+      <div class="gp-stage" id="st3" title="Output Oracle">🔮</div>
+      <div class="gp-stage" id="st4" title="Bug Hunt">🐛</div>
+      <div class="gp-stage" id="st5" title="Complete!">🏆</div>
+    </div>
+    <span class="gp-xp">⚡ <span id="xpDisplay">0</span> XP</span>
+  </div>
+
+  <!-- ════ STAGE 0: LEARN ════ -->
+  <div class="stage active" id="stage-0">
+    
+
+      <div class="compare-row">
+        <div class="no-loop-box">
+          <div class="box-label nl-label">😫 Without a Loop — 5 lines!</div>
+          <div class="code-line rep">🐡 <span style="color:var(--teal)">print</span>(<span style="color:var(--gold)">"Bubble 1 🫧"</span>)</div>
+          <div class="code-line rep">🐡 <span style="color:var(--teal)">print</span>(<span style="color:var(--gold)">"Bubble 2 🫧"</span>)</div>
+          <div class="code-line rep">🐡 <span style="color:var(--teal)">print</span>(<span style="color:var(--gold)">"Bubble 3 🫧"</span>)</div>
+          <div class="code-line rep">🐡 <span style="color:var(--teal)">print</span>(<span style="color:var(--gold)">"Bubble 4 🫧"</span>)</div>
+          <div class="code-line rep">🐡 <span style="color:var(--teal)">print</span>(<span style="color:var(--gold)">"Bubble 5 🫧"</span>)</div>
+        </div>
+        <div class="magic-arrow">✨</div>
+        <div class="yes-loop-box">
+          <div class="box-label yl-label">🚀 With a Loop — 2 lines!</div>
+          <div class="code-line lp"><span class="code-kw">for</span> <span class="code-var">i</span> <span class="code-kw">in</span> <span class="code-fn">range</span>(<span class="code-num">5</span>):</div>
+          <div class="code-line lp">&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-fn">print</span>(<span class="code-str">f"Bubble {'{'}i+1{'}'} 🫧"</span>)</div>
+          <br>
+          <div class="shrink-badge">✅ Same result! Way shorter</div>
+        </div>
+      </div>
+
+      <div class="ocean-hint">
+        <div class="oh-icon">🤿</div>
+        <div class="oh-text"><b>for</b> is the keyword that starts the loop. <b>range(5)</b> means "repeat 5 times". The indented line is the action that gets repeated. Got it? Let's play! 🎮</div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:20px">
+        <button class="btn-primary" onclick="goStage(1)">Run the Loop! ▶️ →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ STAGE 1: SUBMARINE RUNNER ════ -->
+  <div class="stage" id="stage-1">
+    <div class="card">
+      <div class="card-top-bar"></div>
+      <div class="stage-header">
+        <div class="stage-num">▶️</div>
+        <div><div class="stage-title">Run the Loop!</div><div class="stage-sub">Press RUN to see the loop in action, then answer! 🎬</div></div>
+      </div>
+      <div id="runnerGame"></div>
+    </div>
+  </div>
+
+  <!-- ════ STAGE 2: CODE SCRAMBLE ════ -->
+  <div class="stage" id="stage-2">
+    <div class="card">
+      <div class="card-top-bar"></div>
+      <div class="stage-header">
+        <div class="stage-num">🧩</div>
+        <div><div class="stage-title">Code Scramble!</div><div class="stage-sub">The lines are mixed up! Click to put them in order 📋</div></div>
+      </div>
+      <div id="scrambleGame"></div>
+    </div>
+  </div>
+
+  <!-- ════ STAGE 3: OUTPUT ORACLE ════ -->
+  <div class="stage" id="stage-3">
+    <div class="card">
+      <div class="card-top-bar"></div>
+      <div class="stage-header">
+        <div class="stage-num">🔮</div>
+        <div><div class="stage-title">Output Oracle!</div><div class="stage-sub">Predict exactly what the loop prints — in order! 🌀</div></div>
+      </div>
+      <div id="oracleGame"></div>
+    </div>
+  </div>
+
+  <!-- ════ STAGE 4: BUG HUNT ════ -->
+  <div class="stage" id="stage-4">
+    <div class="card">
+      <div class="card-top-bar"></div>
+      <div class="stage-header">
+        <div class="stage-num">🐛</div>
+        <div><div class="stage-title">Bug Hunt!</div><div class="stage-sub">Each loop has ONE bug — click the broken token! 🔍</div></div>
+      </div>
+      <div id="bugGame"></div>
+    </div>
+  </div>
+
+  <!-- ════ STAGE 5: COMPLETE ════ -->
+  <div class="stage" id="stage-5">
+    <div class="card" style="position:relative">
+      <div class="card-top-bar"></div>
+      <div class="stamp">LESSON COMPLETE!</div>
+      <div class="complete-center">
+        <span class="trophy">🏆</span>
+        <div class="complete-title">Ocean Explorer, Level Up!</div>
+        <div class="complete-sub">You've conquered loops! You can run them, unscramble them, predict their output, and even hunt down their bugs. 🌊</div>
+        <div class="xp-earned">
+          <div class="xp-earned-num">⚡ <span id="finalXP">0</span></div>
+          <div class="xp-earned-label">XP Earned<br><span style="font-size:.7rem;opacity:.7">this lesson</span></div>
+        </div>
+        <div class="learnt-grid">
+          <div class="learnt-item"><span class="check">✅</span> What a loop does in code</div>
+          <div class="learnt-item"><span class="check">✅</span> The <code style="color:var(--teal);font-family:var(--mono)">for</code> keyword in Python</div>
+          <div class="learnt-item"><span class="check">✅</span> Running loops and counting output</div>
+          <div class="learnt-item"><span class="check">✅</span> Writing loops in correct order</div>
+          <div class="learnt-item"><span class="check">✅</span> Predicting a loop's exact output</div>
+          <div class="learnt-item"><span class="check">✅</span> Spotting bugs in broken loops 🐛</div>
+        </div>
+        <button class="btn-next-lesson" onclick="location.href='quest4.html'">🚀 Back to Quest Map</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="stats-bar">
+  <div class="sitem">📍 <span class="sval" style="color:var(--teal)">Part 4</span>&nbsp;<span style="color:var(--muted2);font-size:.72rem">of 10</span></div>
+  <div class="sitem">📖 <span class="sval" style="color:var(--text)">Lesson 02</span>&nbsp;<span style="color:var(--muted2);font-size:.72rem">of 10</span></div>
+  <div class="sitem">⚡ <span class="sval" style="color:var(--gold)">+100 XP</span>&nbsp;<span style="color:var(--muted2);font-size:.72rem">to earn</span></div>
+  <div class="sitem">🔥 <span class="sval" style="color:#c05000" id="streakDisplay">—</span>&nbsp;<span style="color:var(--muted2);font-size:.72rem">Day Streak</span></div>
+</div>
+
+<script>
+/* ══ GLOBALS ══ */
+let currentStage=0, totalXP=0;
+const STAGES=6;
+
+function goStage(n){
+  document.getElementById('stage-'+currentStage).classList.remove('active');
+  currentStage=n;
+  document.getElementById('stage-'+n).classList.add('active');
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===1)initRunner();
+  if(n===2)initScramble();
+  if(n===3)initOracle();
+  if(n===4)initBug();
+  if(n===5)showComplete();
+}
+function updateProgress(){
+  document.getElementById('gpFill').style.width=(currentStage/(STAGES-1)*100)+'%';
+  for(let i=0;i<STAGES;i++){
+    const el=document.getElementById('st'+i);
+    if(!el)continue;
+    el.classList.remove('current','done');
+    if(i<currentStage)el.classList.add('done');
+    if(i===currentStage)el.classList.add('current');
+  }
+  document.getElementById('xpDisplay').textContent=totalXP;
+}
+function addXP(amt,x,y){
+  totalXP+=amt;
+  document.getElementById('xpDisplay').textContent=totalXP;
+  const f=document.createElement('div');
+  f.className='xp-floater';f.textContent='+'+amt+' XP ⚡';
+  f.style.cssText=`left:${x||window.innerWidth/2}px;top:${y||200}px`;
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(),900);
+}
+
+/* ── BACKGROUND PARTICLES ── */
+(()=>{
+  const bg=document.querySelector('.sea-bg');
+  for(let i=0;i<24;i++){
+    const b=document.createElement('div');b.className='bubble';
+    const s=Math.random()*12+4;
+    b.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;bottom:${Math.random()*30}%;animation-duration:${Math.random()*12+8}s;animation-delay:${Math.random()*14}s`;
+    bg.appendChild(b);
+  }
+  for(let i=0;i<14;i++){
+    const p=document.createElement('div');p.className='bio';
+    const s=Math.random()*4+2;
+    const col=Math.random()>.5?'rgba(0,180,200,0.6)':'rgba(10,143,85,0.55)';
+    p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:${col};box-shadow:0 0 ${s*2}px ${col};animation-duration:${Math.random()*5+3}s;animation-delay:${Math.random()*7}s`;
+    document.body.appendChild(p);
+  }
+  const fc=document.createElement('div');
+  fc.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden';
+  fc.innerHTML=`<div style="position:absolute;font-size:1.3rem;top:58%;animation:fishSwim 24s linear infinite;opacity:.25">🐟</div><div style="position:absolute;font-size:.9rem;top:68%;animation:fishSwim 33s linear infinite 9s;opacity:.18">🦈</div>`;
+  document.body.appendChild(fc);
+})();
+document.getElementById('streakDisplay').textContent=localStorage.getItem('streak')||'—';
+
+/* ══════════════════════════════════════
+   STAGE 1 — RUN THE LOOP
+   Show code, animate output, then ask
+══════════════════════════════════════ */
+const runnerQs=[
+  {
+    emoji:'🐟',
+    code:`<span class="code-kw">for</span> <span class="code-var">i</span> <span class="code-kw">in</span> <span class="code-fn">range</span>(<span class="code-num">4</span>):\n    <span class="code-fn">print</span>(<span class="code-str">"🐟 swimming!"</span>)`,
+    count:4, items:['🐟','🐟','🐟','🐟'],
+    q:"How many fish 🐟 appeared when the loop ran?",
+    opts:['2','4','6','8'], correct:1,
+    ok:"🎉 Yes! range(4) makes the loop print exactly 4 fish — one per iteration!",
+    nope:"❌ Not quite! Count the fish that appeared. range(4) = 4 iterations = 4 fish."
+  },
+  {
+    emoji:'🫧',
+    code:`<span class="code-var">n</span> = <span class="code-num">6</span>\n<span class="code-kw">for</span> <span class="code-var">i</span> <span class="code-kw">in</span> <span class="code-fn">range</span>(<span class="code-var">n</span>):\n    <span class="code-fn">print</span>(<span class="code-str">"🫧 Bubble!"</span>)`,
+    count:6, items:['🫧','🫧','🫧','🫧','🫧','🫧'],
+    q:"A variable n=6 controls the loop. How many bubbles 🫧 appeared?",
+    opts:['3','5','6','7'], correct:2,
+    ok:"✅ Correct! n=6 so range(n) = range(6) — six bubbles pop up!",
+    nope:"❌ Almost! n holds the value 6, so range(n) runs 6 times."
+  },
+  {
+    emoji:'🐙',
+    code:`<span class="code-var">creatures</span> = [<span class="code-str">"🐙"</span>, <span class="code-str">"🦑"</span>, <span class="code-str">"🦀"</span>, <span class="code-str">"🐡"</span>, <span class="code-str">"🦞"</span>]\n<span class="code-kw">for</span> <span class="code-var">c</span> <span class="code-kw">in</span> <span class="code-var">creatures</span>:\n    <span class="code-fn">print</span>(<span class="code-var">c</span>)`,
+    count:5, items:['🐙','🦑','🦀','🐡','🦞'],
+    q:"The loop goes through the list. How many creatures appeared?",
+    opts:['3','4','5','6'], correct:2,
+    ok:"🌊 Perfect! The list has 5 creatures, so the loop runs 5 times — one per creature!",
+    nope:"❌ Count the items in the list: 🐙🦑🦀🐡🦞 = 5. One loop per creature!"
+  }
+];
+let rQ=0, rScore=0, rRunning=false;
+
+function initRunner(){rQ=0;rScore=0;renderRunnerQ();}
+
+function renderRunnerQ(){
+  const cg=document.getElementById('runnerGame');
+  if(rQ>=runnerQs.length){
+    cg.innerHTML=`<div style="text-align:center;padding:30px 0">
+      <div style="font-size:3rem;margin-bottom:12px">🎬</div>
+      <div style="font-family:var(--head);font-size:1.2rem;font-weight:800;color:var(--biolime);margin-bottom:8px">Loop Runner Complete!</div>
+      <div style="font-size:.9rem;color:var(--muted);margin-bottom:24px">You got ${rScore} out of ${runnerQs.length} correct!</div>
+      <button class="btn-primary" onclick="goStage(2)">Code Scramble! 🧩 →</button>
+    </div>`;return;
+  }
+  const q=runnerQs[rQ];
+  cg.innerHTML=`
+    <div class="runner-qprogress" id="rqp">${runnerQs.map((_,i)=>`<div class="rqp-dot ${i<rQ?'done':i===rQ?'cur':''}"></div>`).join('')}</div>
+    <div style="font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:10px">Read the loop code, then press <b>▶ RUN</b> to see it execute!</div>
+    <div class="runner-code" id="runCode"><pre style="margin:0">${q.code}</pre></div>
+    <div class="run-controls">
+      <button class="run-btn" id="runBtn" onclick="runLoop()">▶ RUN LOOP</button>
+      <span class="run-label">Watch the output below 👇</span>
+    </div>
+    <div class="runner-arena">
+      <div class="iteration-counter" id="iterCounter">Iterations: 0 / ${q.count}</div>
+      <div class="ocean-display" id="oceanDisplay"><span style="color:var(--muted2);font-size:.82rem;font-style:italic">Press RUN to start the loop…</span></div>
+    </div>
+    <div id="runnerQuestionWrap" style="display:none;animation:fadeUp .4s ease both;margin-top:20px">
+      <div class="runner-q">${q.q}</div>
+      <div class="runner-opts">${q.opts.map((o,i)=>`<div class="runner-opt" onclick="answerRunner(${i})">${o}</div>`).join('')}</div>
+      <div class="fb" id="runFB"></div>
+    </div>`;
+}
+
+function runLoop(){
+  if(rRunning)return;
+  rRunning=true;
+  document.getElementById('runBtn').disabled=true;
+  const q=runnerQs[rQ];
+  const display=document.getElementById('oceanDisplay');
+  display.innerHTML='';
+  let idx=0;
+  const interval=setInterval(()=>{
+    if(idx>=q.items.length){
+      clearInterval(interval);
+      rRunning=false;
+      document.getElementById('runnerQuestionWrap').style.display='block';
+      return;
+    }
+    const span=document.createElement('span');
+    span.className='fish-spawn';span.textContent=q.items[idx];
+    span.style.animationDelay=(idx*.05)+'s';
+    display.appendChild(span);
+    document.getElementById('iterCounter').textContent=`Iterations: ${idx+1} / ${q.count}`;
+    idx++;
+  },400);
+}
+
+function answerRunner(idx){
+  const q=runnerQs[rQ];
+  const opts=document.querySelectorAll('.runner-opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const fb=document.getElementById('runFB');
+  if(idx===q.correct){
+    opts[idx].classList.add('correct');
+    fb.className='fb show ok';fb.textContent=q.ok;
+    rScore++;addXP(12,opts[idx].getBoundingClientRect().left,opts[idx].getBoundingClientRect().top);
+  } else {
+    opts[idx].classList.add('wrong');opts[q.correct].classList.add('correct');
+    fb.className='fb show nope';fb.textContent=q.nope;
+  }
+  setTimeout(()=>{rQ++;renderRunnerQ();},2400);
+}
+
+/* ══════════════════════════════════════
+   STAGE 2 — CODE SCRAMBLE
+   Click lines to reorder them
+══════════════════════════════════════ */
+const scrambleQs=[
+  {
+    title:"Unscramble this loop that prints sea creatures!",
+    correct:[
+      {id:'sl0',html:`<span class="code-kw">for</span> <span class="code-var">i</span> <span class="code-kw">in</span> <span class="code-fn">range</span>(<span class="code-num">3</span>):`,plain:'for i in range(3):'},
+      {id:'sl1',html:`&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-fn">print</span>(<span class="code-str">"🐠 I am fish!"</span>)`,plain:'    print("🐠 I am fish!")'},
+      {id:'sl2',html:`<span class="code-fn">print</span>(<span class="code-str">"Loop done! ✅"</span>)`,plain:'print("Loop done! ✅")'},
+    ],
+    scrambled:[1,0,2],
+    ok:"🎉 Correct order! for…: always comes first, then the indented body, then any code outside the loop.",
+    nope:"❌ Almost! The for: line must come first, then the indented action, then the code outside."
+  },
+  {
+    title:"Fix this loop that counts bubbles!",
+    correct:[
+      {id:'sl0',html:`<span class="code-var">count</span> = <span class="code-num">0</span>`,plain:'count = 0'},
+      {id:'sl1',html:`<span class="code-kw">for</span> <span class="code-var">b</span> <span class="code-kw">in</span> <span class="code-fn">range</span>(<span class="code-num">5</span>):`,plain:'for b in range(5):'},
+      {id:'sl2',html:`&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-var">count</span> += <span class="code-num">1</span>`,plain:'    count += 1'},
+      {id:'sl3',html:`<span class="code-fn">print</span>(<span class="code-var">count</span>)`,plain:'print(count)'},
+    ],
+    scrambled:[2,0,3,1],
+    ok:"🌊 Perfect! You set count=0 first, loop 5 times adding 1 each time, then print the result!",
+    nope:"❌ Check the order: set up the variable first, then the for loop, the body inside, then print after."
+  },
+  {
+    title:"Arrange the loop that explores the ocean floor!",
+    correct:[
+      {id:'sl0',html:`<span class="code-var">depths</span> = [<span class="code-num">10</span>, <span class="code-num">20</span>, <span class="code-num">30</span>]`,plain:'depths = [10, 20, 30]'},
+      {id:'sl1',html:`<span class="code-kw">for</span> <span class="code-var">d</span> <span class="code-kw">in</span> <span class="code-var">depths</span>:`,plain:'for d in depths:'},
+      {id:'sl2',html:`&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-fn">dive</span>(<span class="code-var">d</span>)`,plain:'    dive(d)'},
+    ],
+    scrambled:[1,2,0],
+    ok:"🤿 Spot on! Create the list first, then loop through it!",
+    nope:"❌ The list must exist before you loop through it! Create depths first, then for d in depths:."
+  }
+];
+
+let scrQ=0, scrScore=0, scrPicked=null, scrSlots=[];
+
+function initScramble(){scrQ=0;scrScore=0;renderScrambleQ();}
+
+function renderScrambleQ(){
+  const cg=document.getElementById('scrambleGame');
+  if(scrQ>=scrambleQs.length){
+    cg.innerHTML=`<div style="text-align:center;padding:30px 0">
+      <div style="font-size:3rem;margin-bottom:12px">🧩</div>
+      <div style="font-family:var(--head);font-size:1.2rem;font-weight:800;color:var(--biolime);margin-bottom:8px">Scramble Champion!</div>
+      <div style="font-size:.9rem;color:var(--muted);margin-bottom:24px">You got ${scrScore} out of ${scrambleQs.length} correct!</div>
+      <button class="btn-primary" onclick="goStage(3)">Output Oracle! 🔮 →</button>
+    </div>`;return;
+  }
+  const q=scrambleQs[scrQ];
+  const shuffled=q.scrambled.map(i=>q.correct[i]);
+  scrSlots=new Array(q.correct.length).fill(null);
+  scrPicked=null;
+
+  const tilesHtml=shuffled.map((t,i)=>`
+    <div class="code-tile" id="tile-${i}" onclick="pickScrambleTile(${i})" style="animation-delay:${i*.07}s">
+      <span style="color:var(--muted2);font-size:.65rem;font-weight:700;flex-shrink:0">${i+1}</span>
+      <span style="font-family:var(--mono)">${t.html}</span>
+    </div>`).join('');
+
+  const slotsHtml=q.correct.map((_,i)=>`
+    <div class="scramble-slot" id="slot-${i}" onclick="fillScrambleSlot(${i})">
+      <span style="color:var(--muted2);font-size:.65rem;font-weight:700;margin-right:8px">${i+1}</span>
+      <span>click a line, then click here…</span>
+    </div>`).join('');
+
+  cg.innerHTML=`
+    <div class="scr-progress">${scrambleQs.map((_,i)=>`<div class="scr-dot ${i<scrQ?'done':i===scrQ?'cur':''}"></div>`).join('')} &nbsp;Challenge ${scrQ+1} of ${scrambleQs.length}</div>
+    <p class="scramble-desc">🔀 <b>${q.title}</b><br>Click a <b>tile</b> to pick it up, then click an <b>empty slot</b> to place it!</p>
+    <div class="scramble-wrap">
+      <div>
+        <div class="scramble-pool-title">🎲 Shuffled Lines (click to pick)</div>
+        <div class="scramble-pool" id="scrPool">${tilesHtml}</div>
+      </div>
+      <div>
+        <div class="scramble-pool-title">✏️ Your Code Editor (click slot to place)</div>
+        <div class="scramble-editor" id="scrEditor">${slotsHtml}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button class="scr-check-btn" onclick="checkScramble()">✅ Check Order!</button>
+      <button class="btn-secondary" onclick="renderScrambleQ()">↺ Reset</button>
+    </div>
+    <div class="fb" id="scrFB"></div>`;
+  window._scrShuffled=shuffled;
+  window._scrQ=q;
+}
+
+function pickScrambleTile(idx){
+  scrPicked=idx;
+  document.querySelectorAll('.code-tile').forEach((t,i)=>t.classList.toggle('picked',i===idx));
+}
+
+function fillScrambleSlot(slotIdx){
+  if(scrPicked===null)return;
+  const shuffled=window._scrShuffled;
+  scrSlots[slotIdx]=scrPicked;
+  const slot=document.getElementById('slot-'+slotIdx);
+  slot.classList.add('filled');
+  slot.innerHTML=`<span style="color:var(--muted2);font-size:.65rem;font-weight:700;margin-right:8px">${slotIdx+1}</span><span style="font-family:var(--mono)">${shuffled[scrPicked].html}</span>`;
+  document.querySelectorAll('.code-tile').forEach(t=>t.classList.remove('picked'));
+  scrPicked=null;
+}
+
+function checkScramble(){
+  const q=window._scrQ;
+  const allFilled=scrSlots.every(s=>s!==null);
+  const fb=document.getElementById('scrFB');
+  if(!allFilled){fb.className='fb show nope';fb.textContent='⚠️ Place all code lines into slots first!';return;}
+  const shuffled=window._scrShuffled;
+  let correct=true;
+  scrSlots.forEach((pickedIdx,slotIdx)=>{
+    const placed=shuffled[pickedIdx];
+    const expected=q.correct[slotIdx];
+    if(placed.id!==expected.id)correct=false;
+  });
+  if(correct){
+    fb.className='fb show ok';fb.innerHTML='🎉 <b>Perfect order!</b> '+q.ok;
+    scrScore++;addXP(15,window.innerWidth/2,300);
+    setTimeout(()=>{scrQ++;renderScrambleQ();},2500);
+  } else {
+    fb.className='fb show nope';fb.innerHTML='❌ '+q.nope+'<br><small style="opacity:.7">Tip: look at indentation — indented lines go inside the loop!</small>';
+  }
+}
+
+/* ══════════════════════════════════════
+   STAGE 3 — OUTPUT ORACLE
+   Predict the exact sequence printed
+══════════════════════════════════════ */
+const oracleQs=[
+  {
+    title:"What does this loop print, in order?",
+    code:`<span class="code-var">ocean</span> = [<span class="code-str">"🐋"</span>, <span class="code-str">"🐬"</span>, <span class="code-str">"🐟"</span>]\n<span class="code-kw">for</span> <span class="code-var">a</span> <span class="code-kw">in</span> <span class="code-var">ocean</span>:\n    <span class="code-fn">print</span>(<span class="code-var">a</span>)`,
+    pool:['🐋','🐬','🐟','🦑','🐙'],
+    answer:['🐋','🐬','🐟'],
+    ok:"🐋 Correct sequence! The loop goes through ocean[0] → ocean[1] → ocean[2] in order.",
+    nope:"❌ The loop prints each item in the LIST order: 🐋 first, then 🐬, then 🐟."
+  },
+  {
+    title:"A range loop! What does it print, in order?",
+    code:`<span class="code-kw">for</span> <span class="code-var">i</span> <span class="code-kw">in</span> <span class="code-fn">range</span>(<span class="code-num">1</span>, <span class="code-num">5</span>):\n    <span class="code-fn">print</span>(<span class="code-var">i</span>)`,
+    pool:['0','1','2','3','4','5'],
+    answer:['1','2','3','4'],
+    ok:"🔢 Spot on! range(1, 5) gives: 1, 2, 3, 4 — it starts at 1 and stops BEFORE 5!",
+    nope:"❌ range(1, 5) counts: 1, 2, 3, 4. It starts at 1 and stops before reaching 5!"
+  },
+  {
+    title:"Mixed loop — predict the output!",
+    code:`<span class="code-var">emojis</span> = [<span class="code-str">"🌊"</span>, <span class="code-str">"🏖️"</span>, <span class="code-str">"⚓"</span>, <span class="code-str">"🚢"</span>]\n<span class="code-kw">for</span> <span class="code-var">e</span> <span class="code-kw">in</span> <span class="code-var">emojis</span>:\n    <span class="code-fn">print</span>(<span class="code-var">e</span>)`,
+    pool:['🚢','🌊','⚓','🏖️','🐠','🗺️'],
+    answer:['🌊','🏖️','⚓','🚢'],
+    ok:"🌊 Perfect! The list order is preserved: 🌊 → 🏖️ → ⚓ → 🚢",
+    nope:"❌ Follow the list exactly: emojis[0]=🌊, [1]=🏖️, [2]=⚓, [3]=🚢."
+  }
+];
+let oQ=0, oScore=0, oSequence=[];
+
+function initOracle(){oQ=0;oScore=0;renderOracleQ();}
+
+function renderOracleQ(){
+  const cg=document.getElementById('oracleGame');
+  if(oQ>=oracleQs.length){
+    cg.innerHTML=`<div style="text-align:center;padding:30px 0">
+      <div style="font-size:3rem;margin-bottom:12px">🔮</div>
+      <div style="font-family:var(--head);font-size:1.2rem;font-weight:800;color:var(--biolime);margin-bottom:8px">Oracle Master!</div>
+      <div style="font-size:.9rem;color:var(--muted);margin-bottom:24px">You predicted ${oScore} out of ${oracleQs.length} outputs correctly!</div>
+      <button class="btn-primary" onclick="goStage(4)">Bug Hunt! 🐛 →</button>
+    </div>`;return;
+  }
+  const q=oracleQs[oQ];
+  oSequence=[];
+  const poolHtml=q.pool.map((p,i)=>`<div class="seq-chip" id="chip-${i}" onclick="addToSeq('${p}',${i})">${p}</div>`).join('');
+  cg.innerHTML=`
+    <div class="oracle-progress">${oracleQs.map((_,i)=>`<div class="oracle-dot ${i<oQ?'done':i===oQ?'cur':''}"></div>`).join('')}</div>
+    <p class="oracle-desc">🔮 <b>${q.title}</b><br>Click the items from the pool <b>in the exact order</b> you think the loop will print them!</p>
+    <div class="oracle-code"><pre style="margin:0">${q.code}</pre></div>
+    <div class="oracle-pool-label">🎴 Item Pool — click in the ORDER they print:</div>
+    <div class="oracle-pool" id="oPool">${poolHtml}</div>
+    <div class="oracle-pool-label" style="margin-top:14px">📋 Your predicted output sequence:</div>
+    <div class="oracle-counter" id="oCounter">Click items above to build your sequence (need ${q.answer.length} items)</div>
+    <div class="oracle-sequence active" id="oSeq"><span style="color:var(--muted2);font-style:italic;font-size:.82rem">Your sequence will appear here…</span></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:14px">
+      <button class="scr-check-btn" onclick="checkOracle()">🔮 Reveal Answer!</button>
+      <button class="btn-secondary" onclick="resetOracle()">↺ Clear</button>
+    </div>
+    <div class="fb" id="oFB"></div>`;
+  window._oQ=q;
+}
+
+function addToSeq(val,chipIdx){
+  const q=window._oQ;
+  if(oSequence.length>=q.answer.length)return;
+  oSequence.push(val);
+  const chip=document.getElementById('chip-'+chipIdx);
+  chip.classList.add('added');chip.style.pointerEvents='none';
+  renderSequence();
+}
+
+function renderSequence(){
+  const q=window._oQ;
+  const seqEl=document.getElementById('oSeq');
+  const cnt=document.getElementById('oCounter');
+  if(oSequence.length===0){
+    seqEl.innerHTML='<span style="color:var(--muted2);font-style:italic;font-size:.82rem">Your sequence will appear here…</span>';
+    cnt.textContent=`Click items above to build your sequence (need ${q.answer.length} items)`;
+    return;
+  }
+  seqEl.innerHTML=oSequence.map((v,i)=>`<div class="placed-chip" onclick="removeFromSeq(${i})" title="Click to remove">
+    <span style="color:var(--muted2);font-size:.65rem;font-weight:700">${i+1}</span>
+    <span>${v}</span>
+    <span style="color:var(--coral);font-size:.7rem">✕</span>
+  </div>`).join('');
+  cnt.textContent=`${oSequence.length} / ${q.answer.length} items placed — click a placed item to remove it`;
+}
+
+function removeFromSeq(idx){
+  oSequence.splice(idx,1);
+  // re-enable all chips and re-add only remaining
+  document.querySelectorAll('.seq-chip').forEach(c=>{c.classList.remove('added');c.style.pointerEvents='';});
+  const q=window._oQ;
+  // re-disable chips still in sequence
+  oSequence.forEach(val=>{
+    const chips=[...document.querySelectorAll('.seq-chip')];
+    const chip=chips.find(c=>c.textContent===val&&!c.classList.contains('added'));
+    if(chip){chip.classList.add('added');chip.style.pointerEvents='none';}
+  });
+  renderSequence();
+}
+
+function resetOracle(){
+  oSequence=[];
+  document.querySelectorAll('.seq-chip').forEach(c=>{c.classList.remove('added');c.style.pointerEvents='';});
+  renderSequence();
+  document.getElementById('oFB').className='fb';
+}
+
+function checkOracle(){
+  const q=window._oQ;
+  const fb=document.getElementById('oFB');
+  if(oSequence.length!==q.answer.length){
+    fb.className='fb show nope';fb.textContent=`⚠️ Need exactly ${q.answer.length} items! You have ${oSequence.length}.`;return;
+  }
+  const correct=oSequence.every((v,i)=>v===q.answer[i]);
+  if(correct){
+    fb.className='fb show ok';fb.innerHTML='🎉 <b>Perfect prediction!</b> '+q.ok;
+    oScore++;addXP(18,window.innerWidth/2,300);
+    setTimeout(()=>{oQ++;renderOracleQ();},2500);
+  } else {
+    fb.className='fb show nope';fb.innerHTML='❌ '+q.nope;
+    setTimeout(()=>{oQ++;renderOracleQ();},3000);
+  }
+}
+
+/* ══════════════════════════════════════
+   STAGE 4 — BUG HUNT
+   Click the ONE broken token in the loop
+══════════════════════════════════════ */
+const bugQs=[
+  {
+    title:"This loop should print 5 fish. What's the bug?",
+    sub:"One token is WRONG. Click it!",
+    lines:[
+      {tokens:[
+        {id:'b00',text:'for',correct:false,color:'var(--purple)'},
+        {id:'b01',text:'i',correct:false,color:'var(--orange)'},
+        {id:'b02',text:'in',correct:false,color:'var(--purple)'},
+        {id:'b03',text:'range(50)',correct:true,color:'var(--teal)'},
+        {id:'b04',text:':',correct:false,color:'var(--text)'},
+      ]},
+      {tokens:[
+        {id:'b10',text:'    print("🐟")',correct:false,color:'var(--muted)'},
+      ]}
+    ],
+    bugId:'b03',
+    ok:'🎉 Found it! range(50) would print 50 fish! It should be range(5) to print 5 fish.',
+    nope:'❌ The bug is range(50) — that runs 50 times, not 5! It should be range(5).'
+  },
+  {
+    title:"This loop has a missing keyword. Spot it!",
+    sub:"The loop won't run at all — find the bug!",
+    lines:[
+      {tokens:[
+        {id:'c00',text:'to',correct:true,color:'var(--purple)'},
+        {id:'c01',text:'i',correct:false,color:'var(--orange)'},
+        {id:'c02',text:'in',correct:false,color:'var(--purple)'},
+        {id:'c03',text:'range(3)',correct:false,color:'var(--teal)'},
+        {id:'c04',text:':',correct:false,color:'var(--text)'},
+      ]},
+      {tokens:[
+        {id:'c10',text:'    print("🌊")',correct:false,color:'var(--muted)'},
+      ]}
+    ],
+    bugId:'c00',
+    ok:'🔑 Correct! "to" is not a Python keyword. Loops must start with "for"!',
+    nope:'❌ The bug is "to" — Python loops start with the keyword "for", not "to"!'
+  },
+  {
+    title:"This loop should add up numbers. Find the bug!",
+    sub:"The calculation will be wrong — which part is broken?",
+    lines:[
+      {tokens:[
+        {id:'d00',text:'total',correct:false,color:'var(--orange)'},
+        {id:'d01',text:'=',correct:false,color:'var(--text)'},
+        {id:'d02',text:'0',correct:false,color:'var(--biolime)'},
+      ]},
+      {tokens:[
+        {id:'d10',text:'for',correct:false,color:'var(--purple)'},
+        {id:'d11',text:'n',correct:false,color:'var(--orange)'},
+        {id:'d12',text:'in',correct:false,color:'var(--purple)'},
+        {id:'d13',text:'range(5)',correct:false,color:'var(--teal)'},
+        {id:'d14',text:':',correct:false,color:'var(--text)'},
+      ]},
+      {tokens:[
+        {id:'d20',text:'total',correct:false,color:'var(--orange)'},
+        {id:'d21',text:'-=',correct:true,color:'var(--text)'},
+        {id:'d22',text:'n',correct:false,color:'var(--orange)'},
+      ]}
+    ],
+    bugId:'d21',
+    ok:'🐛 Bug squashed! "-=" subtracts instead of adding. It should be "+=" to accumulate the total!',
+    nope:'❌ The bug is "-=" — that subtracts n each loop! To add up numbers use "+=" instead.'
+  },
+  {
+    title:"The loop should print all sea animals. Find the bug!",
+    sub:"The loop will skip some animals!",
+    lines:[
+      {tokens:[
+        {id:'e00',text:'animals',correct:false,color:'var(--orange)'},
+        {id:'e01',text:'=',correct:false,color:'var(--text)'},
+        {id:'e02',text:'["🐋","🐬","🦈","🦑"]',correct:false,color:'var(--gold)'},
+      ]},
+      {tokens:[
+        {id:'e10',text:'for',correct:false,color:'var(--purple)'},
+        {id:'e11',text:'a',correct:false,color:'var(--orange)'},
+        {id:'e12',text:'in',correct:false,color:'var(--purple)'},
+        {id:'e13',text:'range(2)',correct:true,color:'var(--teal)'},
+        {id:'e14',text:':',correct:false,color:'var(--text)'},
+      ]},
+      {tokens:[
+        {id:'e20',text:'    print(a)',correct:false,color:'var(--muted)'},
+      ]}
+    ],
+    bugId:'e13',
+    ok:'🦑 Found it! range(2) only loops twice, missing 🦈 and 🦑! Use "for a in animals:" to loop through ALL animals.',
+    nope:'❌ The bug is range(2) — that only runs twice! To go through a list, use "for a in animals:" instead.'
+  }
+];
+let bQ=0, bScore=0, bSelected=null, bAnswered=false;
+
+function initBug(){bQ=0;bScore=0;renderBugQ();}
+
+function renderBugQ(){
+  const cg=document.getElementById('bugGame');
+  if(bQ>=bugQs.length){
+    cg.innerHTML=`<div style="text-align:center;padding:30px 0">
+      <div style="font-size:3rem;margin-bottom:12px">🐛✅</div>
+      <div style="font-family:var(--head);font-size:1.2rem;font-weight:800;color:var(--biolime);margin-bottom:8px">Bug Exterminator!</div>
+      <div style="font-size:.9rem;color:var(--muted);margin-bottom:24px">You found ${bScore} out of ${bugQs.length} bugs!</div>
+      <button class="btn-primary" onclick="goStage(5)">See Results 🏆 →</button>
+    </div>`;return;
+  }
+  const q=bugQs[bQ];
+  bSelected=null;bAnswered=false;
+  const linesHtml=q.lines.map((line,li)=>`
+    <div class="bug-line">
+      <span class="bug-ln">${li+1}</span>
+      ${li===1?'':''} 
+      ${line.tokens.map(t=>`<span class="bug-token" id="bt-${t.id}" style="color:${t.color}" onclick="selectBugToken('${t.id}','${q.bugId}')">${t.text}</span>`).join(' ')}
+    </div>`).join('');
+
+  cg.innerHTML=`
+    <div class="bug-progress">${bugQs.map((_,i)=>`<div class="bugq-dot ${i<bQ?'done':i===bQ?'cur':''}"></div>`).join('')} &nbsp;Bug ${bQ+1} of ${bugQs.length}</div>
+    <div class="bug-score-row">
+      <div class="bug-score-item">🐛 Bugs found: <b id="bScoreDisp">${bScore}</b></div>
+      <div class="bug-score-item">⚡ XP: <b>${totalXP}</b></div>
+    </div>
+    <div class="bug-q-label">${q.title}</div>
+    <div class="bug-q-sub">${q.sub}</div>
+    <div class="bug-arena" id="bugArena">${linesHtml}</div>
+    <div class="ocean-hint">
+      <div class="oh-icon">🔍</div>
+      <div class="oh-text"><b>Tip:</b> Read the code carefully. What should each part do? Which token doesn't match what the task description says?</div>
+    </div>
+    <div class="fb" id="bugFB"></div>`;
+}
+
+function selectBugToken(tokenId, correctId){
+  if(bAnswered)return;
+  bSelected=tokenId;
+  document.querySelectorAll('.bug-token').forEach(t=>t.classList.remove('selected'));
+  document.getElementById('bt-'+tokenId).classList.add('selected');
+  checkBugToken(tokenId,correctId);
+}
+
+function checkBugToken(tokenId,correctId){
+  bAnswered=true;
+  const fb=document.getElementById('bugFB');
+  const q=bugQs[bQ];
+  document.querySelectorAll('.bug-token').forEach(t=>t.style.pointerEvents='none');
+  if(tokenId===correctId){
+    document.getElementById('bt-'+tokenId).classList.add('correct-bug');
+    fb.className='fb show ok';fb.innerHTML='🎉 <b>Bug squashed!</b> '+q.ok;
+    bScore++;
+    document.getElementById('bScoreDisp').textContent=bScore;
+    addXP(20,window.innerWidth/2,300);
+  } else {
+    document.getElementById('bt-'+tokenId).classList.add('wrong-bug');
+    document.getElementById('bt-'+correctId).classList.add('correct-bug');
+    fb.className='fb show nope';fb.innerHTML='❌ '+q.nope;
+  }
+  setTimeout(()=>{bQ++;renderBugQ();},2600);
+}
+
+/* ══ COMPLETE ══ */
+function showComplete(){
+  document.getElementById('finalXP').textContent=totalXP;
+  localStorage.setItem('p4_lesson02Completed','yes');
+  const cur=parseInt(localStorage.getItem('part4_progress'))||1;
+  if(cur<3)localStorage.setItem('part4_progress','3');
+}
+
+updateProgress();
+</script>
+</body>
+</html>
