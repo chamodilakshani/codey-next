@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>CODEPLAY — Lesson 08 Game: Catch the Error Monster</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:         #e8f5e2;
+  --surface:    #ffffff;
+  --surface2:   #f4faf0;
+  --border:     rgba(80,140,60,.18);
+  --green-dark: #1e5c1e;
+  --green-mid:  #2e7d32;
+  --green-leaf: #4caf50;
+  --green-light:#a5d6a7;
+  --gold:       #f5c800;
+  --gold-soft:  #ffe066;
+  --orange:     #ff8c00;
+  --orange-soft:#ffb74d;
+  --correct:    #27c76f;
+  --coral:      #e84040;
+  --coral-soft: #ff8a80;
+  --text:       #1a3d1a;
+  --text-mid:   #2e5c2e;
+  --text-muted: #6a9a6a;
+  --mono:       'Share Tech Mono', monospace;
+  --head:       'Fredoka One', cursive;
+  --body:       'Nunito', sans-serif;
+  --shadow-card:0 4px 24px rgba(46,125,50,.10), 0 1px 4px rgba(46,125,50,.06);
+  --shadow-strong:0 8px 40px rgba(46,125,50,.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;min-height:100vh;overflow-x:hidden}
+body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Forest background ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 700px 500px at 10% 15%, rgba(180,230,160,.45) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 90% 80%, rgba(200,235,170,.4) 0%, transparent 65%),
+    radial-gradient(ellipse 400px 300px at 55% 50%, rgba(255,255,220,.3) 0%, transparent 60%);
+  pointer-events:none;
+}
+.leaf-deco{position:fixed;pointer-events:none;z-index:0;opacity:.09;user-select:none;animation:leafFloat 8s ease-in-out infinite alternate}
+.leaf-deco:nth-child(1){top:6%;left:2%;font-size:3rem;animation-delay:0s}
+.leaf-deco:nth-child(2){top:22%;right:3%;font-size:2.5rem;animation-delay:1.5s}
+.leaf-deco:nth-child(3){bottom:22%;left:5%;font-size:3.5rem;animation-delay:3s}
+.leaf-deco:nth-child(4){bottom:38%;right:2%;font-size:2rem;animation-delay:2s}
+
+@keyframes leafFloat{0%{transform:translateY(0) rotate(-5deg)}100%{transform:translateY(-18px) rotate(8deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shine{to{left:160%}}
+@keyframes screenIn{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cfFall{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(110vh) rotate(600deg);opacity:0}}
+@keyframes trophySpin{0%{transform:scale(0) rotate(-180deg)}70%{transform:scale(1.2) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes unlockPulse{0%,100%{box-shadow:0 0 0 0 rgba(39,199,111,.4)}50%{box-shadow:0 0 0 12px rgba(39,199,111,0)}}
+@keyframes bugWiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-8deg) scale(1.1)}75%{transform:rotate(8deg) scale(1.1)}}
+@keyframes bugZap{0%{transform:scale(1)}30%{transform:scale(1.4) rotate(15deg)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes robotBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes codeGlow{0%{box-shadow:0 0 0 0 rgba(39,199,111,0)}50%{box-shadow:0 0 30px 6px rgba(39,199,111,.25)}100%{box-shadow:0 0 0 0 rgba(39,199,111,0)}}
+@keyframes bugFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-12px) rotate(5deg)}}
+@keyframes gradShift{0%{background-position:0%}100%{background-position:200%}}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  height:64px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  background:rgba(30,92,30,.97);
+  backdrop-filter:blur(20px);
+  border-bottom:2px solid rgba(165,214,167,.25);
+  box-shadow:0 2px 20px rgba(30,92,30,.18);
+  flex-shrink:0;
+}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--head);font-size:1.3rem;color:#ff8c00;letter-spacing:.04em;text-shadow:0 2px 8px rgba(255,140,0,.3)}
+.logo-leaf{font-size:1.4rem;animation:leafFloat 4s ease-in-out infinite alternate}
+.nav-gtitle{font-family:var(--body);font-size:.75rem;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;flex:1;text-align:center}
+.score-pill{
+  font-family:var(--head);font-size:.85rem;color:var(--gold-soft);
+  display:flex;align-items:center;gap:6px;
+  background:rgba(245,200,0,.15);border:1.5px solid rgba(245,200,0,.4);
+  border-radius:30px;padding:5px 16px;letter-spacing:.04em;
+}
+.btn-back{
+  display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:99px;
+  border:1.5px solid rgba(165,214,167,.4);background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.8);font-family:var(--body);font-size:.78rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-back:hover{border-color:rgba(165,214,167,.7);color:#fff;background:rgba(255,255,255,.15)}
+.btn-back svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── LEVEL BAR ── */
+.level-bar{
+  position:sticky;top:64px;z-index:190;
+  background:rgba(255,255,255,.9);backdrop-filter:blur(12px);
+  padding:8px 24px;border-bottom:1.5px solid rgba(76,175,80,.15);
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 12px rgba(46,125,50,.06);
+}
+.level-label{font-family:var(--body);font-size:.6rem;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;white-space:nowrap;font-weight:700}
+.level-track{flex:1;height:7px;background:rgba(232,64,64,.12);border-radius:99px;overflow:hidden;border:1px solid rgba(232,64,64,.15)}
+.level-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--coral-soft),var(--orange-soft));transition:width .5s cubic-bezier(.22,1,.36,1)}
+.level-dots{display:flex;gap:5px}
+.ldot{
+  width:22px;height:22px;border-radius:50%;
+  border:1.5px solid rgba(76,175,80,.25);background:rgba(76,175,80,.08);
+  font-family:var(--head);font-size:.52rem;font-weight:700;
+  display:grid;place-items:center;color:var(--text-muted);
+  transition:all .3s;flex-shrink:0;
+}
+.ldot.done{background:var(--correct);border-color:var(--correct);color:#fff}
+.ldot.active{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 0 12px rgba(232,64,64,.4)}
+
+/* ── SCREENS ── */
+.screen{display:none;opacity:0;max-width:680px;margin:0 auto;padding:36px 20px 90px;position:relative;z-index:1;animation:screenIn .45s cubic-bezier(.22,1,.36,1) both}
+.screen.active{display:block;opacity:1}
+.big-head{font-family:var(--head);font-size:clamp(1.6rem,5vw,2.3rem);text-align:center;color:var(--green-dark);letter-spacing:.02em;margin-bottom:8px}
+.big-sub{text-align:center;font-size:.95rem;font-weight:600;color:var(--text-muted);margin-bottom:28px}
+
+/* ── GAME CARD ── */
+.game-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:22px;padding:28px 24px;margin-bottom:20px;
+  position:relative;overflow:hidden;box-shadow:var(--shadow-card);
+}
+.game-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--coral-soft),var(--orange-soft),var(--coral-soft));
+  background-size:200% 100%;animation:gradShift 3s linear infinite;
+}
+
+/* ── CHARACTERS ── */
+.char-row{display:flex;align-items:center;justify-content:center;gap:28px;margin-bottom:22px}
+.robot-char{font-size:3.4rem;animation:robotBounce 2s ease-in-out infinite}
+.bug-char{font-size:3.2rem;animation:bugFloat 2.2s ease-in-out infinite;cursor:default}
+.bug-char.caught{animation:bugZap .5s ease forwards}
+.bug-char.escaped{animation:wrongShake .3s ease}
+.vs-txt{font-family:var(--head);font-size:.65rem;color:var(--text-muted);letter-spacing:.2em}
+
+/* ── LEVEL TAG ── */
+.level-tag{text-align:center;font-family:var(--body);font-size:.62rem;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;margin-bottom:16px;font-weight:700}
+
+/* ── CODE DISPLAY ── */
+.code-display{
+  background:var(--green-dark);
+  border:2px solid rgba(232,64,64,.4);
+  border-radius:14px;padding:20px 22px;margin:16px 0;
+  font-family:var(--mono);font-size:clamp(1rem,3.5vw,1.35rem);font-weight:600;
+  text-align:center;line-height:1.6;position:relative;transition:all .4s;
+  color:var(--green-light);
+}
+.code-display::before{content:'python';position:absolute;top:8px;right:12px;font-size:.5rem;color:rgba(165,214,167,.35);letter-spacing:.12em;text-transform:uppercase}
+.code-display.fixed{border-color:rgba(39,199,111,.5);background:var(--green-dark);animation:codeGlow .8s ease}
+.code-display.wrong-border{border-color:rgba(232,64,64,.8);animation:wrongShake .28s ease}
+
+/* ── QUESTION ── */
+.question-txt{text-align:center;font-size:.9rem;font-weight:600;color:var(--text-mid);margin-bottom:18px;line-height:1.55}
+.question-txt b{color:var(--text)}
+
+/* ── CHOICES ── */
+.choices{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:18px 0}
+.choice-btn{
+  padding:14px 22px;border-radius:13px;
+  border:2px solid var(--border);background:var(--surface);
+  font-family:var(--body);font-size:.88rem;font-weight:700;color:var(--text);
+  cursor:pointer;transition:all .2s;min-width:140px;text-align:center;line-height:1.4;
+  box-shadow:var(--shadow-card);
+}
+.choice-btn:hover{transform:scale(1.04);border-color:rgba(76,175,80,.4);background:var(--surface2);box-shadow:var(--shadow-strong)}
+.choice-btn.correct{background:rgba(39,199,111,.1);border-color:var(--correct);color:var(--correct);transform:scale(1.06);pointer-events:none}
+.choice-btn.wrong{background:rgba(232,64,64,.08);border-color:var(--coral);color:var(--coral);pointer-events:none}
+.choice-btn:disabled{pointer-events:none;opacity:.5}
+
+/* ── FEEDBACK ── */
+.feedback{
+  min-height:50px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:.9rem;font-weight:600;text-align:center;border-radius:12px;
+  padding:12px 18px;margin-top:8px;opacity:0;transition:opacity .3s;line-height:1.5;
+}
+.feedback.show{opacity:1}
+.feedback.correct{background:rgba(39,199,111,.1);border:1.5px solid rgba(39,199,111,.35);color:var(--correct)}
+.feedback.wrong{background:rgba(232,64,64,.08);border:1.5px solid rgba(232,64,64,.3);color:var(--coral)}
+
+/* ── NEXT BTN ── */
+.next-lvl-btn{
+  display:none;width:100%;max-width:360px;margin:18px auto 0;
+  background:linear-gradient(135deg,#43a047,#2e7d32);
+  border:none;border-radius:14px;padding:15px;
+  font-family:var(--head);font-size:.85rem;color:#fff;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 6px 22px rgba(46,125,50,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.next-lvl-btn.show{display:block}
+.next-lvl-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.5s linear infinite}
+.next-lvl-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(46,125,50,.45)}
+
+/* ── INTRO ── */
+.if-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:14px;padding:14px 18px;margin-bottom:12px;
+  box-shadow:var(--shadow-card);transition:box-shadow .2s;
+}
+.if-row:hover{box-shadow:var(--shadow-strong)}
+.if-icon{font-size:1.6rem;flex-shrink:0}
+.if-text{font-size:.87rem;color:var(--text-mid);line-height:1.45;font-weight:500}
+.if-text b{color:var(--text)}
+.start-btn{
+  display:block;width:100%;max-width:380px;margin:24px auto 0;
+  background:linear-gradient(135deg,var(--orange),#d04000);
+  border:none;border-radius:14px;padding:18px;
+  font-family:var(--head);font-size:.88rem;color:#fff;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 6px 24px rgba(255,140,0,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.start-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.2s linear infinite}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,140,0,.45)}
+
+/* ── COMPLETE ── */
+.trophy{font-size:5rem;text-align:center;margin-bottom:16px;animation:trophySpin 1.5s ease}
+.complete-stats{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:28px}
+.cstat{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:16px 28px;text-align:center;box-shadow:var(--shadow-card)}
+.csval{font-family:var(--head);font-size:1.8rem;color:var(--green-dark)}
+.cslbl{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;font-weight:600}
+.complete-msg{
+  background:rgba(76,175,80,.08);border:1.5px solid rgba(76,175,80,.3);
+  border-radius:14px;padding:18px 22px;text-align:center;
+  font-size:.9rem;font-weight:500;color:var(--text-mid);line-height:1.7;margin-bottom:22px;
+}
+.complete-msg b{color:var(--green-mid);font-weight:800}
+.unlock-badge{
+  display:flex;justify-content:center;align-items:center;gap:8px;
+  background:rgba(39,199,111,.1);border:1.5px solid var(--correct);
+  border-radius:99px;padding:10px 22px;
+  font-family:var(--head);font-size:.7rem;color:var(--correct);
+  margin-bottom:28px;animation:unlockPulse 1.8s ease-in-out infinite;letter-spacing:.06em;
+}
+.btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-replay{
+  padding:14px 28px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--surface2);
+  font-family:var(--head);font-size:.8rem;font-weight:700;color:var(--text-mid);
+  cursor:pointer;letter-spacing:.04em;transition:all .2s;
+}
+.btn-replay:hover{border-color:rgba(76,175,80,.4);background:var(--surface);transform:translateY(-2px)}
+.btn-goto{
+  padding:16px 32px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--orange),#d04000);
+  color:#fff;font-family:var(--head);font-size:.85rem;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 6px 22px rgba(255,140,0,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.btn-goto::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.2s linear infinite}
+.btn-goto:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,140,0,.45)}
+.redirect-note{text-align:center;margin-top:16px;font-size:.72rem;color:var(--text-muted);letter-spacing:.04em;font-weight:500}
+.redirect-note span{color:var(--green-mid);font-family:var(--head)}
+
+/* CONFETTI */
+.cf{position:fixed;pointer-events:none;z-index:9999;border-radius:2px;animation:cfFall linear forwards}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  height:52px;background:rgba(30,92,30,.97);
+  backdrop-filter:blur(20px);border-top:1.5px solid rgba(165,214,167,.2);
+  box-shadow:0 -2px 20px rgba(30,92,30,.15);
+  display:flex;align-items:center;justify-content:center;gap:44px;
+}
+.si{display:flex;align-items:center;gap:7px;font-size:.76rem;letter-spacing:.06em;color:rgba(255,255,255,.75);font-weight:600}
+.sv{font-family:var(--head);font-size:.8rem;letter-spacing:.03em}
+
+@media(max-width:640px){nav{padding:0 12px}.screen{padding:24px 14px 80px}.level-dots{display:none}.big-head{font-size:1.45rem}.choice-btn{font-size:.8rem;padding:12px 16px}}
+</style>
+</head>
+<body>
+
+<!-- Floating leaves -->
+<div class="leaf-deco">🍃</div>
+<div class="leaf-deco">🌿</div>
+<div class="leaf-deco">🍀</div>
+<div class="leaf-deco">🌱</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo"><span class="logo-leaf">🌿</span>CODEPLAY</div>
+  <div class="nav-gtitle">🐛 Catch the Error Monster · Lesson 08</div>
+  <div class="score-pill">⭐ <span id="scoreNum">0</span></div>
+  <button class="btn-back" onclick="location.href='lesson8.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<!-- LEVEL PROGRESS BAR -->
+<div class="level-bar">
+  <div class="level-label" id="levelLabel">Level 1 / 5</div>
+  <div class="level-track"><div class="level-fill" id="levelFill" style="width:0%"></div></div>
+  <div class="level-dots" id="levelDots"></div>
+</div>
+
+<!-- SCREEN: INTRO -->
+<div class="screen active" id="screenIntro">
+  <h1 class="big-head">🐛 Catch the Error Monster!</h1>
+  <p class="big-sub">Spot the bugs in the broken Python code!</p>
+  <div class="game-card">
+    <div class="char-row">
+      <div class="robot-char">🤖</div>
+      <div class="vs-txt">VS</div>
+      <div class="bug-char">🐛</div>
+    </div>
+    <div class="if-row"><div class="if-icon">🔍</div><div class="if-text"><b>5 levels</b> of buggy Python code — find what's wrong each time!</div></div>
+    <div class="if-row"><div class="if-icon">⭐</div><div class="if-text">Earn <b>20 stars</b> for every correct answer on your first try!</div></div>
+    <div class="if-row"><div class="if-icon">🔓</div><div class="if-text">Catch all 5 bugs to <b>unlock Lesson 09!</b></div></div>
+  </div>
+  <button class="start-btn" onclick="startGame()">START HUNTING BUGS! 🐛</button>
+</div>
+
+<!-- SCREEN: GAME -->
+<div class="screen" id="screenGame">
+  <div class="game-card">
+    <div class="char-row">
+      <div class="robot-char" id="robotChar">🤖</div>
+      <div class="vs-txt">VS</div>
+      <div class="bug-char" id="bugChar">🐛</div>
+    </div>
+    <div class="level-tag" id="levelTag">Level 1 of 5</div>
+    <div class="question-txt" id="questionTxt"></div>
+    <div class="code-display" id="codeDisplay"></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-lvl-btn" id="nextLvlBtn" onclick="nextLevel()">NEXT LEVEL →</button>
+  </div>
+</div>
+
+<!-- SCREEN: COMPLETE -->
+<div class="screen" id="screenComplete">
+  <div class="trophy">🏆</div>
+  <h2 class="big-head">BUG HUNTER!</h2>
+  <p class="big-sub">You caught every Error Monster! 🐛💥</p>
+  <div class="complete-stats">
+    <div class="cstat"><div class="csval" id="finalScore">0</div><div class="cslbl">⭐ Stars</div></div>
+    <div class="cstat"><div class="csval" id="finalCaught">0</div><div class="cslbl">🐛 Bugs Caught</div></div>
+    <div class="cstat"><div class="csval">+100</div><div class="cslbl">⚡ XP Gained</div></div>
+  </div>
+  <div class="complete-msg">🎉 <b>Amazing work!</b> You found all the bugs and proved that <b>mistakes are just puzzles to solve!</b> Lesson 09 is now unlocked!</div>
+  <div class="unlock-badge">🔓 Lesson 09 Unlocked in CodePlay!</div>
+  <div class="btn-row">
+    <button class="btn-replay" onclick="restartGame()">🔄 Play Again</button>
+    <button class="btn-goto" onclick="goToLessons()">GO TO LESSONS 🚀</button>
+  </div>
+  <div class="redirect-note">Auto-redirecting in <span id="cdSpan">8</span>s…</div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="si">📍 <span class="sv" style="color:var(--gold-soft)">Part 1</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.7rem">Lesson 08</span></div>
+  <div class="si">⭐ <span class="sv" id="statScore" style="color:var(--gold-soft)">0</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.7rem">stars</span></div>
+  <div class="si">🐛 <span class="sv" id="statLevel" style="color:var(--coral-soft)">1</span><span style="color:rgba(255,255,255,.4);font-size:.7rem">/5 levels</span></div>
+  <div class="si">🔓 <span class="sv" style="color:var(--correct)">Lesson 09</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.7rem">on finish</span></div>
+</div>
+
+<script>
+const LEVELS=[
+  {
+    question:'The robot tried to print a greeting, but the Error Monster snuck in! <b>What\'s wrong with this code?</b>',
+    bugCode: 'print(Hello)',
+    fixCode: 'print(<span style="color:#a5d6a7">"Hello"</span>)',
+    choices:[
+      {label:'🔤 Missing quote marks',correct:true, explain:'✅ Correct! Text in Python must be inside "quote marks" like this: print("Hello")'},
+      {label:'🔢 Should be a number', correct:false,explain:'❌ Not this time! The problem is the missing " " around Hello.'},
+      {label:'❌ Delete the brackets', correct:false,explain:'❌ Nope! Brackets are required in print(). The quotes are missing!'},
+    ]
+  },
+  {
+    question:'Oops — the Error Monster scrambled the letters! <b>What kind of bug is this?</b>',
+    bugCode: '<span style="color:#ff8a80">Pritn</span>("Hi")',
+    fixCode: '<span style="color:#a5d6a7">print</span>("Hi")',
+    choices:[
+      {label:'💬 Missing quotes',   correct:false,explain:'❌ The quotes are fine! Look more carefully at the word "Pritn".'},
+      {label:'✏️ Spelling mistake', correct:true, explain:'✅ Yes! "Pritn" should be "print" — Python is case-sensitive and spelling matters!'},
+      {label:'🔧 Extra brackets',   correct:false,explain:'❌ The brackets are correct! Check the spelling of the command.'},
+    ]
+  },
+  {
+    question:'Almost perfect! The Error Monster ate one character. <b>What\'s missing at the end?</b>',
+    bugCode: 'print("Hello"<span style="color:#ff8a80">?</span>',
+    fixCode: 'print("Hello"<span style="color:#a5d6a7">)</span>',
+    choices:[
+      {label:'  )  Closing bracket',correct:true, explain:'✅ Right! Every opening ( needs a closing ). The bracket was missing!'},
+      {label:'  ;  Semicolon',      correct:false,explain:'❌ Python doesn\'t use semicolons to end lines. Think about matching brackets!'},
+      {label:'  "  A quote mark',   correct:false,explain:'❌ The quotes around Hello are fine. The closing ) is what\'s missing!'},
+    ]
+  },
+  {
+    question:'The Error Monster made the P uppercase! <b>What rule did it break?</b>',
+    bugCode: '<span style="color:#ff8a80">Print</span>("Coding is fun!")',
+    fixCode: '<span style="color:#a5d6a7">print</span>("Coding is fun!")',
+    choices:[
+      {label:'🔡 Python is case-sensitive',   correct:true, explain:'✅ Exactly! Python only knows "print" in lowercase. "Print" with a capital P is a different (unknown) command!'},
+      {label:'💬 Missing quotes around text', correct:false,explain:'❌ The quotes look fine. Focus on the very first letter of the command.'},
+      {label:'📐 Wrong number of brackets',   correct:false,explain:'❌ The brackets are correct. Look carefully at the capital letter!'},
+    ]
+  },
+  {
+    question:'Final boss level! The Error Monster mixed up TWO things. <b>Which option fixes BOTH bugs?</b>',
+    bugCode: '<span style="color:#ff8a80">PRINT</span>(<span style="color:#ff8a80">Python rocks</span>)',
+    fixCode: '<span style="color:#a5d6a7">print</span>(<span style="color:#ffe066">"Python rocks"</span>)',
+    choices:[
+      {label:'Lowercase + add quotes',      correct:true, explain:'✅ Perfect! Both bugs fixed: "PRINT" → "print" (case), and the text needs "quote marks" around it!'},
+      {label:'Only fix the spelling',        correct:false,explain:'❌ Close! The spelling is one bug, but the text also needs "quote marks" around it.'},
+      {label:'Only add quotes, keep PRINT',  correct:false,explain:'❌ Almost! The quotes fix is right, but PRINT also needs to be lowercase "print".'},
+    ]
+  }
+];
+
+const TOTAL=LEVELS.length;
+let level=0,score=0,caught=0,answered=false,redirectTimer=null;
+
+function buildDots(){
+  const el=document.getElementById('levelDots');el.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.createElement('div');d.className='ldot';d.textContent=i;d.id='ldot'+i;el.appendChild(d);
+  }
+}
+buildDots();
+
+function updateDots(){
+  for(let i=1;i<=TOTAL;i++){
+    const d=document.getElementById('ldot'+i);
+    d.classList.remove('done','active');
+    if(i<level)d.classList.add('done');
+    else if(i===level)d.classList.add('active');
+  }
+}
+
+function updateProgress(){
+  const pct=((level-1)/TOTAL)*100;
+  document.getElementById('levelFill').style.width=pct+'%';
+  document.getElementById('levelLabel').textContent=`Level ${level} / ${TOTAL}`;
+  document.getElementById('levelTag').textContent=`Level ${level} of ${TOTAL}`;
+  document.getElementById('statLevel').textContent=level;
+  updateDots();
+}
+
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function startGame(){
+  level=1;score=0;caught=0;answered=false;
+  updateScore();updateProgress();
+  goScreen('screenGame');renderLevel();
+}
+
+function renderLevel(){
+  answered=false;
+  const lv=LEVELS[level-1];
+  document.getElementById('questionTxt').innerHTML=lv.question;
+  document.getElementById('codeDisplay').innerHTML=lv.bugCode;
+  document.getElementById('codeDisplay').className='code-display';
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('feedback').textContent='';
+  document.getElementById('nextLvlBtn').className='next-lvl-btn';
+  document.getElementById('nextLvlBtn').textContent=level===TOTAL?'FINISH GAME! 🎉':'NEXT LEVEL →';
+  document.getElementById('bugChar').className='bug-char';
+
+  const choicesEl=document.getElementById('choices');
+  choicesEl.innerHTML='';
+  lv.choices.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';btn.textContent=c.label;
+    btn.onclick=()=>answerChoice(i);
+    choicesEl.appendChild(btn);
+  });
+}
+
+function answerChoice(idx){
+  if(answered)return;answered=true;
+  const lv=LEVELS[level-1];
+  const choice=lv.choices[idx];
+  const allBtns=document.querySelectorAll('.choice-btn');
+  const fb=document.getElementById('feedback');
+  const codeDisp=document.getElementById('codeDisplay');
+  const bug=document.getElementById('bugChar');
+
+  allBtns.forEach(b=>b.disabled=true);
+
+  if(choice.correct){
+    allBtns[idx].classList.add('correct');
+    fb.className='feedback correct show';fb.innerHTML=choice.explain;
+    codeDisp.innerHTML=lv.fixCode;codeDisp.classList.add('fixed');
+    bug.className='bug-char caught';
+    score+=20;caught++;updateScore();popMini();
+    setTimeout(()=>document.getElementById('nextLvlBtn').classList.add('show'),900);
+  }else{
+    allBtns[idx].classList.add('wrong');
+    lv.choices.forEach((c,i)=>{if(c.correct)allBtns[i].classList.add('correct')});
+    fb.className='feedback wrong show';fb.innerHTML=choice.explain;
+    codeDisp.classList.add('wrong-border');
+    bug.className='bug-char escaped';
+    setTimeout(()=>{
+      codeDisp.classList.remove('wrong-border');
+      bug.className='bug-char';
+      document.getElementById('nextLvlBtn').classList.add('show');
+    },1400);
+  }
+}
+
+function nextLevel(){
+  if(level>=TOTAL){showComplete();return}
+  level++;updateProgress();renderLevel();
+}
+
+function updateScore(){
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('statScore').textContent=score;
+}
+
+function showComplete(){
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('finalCaught').textContent=caught+'/'+TOTAL;
+  goScreen('screenComplete');
+  popBig();setTimeout(popBig,900);
+  localStorage.setItem('lesson08Completed','yes');
+  const cur=parseInt(localStorage.getItem('part1_progress'))||1;
+  if(cur<9)localStorage.setItem('part1_progress','9');
+  let secs=8;const cd=document.getElementById('cdSpan');
+  redirectTimer=setInterval(()=>{secs--;cd.textContent=secs;if(secs<=0){clearInterval(redirectTimer);window.location.href='quest1.html'}},1000);
+}
+
+function goToLessons(){
+  if(redirectTimer)clearInterval(redirectTimer);
+  localStorage.setItem('lesson08Completed','yes');
+  const cur=parseInt(localStorage.getItem('part1_progress'))||1;
+  if(cur<9)localStorage.setItem('part1_progress','9');
+  window.location.href='quest1.html';
+}
+function restartGame(){if(redirectTimer)clearInterval(redirectTimer);startGame()}
+function handleBack(){if(confirm('Go back to lessons?'))window.location.href='quest1.html'}
+
+const CF=['#f5e000','#27c76f','#ff8c00','#a5d6a7','#ffffff','#4caf50','#ffe066','#ff6b6b'];
+function popMini(){for(let i=0;i<22;i++){const el=document.createElement('div');const sz=5+Math.random()*7;el.className='cf';el.style.cssText=`left:${20+Math.random()*60}vw;top:30vh;width:${sz}px;height:${sz*(Math.random()>.5?1:.4)}px;background:${CF[Math.floor(Math.random()*CF.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1+Math.random()*.7}s;animation-delay:${Math.random()*.2}s`;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}}
+function popBig(){for(let i=0;i<70;i++)setTimeout(()=>{const el=document.createElement('div');const sz=6+Math.random()*10;el.className='cf';el.style.cssText=`left:${Math.random()*100}vw;top:-10px;width:${sz}px;height:${sz*(Math.random()>.5?1:.4)}px;background:${CF[Math.floor(Math.random()*CF.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.8+Math.random()*1.3}s;animation-delay:${Math.random()*.4}s`;document.body.appendChild(el);setTimeout(()=>el.remove(),3500)},i*16)}
+</script>
+</body>
+</html>
+
+
+

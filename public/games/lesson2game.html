@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY — Feed the Animals! 🐾</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#e8f5e2;--surface:#fff;--surface2:#f4faf0;
+  --border:rgba(80,140,60,.18);
+  --green-dark:#1e5c1e;--green-mid:#2e7d32;--green-leaf:#4caf50;
+  --gold:#f5c800;--gold-soft:#ffe066;
+  --orange:#ff8c00;--orange-soft:#ffb74d;
+  --red:#e53935;--red-soft:#ff8a80;
+  --blue:#1976d2;--blue-soft:#64b5f6;
+  --purple:#7b1fa2;--purple-soft:#ce93d8;
+  --text:#1a3d1a;--text-mid:#2e5c2e;--text-muted:#6a9a6a;
+  --head:'Fredoka One',cursive;--body:'Nunito',sans-serif;
+  --shadow:0 4px 24px rgba(46,125,50,.10),0 1px 4px rgba(46,125,50,.06);
+  --shadow-strong:0 8px 40px rgba(46,125,50,.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 700px 500px at 8% 12%,rgba(180,230,160,.5) 0%,transparent 70%),
+    radial-gradient(ellipse 600px 400px at 92% 85%,rgba(200,235,170,.45) 0%,transparent 65%),
+    radial-gradient(ellipse 400px 300px at 50% 50%,rgba(255,255,220,.3) 0%,transparent 60%);
+  pointer-events:none;
+}
+.leaf{position:fixed;pointer-events:none;z-index:0;opacity:.09;font-size:3.5rem;user-select:none;animation:lfloat 9s ease-in-out infinite alternate}
+.leaf:nth-child(2){top:6%;left:2%;font-size:2.8rem;animation-delay:0s}
+.leaf:nth-child(3){top:22%;right:3%;font-size:2.2rem;animation-delay:1.8s}
+.leaf:nth-child(4){bottom:22%;left:5%;font-size:3rem;animation-delay:3.2s}
+.leaf:nth-child(5){bottom:40%;right:2%;font-size:1.9rem;animation-delay:2.1s}
+.leaf:nth-child(6){top:58%;left:42%;font-size:2.6rem;animation-delay:4.5s}
+@keyframes lfloat{0%{transform:translateY(0) rotate(-6deg)}100%{transform:translateY(-20px) rotate(9deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes shine{to{left:160%}}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes popIn{from{transform:scale(.4) rotate(-15deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0) rotate(0)}20%{transform:translateX(-8px) rotate(-3deg)}40%{transform:translateX(8px) rotate(3deg)}60%{transform:translateX(-5px) rotate(-2deg)}80%{transform:translateX(5px) rotate(2deg)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}40%{transform:translateY(-14px)}70%{transform:translateY(-6px)}}
+@keyframes walk{0%,100%{transform:scaleX(1) translateY(0)}50%{transform:scaleX(1) translateY(-8px)}}
+@keyframes walkLeft{0%,100%{transform:scaleX(-1) translateY(0)}50%{transform:scaleX(-1) translateY(-8px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(76,175,80,.3)}50%{box-shadow:0 0 0 10px rgba(76,175,80,0)}}
+@keyframes gradShift{0%{background-position:0%}100%{background-position:200%}}
+@keyframes cmdIn{from{transform:scale(.4) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes celebConfetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(120px) rotate(720deg);opacity:0}}
+@keyframes starPop{0%{transform:scale(0) rotate(-30deg);opacity:0}60%{transform:scale(1.3) rotate(10deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes eatAnim{0%,100%{transform:scale(1)}30%{transform:scale(1.3) rotate(-10deg)}60%{transform:scale(.9) rotate(5deg)}}
+@keyframes slideIn{from{transform:translateX(-30px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 6px rgba(245,200,0,.5))}50%{filter:drop-shadow(0 0 16px rgba(245,200,0,.9))}}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;height:64px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 32px;
+  background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(200,200,200,.2);box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--head);font-size:1.45rem;color:#ff8c00;letter-spacing:.04em;text-shadow:0 2px 8px rgba(255,140,0,.3)}
+.logo span{animation:lfloat 4s ease-in-out infinite alternate;font-size:1.5rem}
+.nav-mid{text-align:center}
+.nav-tag{font-size:.6rem;letter-spacing:.2em;color:rgba(0,0,0,.55);text-transform:uppercase}
+.nav-title{font-size:.82rem;font-weight:800;color:#1a3d1a}
+.nav-pip{width:6px;height:6px;border-radius:50%;background:var(--gold-soft);box-shadow:0 0 10px var(--gold);animation:blink 1.4s infinite;margin:0 10px}
+.btn-back{
+  display:flex;align-items:center;gap:7px;padding:8px 20px;border-radius:99px;
+  border:1.5px solid rgba(165,214,167,.4);background:rgba(255,255,255,.08);
+  color:#1a3d1a;font-family:var(--body);font-size:.82rem;font-weight:700;
+  cursor:pointer;letter-spacing:.03em;transition:all .2s;
+}
+.btn-back:hover{border-color:rgba(165,214,167,.7);background:rgba(255,255,255,.15)}
+.btn-back svg{width:13px;height:13px;stroke:#1a3d1a;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── HEADER ── */
+.hdr{
+  position:relative;z-index:2;max-width:1100px;width:100%;
+  margin:0 auto;padding:28px 28px 0;animation:fadeUp .5s ease both;
+}
+.part-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  border:1.5px solid rgba(46,125,50,.3);background:rgba(76,175,80,.12);
+  padding:3px 14px;border-radius:99px;
+  font-size:.62rem;letter-spacing:.2em;color:var(--green-mid);text-transform:uppercase;font-weight:700;margin-bottom:8px;
+}
+.part-tag::before{content:'🌿';font-size:.7rem}
+.hdr-title{font-family:var(--head);font-size:clamp(1.7rem,3vw,2.5rem);color:var(--green-dark);letter-spacing:.02em;line-height:1.1}
+.hdr-title span{color:var(--green-leaf)}
+.hdr-sub{margin-top:7px;font-size:.92rem;color:var(--text-muted);font-weight:500}
+.hdr-div{margin-top:22px;height:2px;background:linear-gradient(90deg,rgba(46,125,50,.3),rgba(76,175,80,.15),transparent);border-radius:99px}
+
+/* ── MAIN LAYOUT ── */
+.main{
+  position:relative;z-index:2;max-width:1100px;width:100%;
+  margin:0 auto;padding:28px 28px 90px;
+  display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start;
+}
+
+/* ── JUNGLE STAGE ── */
+.stage-wrap{display:flex;flex-direction:column;gap:20px;animation:fadeUp .5s .06s ease both}
+
+/* Level selector */
+.level-tabs{display:flex;gap:10px;flex-wrap:wrap}
+.level-tab{
+  display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:99px;
+  border:2px solid var(--border);background:var(--surface);
+  font-family:var(--body);font-size:.82rem;font-weight:700;color:var(--text-muted);
+  cursor:pointer;transition:all .22s;box-shadow:var(--shadow);
+}
+.level-tab:hover{border-color:rgba(76,175,80,.4);color:var(--green-mid);transform:translateY(-2px)}
+.level-tab.active{border-color:var(--green-leaf);background:rgba(76,175,80,.1);color:var(--green-mid)}
+.level-tab.locked{opacity:.45;cursor:not-allowed}
+.level-tab .lv-emoji{font-size:1.1rem}
+.level-tab .lv-stars{font-size:.7rem;color:var(--gold);letter-spacing:.05em}
+
+/* Jungle canvas card */
+.jungle-card{
+  border-radius:24px;border:2.5px solid rgba(76,175,80,.3);
+  background:var(--surface);box-shadow:var(--shadow-strong);
+  overflow:hidden;position:relative;
+}
+.jungle-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--green-leaf),#81c784,var(--gold-soft),var(--green-leaf));
+  background-size:200%;animation:gradShift 3s linear infinite;z-index:2;
+}
+.jungle-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 22px 0;
+}
+.jt-label{font-size:.62rem;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;font-weight:700}
+.jt-lives{display:flex;gap:5px}
+.heart{font-size:1.1rem;transition:all .3s}
+.heart.lost{filter:grayscale(1);opacity:.3}
+
+/* The jungle path */
+.jungle-scene{
+  position:relative;height:180px;margin:16px 20px;
+  background:linear-gradient(180deg,rgba(200,235,180,.3) 0%,rgba(165,214,167,.15) 60%,rgba(139,195,74,.12) 100%);
+  border-radius:16px;border:1.5px solid rgba(76,175,80,.18);
+  overflow:hidden;
+}
+.scene-ground{
+  position:absolute;bottom:0;left:0;right:0;height:40px;
+  background:linear-gradient(180deg,rgba(139,195,74,.25),rgba(76,175,80,.15));
+  border-top:2px dashed rgba(76,175,80,.25);
+}
+/* Track dots */
+.track{
+  position:absolute;bottom:28px;left:0;right:0;
+  display:flex;align-items:center;padding:0 60px;
+  gap:0;
+}
+.track-dot{
+  flex:1;height:3px;background:rgba(76,175,80,.2);
+  border-radius:99px;position:relative;
+}
+.track-dot::after{
+  content:'';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(76,175,80,.18);border:1.5px solid rgba(76,175,80,.25);
+}
+/* Trees */
+.tree{position:absolute;bottom:36px;font-size:2rem;user-select:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.1))}
+/* Animal */
+.animal-sprite{
+  position:absolute;bottom:34px;font-size:2.6rem;
+  transition:left .45s cubic-bezier(.34,1.56,.64,1);
+  user-select:none;z-index:3;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.15));
+}
+.animal-sprite.walking{animation:walk .5s ease-in-out infinite}
+.animal-sprite.walking-left{animation:walkLeft .5s ease-in-out infinite}
+.animal-sprite.eating{animation:eatAnim .5s ease-in-out 3}
+.animal-sprite.error-shake{animation:shake .5s ease}
+/* Food */
+.food-sprite{
+  position:absolute;bottom:34px;font-size:2rem;
+  user-select:none;z-index:2;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.12));
+  animation:float 2s ease-in-out infinite;
+}
+/* obstacle */
+.obstacle{position:absolute;bottom:34px;font-size:2rem;user-select:none;z-index:2}
+/* Celebration particles */
+.confetti-piece{
+  position:absolute;font-size:1.3rem;pointer-events:none;z-index:10;
+  animation:celebConfetti .9s ease forwards;
+}
+/* Speech bubble */
+.speech{
+  position:absolute;background:var(--surface);border:2px solid var(--green-leaf);
+  border-radius:14px;padding:6px 13px;font-size:.78rem;font-weight:700;
+  color:var(--green-mid);white-space:nowrap;z-index:20;
+  box-shadow:0 4px 16px rgba(46,125,50,.2);
+  animation:pop .3s ease;
+  top:12px;left:50%;transform:translateX(-50%);
+}
+.speech::after{
+  content:'';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--green-leaf);
+}
+
+/* ── COMMAND STRIP ── */
+.cmd-strip{
+  margin:0 20px 16px;
+  background:var(--surface2);border:1.5px solid rgba(76,175,80,.2);
+  border-radius:14px;padding:12px 14px;min-height:58px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  position:relative;
+}
+.cmd-strip::before{content:'📋 Program';position:absolute;top:7px;right:12px;font-size:.55rem;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase}
+.cmd-chip{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 13px;border-radius:99px;
+  font-size:.8rem;font-weight:800;
+  border:2px solid;cursor:default;
+  animation:cmdIn .22s cubic-bezier(.34,1.56,.64,1) both;
+  position:relative;user-select:none;
+}
+.cmd-chip .chip-del{
+  width:16px;height:16px;border-radius:50%;
+  background:rgba(0,0,0,.1);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;color:inherit;margin-left:2px;transition:background .15s;
+}
+.cmd-chip .chip-del:hover{background:rgba(0,0,0,.22)}
+.cmd-chip.up   {color:#1976d2;border-color:rgba(25,118,210,.4);background:rgba(25,118,210,.1)}
+.cmd-chip.down {color:#7b1fa2;border-color:rgba(123,31,162,.4);background:rgba(123,31,162,.1)}
+.cmd-chip.left {color:var(--orange);border-color:rgba(255,140,0,.4);background:rgba(255,140,0,.1)}
+.cmd-chip.right{color:var(--green-mid);border-color:rgba(46,125,50,.4);background:rgba(46,125,50,.1)}
+.cmd-chip.active-step{box-shadow:0 0 0 3px rgba(245,200,0,.7);transform:scale(1.12)}
+.cmd-empty-hint{color:var(--text-muted);font-size:.82rem;font-style:italic}
+
+/* ── CONTROLS ── */
+.controls-area{padding:0 20px 18px;display:flex;flex-direction:column;gap:12px}
+.cmd-buttons{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+}
+.cmd-btn{
+  padding:12px 8px;border-radius:14px;border:2px solid;
+  font-family:var(--body);font-size:.82rem;font-weight:800;
+  cursor:pointer;transition:all .18s;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  position:relative;overflow:hidden;
+}
+.cmd-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transition:left .4s}
+.cmd-btn:hover::after{left:160%}
+.cmd-btn:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.cmd-btn:active{transform:scale(.93)}
+.cmd-btn .cb-icon{font-size:1.5rem}
+.cmd-btn .cb-label{font-size:.65rem;letter-spacing:.06em;text-transform:uppercase}
+.cmd-btn.up   {color:#1976d2;border-color:rgba(25,118,210,.35);background:rgba(25,118,210,.07)}
+.cmd-btn.down {color:#7b1fa2;border-color:rgba(123,31,162,.35);background:rgba(123,31,162,.07)}
+.cmd-btn.left {color:var(--orange);border-color:rgba(255,140,0,.35);background:rgba(255,140,0,.07)}
+.cmd-btn.right{color:var(--green-mid);border-color:rgba(46,125,50,.35);background:rgba(46,125,50,.07)}
+
+.run-row{display:flex;gap:10px}
+.btn-run{
+  flex:1;padding:14px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,#43a047,#2e7d32);
+  color:#fff;font-family:var(--head);font-size:.85rem;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 4px 18px rgba(46,125,50,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.btn-run::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.5s linear infinite}
+.btn-run:hover{transform:translateY(-2px);box-shadow:0 7px 26px rgba(46,125,50,.45)}
+.btn-run:active{transform:scale(.96)}
+.btn-clear{
+  padding:14px 18px;border-radius:14px;
+  border:1.5px solid rgba(229,57,53,.25);background:rgba(229,57,53,.06);
+  color:var(--red);font-family:var(--head);font-size:.75rem;
+  cursor:pointer;letter-spacing:.06em;transition:all .2s;
+}
+.btn-clear:hover{border-color:rgba(229,57,53,.5);background:rgba(229,57,53,.12)}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;gap:18px;animation:fadeUp .5s .12s ease both}
+.card{
+  border-radius:20px;border:1.5px solid var(--border);background:var(--surface);
+  box-shadow:var(--shadow);padding:20px 22px;transition:box-shadow .2s,transform .2s;
+}
+.card:hover{box-shadow:var(--shadow-strong);transform:translateY(-1px)}
+.card-ttl{font-size:.58rem;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;font-weight:700;margin-bottom:11px}
+
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.score-item{
+  background:var(--surface2);border-radius:13px;padding:11px 10px;
+  border:1.5px solid var(--border);text-align:center;
+}
+.score-num{font-family:var(--head);font-size:1.5rem}
+.score-lbl{font-size:.6rem;letter-spacing:.1em;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-top:3px}
+
+/* level progress */
+.lvl-progress{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.lvl-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 13px;border-radius:13px;
+  border:1.5px solid var(--border);background:var(--surface2);
+  font-size:.83rem;font-weight:600;color:var(--text-mid);
+  transition:all .2s;
+}
+.lvl-row.done{border-color:rgba(76,175,80,.4);background:rgba(76,175,80,.08);color:var(--green-mid)}
+.lvl-row.current{border-color:rgba(245,200,0,.5);background:rgba(245,200,0,.09);color:#b8860b;animation:pulse 2s ease-in-out infinite}
+.lvl-row .lr-emo{font-size:1.2rem}
+.lvl-row .lr-stars{font-size:.75rem;color:var(--gold);margin-left:auto}
+
+/* how to card */
+.how-list{display:flex;flex-direction:column;gap:10px}
+.how-item{display:flex;align-items:flex-start;gap:10px;font-size:.83rem;color:var(--text-mid);line-height:1.5;font-weight:500}
+.how-num{width:23px;height:23px;border-radius:50%;flex-shrink:0;margin-top:1px;background:rgba(76,175,80,.12);border:1.5px solid rgba(76,175,80,.3);display:grid;place-items:center;font-family:var(--head);font-size:.68rem;color:var(--green-mid)}
+
+/* completed / next btn */
+.done-badge{
+  display:none;align-items:center;gap:10px;
+  background:rgba(76,175,80,.1);border:1.5px solid rgba(76,175,80,.35);
+  border-radius:13px;padding:13px 16px;
+}
+.done-badge.show{display:flex;animation:slideIn .4s ease}
+.done-badge-text{font-size:.83rem;color:var(--text-mid);line-height:1.4;font-weight:500}
+.done-badge-text b{color:var(--green-mid)}
+.btn-next{
+  width:100%;padding:16px;border-radius:15px;border:none;
+  background:linear-gradient(135deg,#388e3c,#2e7d32);
+  color:#fff;font-family:var(--head);font-size:.92rem;
+  cursor:not-allowed;opacity:.3;letter-spacing:.06em;
+  box-shadow:0 4px 16px rgba(46,125,50,.2);transition:all .3s;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-next.active{cursor:pointer;opacity:1;background:linear-gradient(135deg,#43a047,#2e7d32);box-shadow:0 6px 28px rgba(46,125,50,.45);animation:pulse 2s ease-in-out infinite}
+.btn-next.active::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.4s linear infinite}
+.btn-next.active:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(46,125,50,.55)}
+
+/* ── SUCCESS POPUP ── */
+.popup-overlay{position:fixed;inset:0;z-index:500;background:rgba(200,230,200,.65);backdrop-filter:blur(18px);display:none;place-items:center}
+.popup-overlay.open{display:grid}
+.popup{
+  background:var(--surface);border:2px solid rgba(76,175,80,.35);
+  border-radius:28px;padding:44px 48px;max-width:460px;width:92%;text-align:center;
+  position:relative;box-shadow:0 20px 60px rgba(46,125,50,.2),0 0 0 8px rgba(76,175,80,.08);
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+}
+.popup::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--green-leaf),var(--gold-soft),var(--green-leaf));border-radius:28px 28px 0 0}
+.popup-icon{font-size:3.5rem;margin-bottom:12px;animation:starPop .5s .1s ease both}
+.popup-title{font-family:var(--head);font-size:1.55rem;color:var(--green-dark);letter-spacing:.02em;margin-bottom:9px}
+.popup-desc{font-size:.9rem;color:var(--text-muted);line-height:1.65;margin-bottom:8px;font-weight:500}
+.popup-xp{display:inline-flex;align-items:center;gap:6px;background:rgba(245,200,0,.12);border:1.5px solid rgba(245,200,0,.4);padding:5px 18px;border-radius:99px;font-family:var(--head);font-size:.76rem;color:#b8860b;letter-spacing:.08em;margin-bottom:22px}
+.popup-stars{font-size:1.8rem;margin-bottom:18px;animation:starPop .5s .2s ease both}
+.popup-btn{
+  padding:14px 40px;border-radius:99px;border:none;
+  background:linear-gradient(135deg,#43a047,#2e7d32);
+  color:#fff;font-family:var(--head);font-size:.83rem;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 4px 20px rgba(46,125,50,.35);transition:all .2s;margin:0 5px;
+}
+.popup-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(46,125,50,.5)}
+.popup-btn.secondary{background:linear-gradient(135deg,#ff8c00,#e65100);box-shadow:0 4px 20px rgba(255,140,0,.3)}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;top:76px;left:50%;transform:translateX(-50%) translateY(-18px);
+  background:rgba(255,255,255,.96);border:1.5px solid rgba(229,57,53,.3);
+  border-radius:13px;padding:11px 26px;
+  font-family:var(--body);font-size:.82rem;font-weight:700;color:var(--red);
+  opacity:0;transition:all .3s;z-index:400;white-space:nowrap;
+  box-shadow:0 8px 24px rgba(229,57,53,.15);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  height:50px;background:rgba(30,92,30,.97);backdrop-filter:blur(20px);
+  border-top:1.5px solid rgba(165,214,167,.2);box-shadow:0 -2px 20px rgba(30,92,30,.15);
+  display:flex;align-items:center;justify-content:center;gap:40px;
+}
+.si{display:flex;align-items:center;gap:6px;font-size:.76rem;letter-spacing:.06em;color:rgba(255,255,255,.75);font-weight:600}
+.sv{font-family:var(--head);font-size:.8rem;letter-spacing:.03em}
+</style>
+</head>
+<body>
+<div class="leaf">🍃</div><div class="leaf">🌿</div><div class="leaf">🍀</div><div class="leaf">🌱</div><div class="leaf">🍃</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo"><span>🌿</span>CODEPLAY</div>
+  <div style="display:flex;align-items:center">
+    <div class="nav-pip"></div>
+    <div class="nav-mid">
+      <div class="nav-tag">Part 1 · Lesson 02 · Game</div>
+      <div class="nav-title">Feed the Animals! 🐾</div>
+    </div>
+  </div>
+  <button class="btn-back" onclick="location.href='lesson2.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="part-tag">Part 01 of 05 ·Lesson 02 · Practice Game</div>
+  <div class="hdr-title">Feed the <span>Animals!</span> 🐾</div>
+  <div class="hdr-sub">Program the animal's moves so it can reach its yummy food — in the right order! 🍌🐵</div>
+  <div class="hdr-div"></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: GAME -->
+  <div class="stage-wrap">
+
+    <!-- Level tabs -->
+    <div class="level-tabs" id="levelTabs"></div>
+
+    <!-- Jungle card -->
+    <div class="jungle-card">
+      <div class="jungle-top">
+        <div class="jt-label" id="levelLabel">🐵 Level 1 — Monkey & Banana</div>
+        <div class="jt-lives" id="livesDisplay"></div>
+      </div>
+
+      <!-- Scene -->
+      <div class="jungle-scene" id="scene">
+        <div class="scene-ground"></div>
+        <!-- trees, animal, food injected by JS -->
+      </div>
+
+      <!-- Command strip -->
+      <div class="cmd-strip" id="cmdStrip">
+        <span class="cmd-empty-hint" id="cmdHint">// tap buttons below to build your program…</span>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-area">
+        <div class="cmd-buttons" id="cmdButtons">
+          <!-- injected per level -->
+        </div>
+        <div class="run-row">
+          <button class="btn-run" id="btnRun" onclick="runProgram()">▶ RUN PROGRAM</button>
+          <button class="btn-clear" onclick="clearProgram()">✕ CLEAR</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: INFO -->
+  <div class="right-panel">
+
+    <div class="card">
+      <div class="card-ttl">📊 Your Score</div>
+      <div class="score-grid">
+        <div class="score-item">
+          <div class="score-num" id="scoreXP" style="color:var(--gold)">0</div>
+          <div class="score-lbl">XP Earned</div>
+        </div>
+        <div class="score-item">
+          <div class="score-num" id="scoreLevels" style="color:var(--green-leaf)">0/3</div>
+          <div class="score-lbl">Levels Done</div>
+        </div>
+        <div class="score-item">
+          <div class="score-num" id="scoreStars" style="color:var(--gold)">☆☆☆</div>
+          <div class="score-lbl">Stars</div>
+        </div>
+        <div class="score-item">
+          <div class="score-num" id="scoreMistakes" style="color:var(--red)">0</div>
+          <div class="score-lbl">Oops!</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-ttl">🗺️ Level Progress</div>
+      <div class="lvl-progress" id="lvlProgress"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-ttl">How To Play</div>
+      <div class="how-list">
+        <div class="how-item"><div class="how-num">1</div><span>Pick an animal level above</span></div>
+        <div class="how-item"><div class="how-num">2</div><span>Press <b style="color:var(--text)">command buttons</b> to build a step-by-step program</span></div>
+        <div class="how-item"><div class="how-num">3</div><span>Press <b style="color:var(--text)">RUN PROGRAM</b> and watch your animal move!</span></div>
+        <div class="how-item"><div class="how-num">4</div><span>Avoid 🌵 obstacles — guide the animal to its 🍕 food!</span></div>
+        <div class="how-item"><div class="how-num">5</div><span>Use <b style="color:var(--text)">fewer commands</b> to earn more ⭐ stars!</span></div>
+      </div>
+    </div>
+
+    <div class="done-badge" id="doneBadge">
+      <span style="font-size:1.35rem">🎉</span>
+      <div class="done-badge-text"><b>All levels complete!</b> You've earned your 50 XP and unlocked Lesson 03.</div>
+    </div>
+
+    <button class="btn-next" id="btnNext" disabled>
+      <span id="btnIcon">🔒</span>
+      <span id="btnLabel">COMPLETE ALL LEVELS TO UNLOCK</span>
+    </button>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SUCCESS POPUP -->
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <div class="popup-icon" id="popupIcon">🎉</div>
+    <div class="popup-title" id="popupTitle">Level Complete!</div>
+    <div class="popup-stars" id="popupStars">⭐⭐⭐</div>
+    <div class="popup-desc" id="popupDesc">Amazing! The animal reached its food!</div>
+    <div class="popup-xp" id="popupXP">⚡ +15 XP Earned!</div>
+    <button class="popup-btn" id="popupNextBtn" onclick="closePopup()">Next Level →</button>
+    <button class="popup-btn secondary" onclick="closePopup(true)" style="margin-top:8px;display:block;width:100%">Play Again</button>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="si">📍 <span class="sv" style="color:var(--gold-soft)">Lesson 02</span></div>
+  <div class="si">⭐ <span class="sv" style="color:var(--gold-soft)" id="statStars">0 Stars</span></div>
+  <div class="si">⚡ <span class="sv" style="color:var(--gold-soft)" id="statXP">0 XP</span></div>
+  <div class="si">❤️ <span class="sv" style="color:#ff8a80" id="statLives">3</span></div>
+</div>
+
+<script>
+/* ───────────────────────────────────────────
+   LEVEL DEFINITIONS
+   Each level = an animal, food, obstacles,
+   a path (sequence of cells on a 9-cell track),
+   and the OPTIMAL solution.
+─────────────────────────────────────────── */
+const LEVELS = [
+  {
+    id: 0,
+    name: "Monkey & Banana",
+    animal: "🐵",
+    food: "🍌",
+    obstacle: "🌵",
+    bg: "linear-gradient(180deg,rgba(255,220,100,.18) 0%,rgba(200,235,170,.25) 100%)",
+    // track positions (% from left), 0=start, 8=end
+    trackLen: 8,
+    animalStart: 0,
+    foodPos: 7,
+    obstaclePos: [3],
+    // allowed commands for this level
+    commands: ["right","left","jump"],
+    // optimal solution (fewest moves)
+    optimal: ["right","right","right","jump","right","right","right"],
+    maxCmds: 12,
+    xpReward: 15,
+    hint: "Use RIGHT to move forward and JUMP to leap over the cactus!",
+    funFact: "🐵 Monkeys use their hands and feet to swing through trees!"
+  },
+  {
+    id: 1,
+    name: "Frog & Dragonfly",
+    animal: "🐸",
+    food: "🦋",
+    obstacle: "🪨",
+    bg: "linear-gradient(180deg,rgba(100,200,255,.15) 0%,rgba(180,235,170,.22) 100%)",
+    trackLen: 9,
+    animalStart: 0,
+    foodPos: 8,
+    obstaclePos: [2, 5],
+    commands: ["right","jump","back"],
+    optimal: ["right","right","jump","right","right","right","jump","right"],
+    maxCmds: 14,
+    xpReward: 18,
+    hint: "JUMP over the rocks! You'll need to jump TWICE on this level.",
+    funFact: "🐸 Frogs can jump 20x their body length in one leap!"
+  },
+  {
+    id: 2,
+    name: "Bunny & Carrot",
+    animal: "🐰",
+    food: "🥕",
+    obstacle: "🌊",
+    bg: "linear-gradient(180deg,rgba(255,200,220,.18) 0%,rgba(200,235,170,.22) 100%)",
+    trackLen: 10,
+    animalStart: 0,
+    foodPos: 9,
+    obstaclePos: [2, 4, 7],
+    commands: ["right","jump","turbo"],
+    optimal: ["right","right","jump","right","right","jump","right","right","right","jump","right"],
+    maxCmds: 16,
+    xpReward: 20,
+    hint: "TURBO dashes 2 steps at once — use it wisely between the puddles!",
+    funFact: "🐰 Bunnies can run up to 45 km/h — they're super speedy!"
+  }
+];
+
+/* ── STATE ── */
+let currentLevel = 0;
+let commands = [];
+let lives = 3;
+let running = false;
+let levelsDone = [false, false, false];
+let levelStars = [0, 0, 0];
+let totalXP = 0;
+let totalMistakes = 0;
+let gameWon = false;
+
+/* ── INIT ── */
+function init() {
+  buildLevelTabs();
+  buildLvlProgress();
+  loadLevel(currentLevel);
+  updateScorePanel();
+  if (localStorage.getItem('lesson02GameComplete') === 'yes') {
+    gameWon = true;
+    unlockNext();
+  }
+}
+
+function buildLevelTabs() {
+  const wrap = document.getElementById('levelTabs');
+  wrap.innerHTML = '';
+  LEVELS.forEach((lv, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'level-tab' + (i === currentLevel ? ' active' : '') + (i > 0 && !levelsDone[i-1] ? ' locked' : '');
+    btn.innerHTML = `<span class="lv-emoji">${lv.animal}</span> Level ${i+1}<span class="lv-stars">${'⭐'.repeat(levelStars[i])}</span>`;
+    btn.onclick = () => {
+      if (i > 0 && !levelsDone[i-1]) { showToast('🔒 Complete the previous level first!'); return; }
+      if (running) return;
+      currentLevel = i;
+      buildLevelTabs();
+      loadLevel(i);
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+function buildLvlProgress() {
+  const wrap = document.getElementById('lvlProgress');
+  wrap.innerHTML = '';
+  LEVELS.forEach((lv, i) => {
+    const row = document.createElement('div');
+    const cls = levelsDone[i] ? 'done' : i === currentLevel ? 'current' : '';
+    row.className = 'lvl-row ' + cls;
+    row.innerHTML = `<span class="lr-emo">${lv.animal}</span><span>${lv.name}</span><span class="lr-stars">${levelsDone[i] ? '⭐'.repeat(levelStars[i]) : (i === currentLevel ? '▶ Playing' : '🔒')}</span>`;
+    wrap.appendChild(row);
+  });
+}
+
+function loadLevel(idx) {
+  commands = [];
+  lives = 3;
+  running = false;
+  const lv = LEVELS[idx];
+
+  // update label
+  document.getElementById('levelLabel').textContent = `${lv.animal} Level ${idx+1} — ${lv.name}`;
+
+  // render lives
+  renderLives();
+
+  // build scene
+  buildScene(lv);
+
+  // build command buttons
+  buildCmdButtons(lv);
+
+  // clear strip
+  renderCmdStrip();
+}
+
+function buildScene(lv) {
+  const scene = document.getElementById('scene');
+  scene.style.background = lv.bg;
+
+  // clear dynamic elements
+  scene.querySelectorAll('.animal-sprite,.food-sprite,.obstacle,.tree,.speech').forEach(e => e.remove());
+
+  // draw some trees for atmosphere
+  const treePositions = [8, 20, 72, 88];
+  treePositions.forEach(p => {
+    const t = document.createElement('div');
+    t.className = 'tree';
+    t.style.left = p + '%';
+    t.textContent = Math.random() > .5 ? '🌴' : '🌳';
+    t.style.fontSize = (1.5 + Math.random() * .8) + 'rem';
+    t.style.bottom = (36 + Math.random() * 30) + 'px';
+    scene.appendChild(t);
+  });
+
+  // draw obstacles
+  lv.obstaclePos.forEach(pos => {
+    const o = document.createElement('div');
+    o.className = 'obstacle';
+    o.style.left = cellToPercent(pos, lv.trackLen) + '%';
+    o.textContent = lv.obstacle;
+    o.id = 'obs_' + pos;
+    scene.appendChild(o);
+  });
+
+  // food
+  const food = document.createElement('div');
+  food.className = 'food-sprite';
+  food.style.left = cellToPercent(lv.foodPos, lv.trackLen) + '%';
+  food.textContent = lv.food;
+  food.id = 'foodSprite';
+  scene.appendChild(food);
+
+  // animal
+  const animal = document.createElement('div');
+  animal.className = 'animal-sprite';
+  animal.style.left = cellToPercent(lv.animalStart, lv.trackLen) + '%';
+  animal.textContent = lv.animal;
+  animal.id = 'animalSprite';
+  scene.appendChild(animal);
+}
+
+function cellToPercent(cell, total) {
+  // maps cell index to % (5% to 90%)
+  return 5 + (cell / total) * 82;
+}
+
+function buildCmdButtons(lv) {
+  const wrap = document.getElementById('cmdButtons');
+  wrap.innerHTML = '';
+  const defs = {
+    right: { icon: '➡️', label: 'STEP RIGHT', cls: 'right' },
+    left:  { icon: '⬅️', label: 'STEP LEFT',  cls: 'left'  },
+    jump:  { icon: '🦘', label: 'JUMP OVER',  cls: 'up'    },
+    back:  { icon: '↩️', label: 'BACK STEP',  cls: 'down'  },
+    turbo: { icon: '⚡', label: 'TURBO ×2',   cls: 'down'  },
+  };
+  lv.commands.forEach(cmd => {
+    const d = defs[cmd];
+    const btn = document.createElement('button');
+    btn.className = `cmd-btn ${d.cls}`;
+    btn.innerHTML = `<span class="cb-icon">${d.icon}</span><span class="cb-label">${d.label}</span>`;
+    btn.onclick = () => addCmd(cmd);
+    wrap.appendChild(btn);
+  });
+}
+
+function renderLives() {
+  const el = document.getElementById('livesDisplay');
+  el.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const h = document.createElement('span');
+    h.className = 'heart' + (i >= lives ? ' lost' : '');
+    h.textContent = '❤️';
+    el.appendChild(h);
+  }
+  document.getElementById('statLives').textContent = lives;
+}
+
+function renderCmdStrip() {
+  const strip = document.getElementById('cmdStrip');
+  const hint = document.getElementById('cmdHint');
+  // remove old chips
+  strip.querySelectorAll('.cmd-chip').forEach(e => e.remove());
+
+  if (commands.length === 0) {
+    if (hint) hint.style.display = '';
+    return;
+  }
+  if (hint) hint.style.display = 'none';
+
+  const labels = { right:'➡️ RIGHT', left:'⬅️ LEFT', jump:'🦘 JUMP', back:'↩️ BACK', turbo:'⚡ TURBO' };
+  const cls    = { right:'right', left:'left', jump:'up', back:'down', turbo:'down' };
+
+  commands.forEach((cmd, i) => {
+    const chip = document.createElement('div');
+    chip.className = `cmd-chip ${cls[cmd]}`;
+    chip.id = 'chip_' + i;
+    chip.innerHTML = `${labels[cmd]}<button class="chip-del" onclick="removeCmd(${i})">✕</button>`;
+    strip.appendChild(chip);
+  });
+}
+
+function addCmd(cmd) {
+  if (running || gameWon) return;
+  const lv = LEVELS[currentLevel];
+  if (commands.length >= lv.maxCmds) { showToast(`⚠️ Max ${lv.maxCmds} commands!`); return; }
+  commands.push(cmd);
+  renderCmdStrip();
+}
+
+function removeCmd(i) {
+  if (running) return;
+  commands.splice(i, 1);
+  renderCmdStrip();
+}
+
+function clearProgram() {
+  if (running) return;
+  commands = [];
+  renderCmdStrip();
+  // reset animal position
+  const lv = LEVELS[currentLevel];
+  const a = document.getElementById('animalSprite');
+  if (a) { a.style.left = cellToPercent(lv.animalStart, lv.trackLen) + '%'; a.className = 'animal-sprite'; a.style.transform = ''; }
+  // restore obstacles
+  lv.obstaclePos.forEach(pos => {
+    let o = document.getElementById('obs_'+pos);
+    if (!o) {
+      const scene = document.getElementById('scene');
+      o = document.createElement('div');
+      o.className = 'obstacle'; o.id = 'obs_'+pos;
+      o.style.left = cellToPercent(pos, lv.trackLen) + '%';
+      o.textContent = lv.obstacle;
+      scene.appendChild(o);
+    }
+    o.style.display = '';
+  });
+  const food = document.getElementById('foodSprite');
+  if (food) food.style.display = '';
+}
+
+/* ── RUN ── */
+async function runProgram() {
+  if (running || commands.length === 0) {
+    if (commands.length === 0) showToast('⚠️ Add some commands first!');
+    return;
+  }
+  running = true;
+
+  const lv = LEVELS[currentLevel];
+  let pos = lv.animalStart;
+  const animal = document.getElementById('animalSprite');
+
+  // remove old speech
+  document.querySelectorAll('.speech').forEach(e => e.remove());
+
+  for (let i = 0; i < commands.length; i++) {
+    const cmd = commands[i];
+    // highlight current chip
+    document.querySelectorAll('.cmd-chip').forEach((c,j) => c.classList.toggle('active-step', j===i));
+
+    const chip = document.getElementById('chip_' + i);
+    const lv2 = LEVELS[currentLevel];
+
+    let nextPos = pos;
+    let isJump = false;
+    let isTurbo = false;
+
+    if (cmd === 'right') { nextPos = pos + 1; animal.className = 'animal-sprite walking'; }
+    else if (cmd === 'left') { nextPos = pos - 1; animal.className = 'animal-sprite walking-left'; }
+    else if (cmd === 'jump') { nextPos = pos + 1; isJump = true; animal.className = 'animal-sprite'; }
+    else if (cmd === 'back') { nextPos = pos - 1; animal.className = 'animal-sprite walking-left'; }
+    else if (cmd === 'turbo') { nextPos = pos + 2; isTurbo = true; animal.className = 'animal-sprite walking'; }
+
+    // bounds check
+    if (nextPos < 0 || nextPos > lv.trackLen) {
+      await handleError(animal, lv, "🚧 Out of bounds! Don't fall off the path!", i);
+      return;
+    }
+
+    // obstacle check (jumps skip obstacles, turbo must not land on one)
+    const obsCells = isJump ? [] : (isTurbo ? [pos+1, pos+2] : [nextPos]);
+    let hitObs = false;
+    for (const cell of obsCells) {
+      if (lv.obstaclePos.includes(cell)) { hitObs = true; break; }
+    }
+
+    if (hitObs && !isJump) {
+      await handleError(animal, lv, lv.obstacle === '🌊' ? '💦 Splashed! Jump over the water!' : `Ouch! The ${lv.obstacle} is blocking the way!`, i);
+      return;
+    }
+
+    // jump animation — bounce the animal
+    if (isJump) {
+      animal.style.transition = 'left .35s cubic-bezier(.34,1.56,.64,1), bottom .18s ease';
+      const scene = document.getElementById('scene');
+      const baseBottom = 34;
+      animal.style.bottom = (baseBottom + 48) + 'px';
+      await sleep(220);
+      animal.style.left = cellToPercent(nextPos, lv.trackLen) + '%';
+      await sleep(200);
+      animal.style.bottom = baseBottom + 'px';
+      await sleep(200);
+      animal.style.transition = '';
+    } else if (isTurbo) {
+      animal.style.transition = 'left .3s cubic-bezier(.5,0,.3,1.5)';
+      animal.style.left = cellToPercent(nextPos, lv.trackLen) + '%';
+      showSpeech(animal, '⚡ Turbo!');
+      await sleep(350);
+      animal.style.transition = '';
+    } else {
+      animal.style.left = cellToPercent(nextPos, lv.trackLen) + '%';
+      await sleep(480);
+    }
+
+    pos = nextPos;
+    document.querySelectorAll('.speech').forEach(e => e.remove());
+
+    // reached food?
+    if (pos === lv.foodPos) {
+      document.querySelectorAll('.cmd-chip').forEach(c => c.classList.remove('active-step'));
+      animal.className = 'animal-sprite eating';
+      document.getElementById('foodSprite').style.display = 'none';
+      showSpeech(animal, `Yummy! ${lv.food} 😋`);
+      spawnConfetti();
+      await sleep(700);
+      running = false;
+      levelComplete(i + 1);
+      return;
+    }
+
+    await sleep(80);
+  }
+
+  // commands ran out without reaching food
+  document.querySelectorAll('.cmd-chip').forEach(c => c.classList.remove('active-step'));
+  animal.className = 'animal-sprite';
+  showToast("🤔 Ran out of commands — add more to reach the food!");
+  running = false;
+}
+
+async function handleError(animal, lv, msg, chipIdx) {
+  document.querySelectorAll('.cmd-chip').forEach((c,j) => {
+    if (j === chipIdx) c.style.outline = '2px solid var(--red)';
+  });
+  animal.className = 'animal-sprite error-shake';
+  showSpeech(animal, '😵 Oof!');
+  showToast('❌ ' + msg);
+  totalMistakes++;
+  lives = Math.max(0, lives - 1);
+  renderLives();
+  updateScorePanel();
+  await sleep(700);
+  document.querySelectorAll('.speech').forEach(e => e.remove());
+  animal.className = 'animal-sprite';
+  document.querySelectorAll('.cmd-chip').forEach(c => { c.classList.remove('active-step'); c.style.outline = ''; });
+  commands = [];
+  renderCmdStrip();
+  animal.style.left = cellToPercent(lv.animalStart, lv.trackLen) + '%';
+  // restore obstacles
+  lv.obstaclePos.forEach(pos2 => {
+    let o = document.getElementById('obs_'+pos2);
+    if (!o) {
+      const scene = document.getElementById('scene');
+      o = document.createElement('div');
+      o.className = 'obstacle'; o.id = 'obs_'+pos2;
+      o.style.left = cellToPercent(pos2, lv.trackLen) + '%';
+      o.textContent = lv.obstacle;
+      scene.appendChild(o);
+    }
+    o.style.display = '';
+  });
+  document.getElementById('foodSprite').style.display = '';
+
+  if (lives === 0) {
+    await sleep(400);
+    showToast('💔 Out of lives! Resetting…');
+    lives = 3; renderLives(); updateScorePanel();
+  }
+  running = false;
+}
+
+function levelComplete(cmdCount) {
+  const lv = LEVELS[currentLevel];
+  const optimal = lv.optimal.length;
+  let stars = cmdCount <= optimal ? 3 : cmdCount <= optimal + 2 ? 2 : 1;
+  levelsDone[currentLevel] = true;
+  levelStars[currentLevel] = Math.max(levelStars[currentLevel], stars);
+  const xp = lv.xpReward + (stars === 3 ? 10 : stars === 2 ? 5 : 0);
+  totalXP += xp;
+  updateScorePanel();
+  buildLevelTabs();
+  buildLvlProgress();
+
+  // show popup
+  const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+  document.getElementById('popupIcon').textContent = lv.animal + lv.food;
+  document.getElementById('popupTitle').textContent = 'Level ' + (currentLevel + 1) + ' Complete!';
+  document.getElementById('popupStars').textContent = starStr;
+  document.getElementById('popupDesc').textContent = lv.funFact;
+  document.getElementById('popupXP').textContent = `⚡ +${xp} XP Earned!`;
+
+  const nextBtn2 = document.getElementById('popupNextBtn');
+  if (currentLevel < LEVELS.length - 1) {
+    nextBtn2.textContent = 'Next Level →';
+    nextBtn2.onclick = () => { closePopup(); currentLevel++; buildLevelTabs(); loadLevel(currentLevel); };
+  } else {
+    nextBtn2.textContent = '🎉 All Done!';
+    nextBtn2.onclick = () => { closePopup(); finishGame(); };
+  }
+
+  document.getElementById('popup').classList.add('open');
+}
+
+function finishGame() {
+  gameWon = true;
+  localStorage.setItem('lesson02GameComplete', 'yes');
+  const prog = parseInt(localStorage.getItem('part1_progress')) || 1;
+  if (prog < 3) localStorage.setItem('part1_progress', '3');
+  unlockNext();
+}
+
+function unlockNext() {
+  document.getElementById('doneBadge').classList.add('show');
+  const btn = document.getElementById('btnNext');
+  btn.classList.add('active'); btn.disabled = false;
+  document.getElementById('btnIcon').textContent = '🚀';
+  document.getElementById('btnLabel').textContent = 'GO TO LESSON 03 →';
+  btn.onclick = () => location.href = 'quest1.html';
+}
+
+function closePopup(replay = false) {
+  document.getElementById('popup').classList.remove('open');
+  if (replay) { loadLevel(currentLevel); }
+}
+
+function updateScorePanel() {
+  document.getElementById('scoreXP').textContent = totalXP;
+  document.getElementById('scoreLevels').textContent = levelsDone.filter(Boolean).length + '/3';
+  const totalStars = levelStars.reduce((a, b) => a + b, 0);
+  document.getElementById('scoreStars').textContent = '⭐'.repeat(totalStars) || '☆☆☆';
+  document.getElementById('scoreMistakes').textContent = totalMistakes;
+  document.getElementById('statXP').textContent = totalXP + ' XP';
+  document.getElementById('statStars').textContent = totalStars + ' Stars';
+}
+
+function spawnConfetti() {
+  const scene = document.getElementById('scene');
+  const pieces = ['🌟','✨','🎊','💫','🍀','⭐','🎉'];
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+    p.style.left = (10 + Math.random() * 80) + '%';
+    p.style.top = (10 + Math.random() * 60) + '%';
+    p.style.animationDelay = (Math.random() * .4) + 's';
+    p.style.fontSize = (.8 + Math.random() * .9) + 'rem';
+    scene.appendChild(p);
+    setTimeout(() => p.remove(), 1200);
+  }
+}
+
+function showSpeech(animal, text) {
+  document.querySelectorAll('.speech').forEach(e => e.remove());
+  const s = document.createElement('div');
+  s.className = 'speech';
+  s.textContent = text;
+  document.getElementById('scene').appendChild(s);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// startup
+init();
+</script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>CODEPLAY — Jurassic Path Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Nunito:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --cream:#F5EFE0;--parchment:#EDE3CC;--sand:#E2D5B8;--white:#FDFAF4;
+  --orange:#C8740E;--orange2:#A05808;--orange-lt:#E8921A;
+  --gold:#D4931A;--amber:#B86A0A;
+  --green:#3D6B39;--green-lt:#5E8C5A;--leaf:#7BB86E;
+  --teal:#2E7D72;--teal2:#1A5C55;
+  --ink:#2C2015;--ink-mid:#5A3E28;--ink-lt:#8B6840;--stone:#C9BB9A;
+  --red:#B84A1A;
+  --shadow:rgba(44,32,21,.12);--shadow-md:rgba(44,32,21,.20);
+  --head:'Baloo 2',cursive;--body:'Nunito',sans-serif;--mono:'Share Tech Mono',monospace;
+  --nav:52px;--bar:48px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--cream);font-family:var(--body);color:var(--ink);touch-action:manipulation;}
+
+/* ── BG ── */
+.page-bg{
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% 0%,rgba(123,184,110,.14),transparent 55%),
+    radial-gradient(ellipse 50% 35% at 0% 70%,rgba(200,116,14,.09),transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 85%,rgba(59,138,128,.09),transparent 55%),
+    linear-gradient(170deg,#F5EFE0 0%,#EFE8D2 30%,#EAE0C8 60%,#F0E8D8 100%)
+}
+
+/* Leaf dots */
+.star-dot{position:fixed;border-radius:50%;pointer-events:none;z-index:1;animation:twinkle linear infinite}
+@keyframes twinkle{0%,100%{opacity:1}50%{opacity:.08}}
+
+/* ── KEYFRAMES ── */
+@keyframes fadeUp    {from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn     {0%{transform:scale(.3);opacity:0}65%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes bobY      {0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes dinoHappy {0%{transform:scale(1) translateY(0)}30%{transform:scale(1.18) translateY(-16px)}65%{transform:scale(.96)}100%{transform:scale(1) translateY(0)}}
+@keyframes dinoSad   {0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-4deg)}80%{transform:rotate(3deg)}}
+@keyframes shine     {to{left:160%}}
+@keyframes spinin    {0%{transform:scale(.3) rotate(-25deg);opacity:0}65%{transform:scale(1.12) rotate(6deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes floatY    {0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes blink     {0%,100%{opacity:1}50%{opacity:.18}}
+@keyframes trailPop  {0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+@keyframes flashOk   {0%,100%{background:transparent}40%{background:rgba(61,107,57,.1)}}
+@keyframes flashNo   {0%,100%{background:transparent}40%{background:rgba(184,74,26,.07)}}
+@keyframes correctPop{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
+@keyframes leafDrift {0%{opacity:0;transform:translateY(-10px) rotate(0deg)}10%{opacity:.45}90%{opacity:.2}100%{opacity:0;transform:translateY(110vh) rotate(300deg)}}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:200;
+  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
+  background:rgba(253,250,244,.97);backdrop-filter:blur(18px);
+  border-bottom:2px solid rgba(200,116,14,.18);
+  box-shadow:0 2px 18px var(--shadow)
+}
+.nav-logo    {display:flex;align-items:center;gap:8px;font-family:var(--head);font-size:1rem;font-weight:900;color:#ff8c00}
+.nav-logo-img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,116,14,.35)}
+.nav-logo-dino{animation:bobY 3s ease-in-out infinite;display:inline-block}
+.nav-lesson  {font-family:var(--head);font-size:.72rem;font-weight:800;color:var(--orange);letter-spacing:.06em}
+.btn-back    {display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:99px;border:1.5px solid rgba(200,116,14,.38);background:rgba(200,116,14,.09);color:var(--orange);font-family:var(--body);font-size:.75rem;font-weight:800;cursor:pointer;transition:all .2s}
+.btn-back:hover{background:rgba(200,116,14,.18);border-color:rgba(200,116,14,.65)}
+.btn-back svg{width:11px;height:11px;stroke:var(--orange);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── BOTTOM BAR ── */
+.bar{
+  position:fixed;bottom:0;left:0;right:0;height:var(--bar);z-index:200;
+  background:rgba(253,250,244,.97);backdrop-filter:blur(18px);
+  border-top:2px solid rgba(200,116,14,.14);
+  box-shadow:0 -2px 12px var(--shadow);
+  display:flex;align-items:center;justify-content:center;gap:24px;
+}
+.bi{display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--ink-lt)}
+.bv{font-family:var(--head);font-weight:900;font-size:.75rem}
+
+/* ── SCREENS ── */
+.screen{display:none;position:fixed;top:var(--nav);left:0;right:0;bottom:var(--bar);z-index:10;overflow:hidden}
+.screen.on{display:flex}
+
+/* ══ INTRO ══ */
+#introScreen{flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:14px 20px}
+.intro-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(200,116,14,.1);border:1.5px solid rgba(200,116,14,.35);padding:4px 16px;border-radius:99px;font-family:var(--head);font-size:.62rem;font-weight:800;color:var(--orange);letter-spacing:.12em;text-transform:uppercase}
+.intro-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--orange-lt);animation:blink 1.5s infinite}
+.intro-title{font-family:var(--head);font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;color:var(--ink);text-align:center;line-height:1.05}
+.intro-title span{color:var(--orange)}
+.intro-sub  {font-family:var(--head);font-size:.8rem;font-weight:800;color:var(--gold);text-align:center}
+.intro-dino {height:clamp(90px,18vh,155px);width:auto;max-width:240px;object-fit:contain;filter:drop-shadow(0 6px 20px rgba(200,116,14,.18));animation:bobY 2.5s ease-in-out infinite}
+.how-card   {background:rgba(253,250,244,.92);border:1.5px solid rgba(200,116,14,.18);border-radius:18px;padding:12px 16px;width:100%;max-width:460px;box-shadow:0 4px 18px var(--shadow)}
+.how-lbl {font-size:.54rem;letter-spacing:.2em;color:var(--stone);text-transform:uppercase;margin-bottom:8px}
+.how-rows{display:flex;flex-direction:column;gap:7px}
+.how-row {display:flex;align-items:flex-start;gap:9px;font-size:.78rem;color:var(--ink-mid);line-height:1.35}
+.how-n   {width:22px;height:22px;border-radius:50%;background:rgba(200,116,14,.12);border:1.5px solid rgba(200,116,14,.38);display:grid;place-items:center;font-family:var(--head);font-size:.65rem;font-weight:900;color:var(--orange);flex-shrink:0;margin-top:1px}
+.start-btn{width:100%;max-width:460px;flex-shrink:0;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--orange),var(--orange2));color:var(--white);font-family:var(--head);font-size:.95rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 0 var(--amber),0 6px 22px rgba(200,116,14,.4);transition:all .2s;position:relative;overflow:hidden}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--amber),0 10px 30px rgba(200,116,14,.5)}
+.start-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);animation:shine 1.8s linear infinite}
+
+/* ══ GAME ══ */
+#gameScreen{flex-direction:column;align-items:center;justify-content:flex-start}
+.game-hud{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:7px 16px;background:rgba(253,250,244,.95);border-bottom:1px solid rgba(200,116,14,.14);width:min(980px,100%)}
+.hud-left {display:flex;align-items:center;gap:10px}
+.hud-lives{display:flex;gap:5px;align-items:center}
+.life-dot  {width:13px;height:13px;border-radius:50%;background:var(--red);box-shadow:0 0 5px rgba(184,74,26,.5);transition:all .3s}
+.life-dot.lost{background:rgba(184,74,26,.15);box-shadow:none}
+.streak-lbl{font-family:var(--head);font-size:.7rem;font-weight:900;color:var(--gold)}
+.hud-right {display:flex;align-items:center;gap:14px}
+.hud-stat  {display:flex;flex-direction:column;align-items:center}
+.hud-val   {font-family:var(--head);font-size:.82rem;font-weight:900;line-height:1;color:var(--ink)}
+.hud-lbl   {font-size:.44rem;letter-spacing:.14em;color:var(--stone);text-transform:uppercase}
+
+/* Progress */
+.prog-zone{flex:0 0 auto;padding:6px 16px 8px;position:relative;background:rgba(245,239,224,.9);border-bottom:1px solid rgba(200,116,14,.1);width:min(980px,100%)}
+.prog-track{height:12px;background:rgba(44,32,21,.08);border-radius:99px;overflow:hidden;position:relative}
+.prog-fill {height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .55s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 7px rgba(61,107,57,.4)}
+.prog-runner{position:absolute;top:-14px;width:38px;height:38px;object-fit:contain;border-radius:50%;border:2px solid var(--green-lt);box-shadow:0 0 12px rgba(61,107,57,.4);transition:left .55s cubic-bezier(.34,1.56,.64,1)}
+.prog-steps{display:flex;justify-content:space-between;margin-top:5px;padding:0 2px}
+.pstep     {width:8px;height:8px;border-radius:50%;background:rgba(44,32,21,.1);border:1.5px solid rgba(44,32,21,.18);transition:all .35s;flex-shrink:0}
+.pstep.done{background:var(--green);border-color:var(--green);box-shadow:0 0 5px rgba(61,107,57,.5);animation:trailPop .35s ease}
+.pstep.fail{background:var(--red);border-color:var(--red);box-shadow:0 0 5px rgba(184,74,26,.45)}
+.pstep.cur {background:var(--gold);border-color:var(--amber);animation:blink 1s ease infinite}
+
+/* Question card */
+.q-zone{flex:0 0 auto;padding:6px 14px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;width:min(980px,100%)}
+.round-strip{display:flex;align-items:center;gap:8px}
+.round-tag  {display:flex;align-items:center;gap:5px;background:rgba(200,116,14,.1);border:1px solid rgba(200,116,14,.28);padding:2px 12px;border-radius:99px;font-size:.56rem;letter-spacing:.16em;color:var(--orange);text-transform:uppercase;font-weight:800}
+.rdot       {width:4px;height:4px;border-radius:50%;background:var(--orange-lt);animation:blink 1.3s infinite}
+.cat-tag    {padding:2px 10px;border-radius:99px;font-size:.54rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.cat-tag.concept{background:rgba(212,147,26,.1);border:1px solid rgba(212,147,26,.25);color:var(--gold)}
+.cat-tag.math   {background:rgba(61,107,57,.1); border:1px solid rgba(61,107,57,.28); color:var(--green-lt)}
+.cat-tag.dino   {background:rgba(200,116,14,.1);border:1px solid rgba(200,116,14,.28);color:var(--orange-lt)}
+
+.q-card{
+  width:min(540px,100%);
+  background:rgba(253,250,244,.94);border:2px solid rgba(212,147,26,.22);
+  border-radius:20px;padding:14px 18px 12px;
+  box-shadow:0 6px 28px var(--shadow-md),0 1px 0 rgba(255,255,255,.8) inset;
+  position:relative;overflow:hidden;animation:fadeUp .35s ease;
+}
+.q-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--orange2),var(--gold),var(--orange2))}
+.q-level-tag{font-size:.6rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.7;text-align:center;margin-bottom:4px}
+.q-scenario {
+  background:rgba(253,250,244,.9);border:1.5px solid rgba(200,116,14,.16);
+  border-radius:12px;padding:10px 14px;margin-bottom:8px;
+  font-family:var(--mono);font-size:clamp(.88rem,2.1vw,1rem);
+  color:var(--ink-mid);line-height:2;
+  box-shadow:0 2px 8px var(--shadow)
+}
+.q-if  {color:var(--red);font-weight:700}
+.q-then{color:var(--green-lt)}
+.q-else{color:var(--teal);font-weight:700}
+.q-elif{color:var(--gold)}
+.q-arrow{color:var(--gold);opacity:.7}
+.q-text{
+  font-family:var(--head);font-size:clamp(.95rem,2.4vw,1.15rem);font-weight:800;
+  color:var(--ink);line-height:1.45;text-align:center;
+  background:rgba(200,116,14,.07);border:1px solid rgba(200,116,14,.16);
+  border-radius:10px;padding:8px 12px;margin-top:2px;
+}
+
+/* Answer buttons */
+.answer-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(540px,100%);margin-top:4px}
+.answer-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:62px;padding:10px 12px;border-radius:16px;
+  border:2px solid rgba(200,116,14,.16);background:rgba(253,250,244,.9);
+  color:var(--ink);font-family:var(--head);font-size:clamp(.82rem,2vw,.98rem);
+  font-weight:800;line-height:1.25;text-align:center;cursor:pointer;
+  transition:transform .15s,box-shadow .2s,background .2s,border-color .2s;
+  position:relative;overflow:hidden;
+  box-shadow:0 3px 12px var(--shadow)
+}
+.answer-btn::after{content:'';position:absolute;top:0;left:-110%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transition:left 0s}
+.answer-btn:hover::after{left:150%;transition:left .4s}
+.answer-btn:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 6px 18px var(--shadow-md);background:rgba(200,116,14,.08);border-color:rgba(200,116,14,.38)}
+.answer-btn:not(:disabled):active{transform:translateY(0)}
+.answer-btn:disabled{cursor:default}
+.answer-btn .btn-label{font-size:.52rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;opacity:.45;margin-bottom:3px;color:var(--ink-lt)}
+.answer-btn.correct-ans{border-color:var(--green)!important;background:rgba(61,107,57,.14)!important;box-shadow:0 0 22px rgba(61,107,57,.35)!important;animation:correctPop .4s cubic-bezier(.34,1.56,.64,1)}
+.answer-btn.wrong-ans  {border-color:var(--red)!important;background:rgba(184,74,26,.1)!important;animation:wrongShake .4s ease}
+.answer-btn.reveal-ans {border-color:rgba(61,107,57,.45)!important;background:rgba(61,107,57,.08)!important}
+
+/* Fork arena */
+.fork-arena{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.fork-svg  {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.path-zone {position:absolute;bottom:0;height:85%;width:46%;z-index:2;display:flex;align-items:center;justify-content:center}
+.path-zone.left-zone {left:0}
+.path-zone.right-zone{right:0}
+.path-glow{position:absolute;inset:0;border-radius:50% 50% 0 0/30% 30% 0 0;opacity:0;transition:opacity .4s}
+.left-zone  .path-glow{background:radial-gradient(ellipse 80% 60% at 40% 70%,rgba(61,107,57,.22),transparent 70%)}
+.right-zone .path-glow{background:radial-gradient(ellipse 80% 60% at 60% 70%,rgba(184,74,26,.18),transparent 70%)}
+.path-zone.activated-ok   .path-glow{opacity:1;background:radial-gradient(ellipse 80% 60% at 50% 70%,rgba(61,107,57,.38),transparent 70%)}
+.path-zone.activated-fail .path-glow{opacity:1;background:radial-gradient(ellipse 80% 60% at 50% 70%,rgba(184,74,26,.3),transparent 70%)}
+
+.dino-spot{position:absolute;bottom:12%;left:50%;transform:translateX(-50%);z-index:8;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.dino-vid {height:clamp(72px,14vh,120px);width:auto;max-width:130px;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(44,32,21,.2))}
+.dino-vid.idle {animation:bobY 2.4s ease-in-out infinite}
+.dino-vid.happy{animation:dinoHappy .55s ease forwards;filter:drop-shadow(0 0 18px rgba(61,107,57,.45)) drop-shadow(0 6px 14px rgba(44,32,21,.18))}
+.dino-vid.sad  {animation:dinoSad .5s ease forwards; filter:drop-shadow(0 0 16px rgba(184,74,26,.4))  drop-shadow(0 6px 14px rgba(44,32,21,.18))}
+
+.dino-bubble{background:rgba(253,250,244,.97);border:1.5px solid rgba(200,116,14,.32);border-radius:12px;padding:4px 12px;font-family:var(--head);font-size:.65rem;font-weight:800;color:var(--ink);white-space:nowrap;box-shadow:0 2px 10px var(--shadow);margin-bottom:4px;position:relative}
+.dino-bubble::after {content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(200,116,14,.32)}
+.dino-bubble::before{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:rgba(253,250,244,.97);z-index:1;margin-top:-1px}
+
+/* Rocks & leaves — earthy tones */
+.rock{position:absolute;border-radius:50% 45% 50% 45%;background:rgba(180,140,90,.22);pointer-events:none}
+.r1{width:22px;height:14px;bottom:28%;left:8%;transform:rotate(-12deg)}
+.r2{width:16px;height:10px;bottom:22%;left:15%;transform:rotate(8deg)}
+.r3{width:22px;height:14px;bottom:28%;right:8%;transform:rotate(12deg)}
+.r4{width:16px;height:10px;bottom:22%;right:15%;transform:rotate(-8deg)}
+.r5{width:12px;height:8px;bottom:18%;left:42%;transform:rotate(5deg)}
+.g-leaf{position:absolute;pointer-events:none;opacity:.18;border-radius:50% 0;background:rgba(61,107,57,.7)}
+.gl1{width:28px;height:16px;bottom:32%;left:4%;transform:rotate(-20deg)}
+.gl2{width:20px;height:12px;bottom:26%;left:22%;transform:rotate(15deg)}
+.gl3{width:28px;height:16px;bottom:32%;right:4%;transform:rotate(20deg);border-radius:0 50%}
+.gl4{width:20px;height:12px;bottom:26%;right:22%;transform:rotate(-15deg);border-radius:0 50%}
+
+.env-flash{position:absolute;inset:0;z-index:15;pointer-events:none}
+.env-flash.ok{animation:flashOk .5s ease forwards}
+.env-flash.no{animation:flashNo .5s ease forwards}
+
+/* Bottom strip */
+.bottom-strip{flex:0 0 auto;padding:4px 14px 6px;display:flex;flex-direction:column;gap:4px;background:rgba(253,250,244,.96);border-top:1.5px solid rgba(200,116,14,.14);width:min(980px,100%)}
+.fb-row{display:flex;align-items:center;gap:8px;border-radius:10px;padding:7px 12px;font-family:var(--head);font-size:clamp(.74rem,1.7vw,.85rem);font-weight:800;opacity:0;transition:all .28s;transform:translateY(5px);min-height:36px}
+.fb-row.show{opacity:1;transform:translateY(0);animation:fadeUp .25s ease}
+.fb-row.ok  {background:rgba(61,107,57,.1);border:1.5px solid rgba(61,107,57,.28);color:var(--green)}
+.fb-row.no  {background:rgba(184,74,26,.08);border:1.5px solid rgba(184,74,26,.25);color:var(--red)}
+.fb-vid{width:24px;height:24px;object-fit:contain;flex-shrink:0}
+
+.next-btn{width:100%;padding:10px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--orange),var(--orange2));color:var(--white);font-family:var(--head);font-size:.8rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;display:none;position:relative;overflow:hidden;box-shadow:0 3px 0 var(--amber),0 4px 16px rgba(200,116,14,.3)}
+.next-btn.show{display:block;animation:fadeUp .28s ease}
+.next-btn:hover{transform:translateY(-2px);box-shadow:0 5px 0 var(--amber),0 6px 22px rgba(200,116,14,.5)}
+.next-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);animation:shine 2s linear infinite}
+
+/* ══ RESULT ══ */
+#resultScreen{
+  flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:14px 20px;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 85%,rgba(200,116,14,.1),transparent 60%),
+    radial-gradient(ellipse 60% 40% at 10% 10%,rgba(123,184,110,.1),transparent 50%),
+    linear-gradient(170deg,#F5EFE0 0%,#EFE8D2 50%,#EAE0C8 100%)
+}
+.res-title{font-family:var(--head);font-size:clamp(1.6rem,4.5vw,2.4rem);font-weight:900;line-height:1;text-align:center}
+.res-title.perfect {color:var(--gold);text-shadow:0 0 22px rgba(212,147,26,.4)}
+.res-title.great   {color:var(--green);text-shadow:0 0 22px rgba(61,107,57,.3)}
+.res-title.good    {color:var(--orange);text-shadow:0 0 22px rgba(200,116,14,.38)}
+.res-title.tryagain{color:var(--red);text-shadow:0 0 22px rgba(184,74,26,.32)}
+.res-dino{height:clamp(90px,18vh,155px);width:auto;max-width:220px;object-fit:contain;border-radius:14px;flex-shrink:0;filter:drop-shadow(0 6px 20px rgba(200,116,14,.18))}
+.res-score-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-shrink:0}
+.score-ring    {width:90px;height:90px;position:relative;flex-shrink:0}
+.score-ring svg{position:absolute;inset:0;width:100%;height:100%}
+.ring-inner    {position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-n {font-family:var(--head);font-size:1.6rem;font-weight:900;color:var(--ink);line-height:1}
+.ring-of{font-size:.58rem;color:var(--stone);letter-spacing:.1em}
+.res-details{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.res-xp{font-family:var(--head);font-size:.85rem;font-weight:900;color:var(--amber);background:rgba(200,116,14,.1);border:1.5px solid rgba(200,116,14,.25);padding:5px 14px;border-radius:99px}
+.stars-row{display:flex;gap:6px}
+.star-vid-wrap{width:34px;height:34px;border-radius:50%;overflow:hidden;flex-shrink:0;opacity:0;transform:scale(0) rotate(-20deg);transition:all .38s cubic-bezier(.34,1.56,.64,1);background:rgba(212,147,26,.12);border:1.5px solid rgba(212,147,26,.25)}
+.star-vid-wrap.show{opacity:1;transform:scale(1) rotate(0)}
+.star-vid-wrap.dim {opacity:.2;transform:scale(1)}
+.star-el{width:100%;height:100%;object-fit:cover;display:block}
+.trophy-el{height:52px;width:auto;object-fit:contain;display:none;filter:drop-shadow(0 0 12px rgba(212,147,26,.45))}
+.trophy-el.show{display:block;animation:popIn .45s cubic-bezier(.34,1.56,.64,1) both,floatY 2.5s ease-in-out .45s infinite}
+.res-msg {font-size:.8rem;color:var(--ink-mid);line-height:1.55;text-align:center;max-width:380px;font-weight:700}
+.res-btns{display:flex;gap:9px;width:100%;max-width:380px;flex-shrink:0}
+.rb{flex:1;padding:11px;border-radius:12px;font-family:var(--head);font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;border:1.5px solid;text-align:center}
+.rb.p{background:linear-gradient(135deg,var(--orange),var(--orange2));border-color:transparent;color:var(--white);box-shadow:0 3px 0 var(--amber),0 4px 16px rgba(200,116,14,.32)}
+.rb.p:hover{transform:translateY(-2px)}
+.rb.s{background:transparent;border-color:rgba(44,32,21,.15);color:var(--ink-lt)}
+.rb.s:hover{border-color:rgba(44,32,21,.3);color:var(--ink)}
+#ccvs{position:fixed;inset:0;z-index:300;pointer-events:none;display:none}
+</style>
+</head>
+<body>
+
+<div class="page-bg"></div>
+<div id="starField"></div>
+<canvas id="ccvs"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img class="nav-logo-img" id="imgNavLogo" src="image/png" alt="" onerror="this.style.display='none'">
+    <span class="nav-logo-dino">🦕</span>
+    CODE<span style="color:var(--orange)">PLAY</span>
+  </div>
+  <span class="nav-lesson">Lesson 04 — ELSE</span>
+  <button class="btn-back" onclick="go('3_4lesson.html')">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<!-- INTRO -->
+<div class="screen on" id="introScreen">
+  <div class="intro-badge">Lesson 04 · ELSE Statement</div>
+  <div class="intro-title">Jurassic Path<br><span>Quest!</span></div>
+  <div class="intro-sub">Help your baby dino pick the right path!</div>
+  <video class="intro-dino" id="introVid" autoplay loop muted playsinline src="video/YOUR_INTRO_CHARACTER.mp4" onerror="this.style.background='rgba(200,116,14,.08)';this.style.border='1.5px solid rgba(200,116,14,.2)';this.style.borderRadius='16px'"></video>
+  <div class="how-card">
+    <div class="how-lbl">How to play</div>
+    <div class="how-rows">
+      <div class="how-row"><div class="how-n">1</div><span>Read the IF → ELSE situation carefully!</span></div>
+      <div class="how-row"><div class="how-n">2</div><span>Read the question and pick the right answer!</span></div>
+      <div class="how-row"><div class="how-n">3</div><span>Your dino runs the path you choose!</span></div>
+      <div class="how-row"><div class="how-n">4</div><span>3 wrong answers and the dino goes home!</span></div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startGame()">Let's Go!</button>
+</div>
+
+<!-- GAME -->
+<div class="screen" id="gameScreen">
+  <div class="game-hud">
+    <div class="hud-left">
+      <div class="hud-lives" id="livesRow"></div>
+      <div class="streak-lbl" id="streakLbl"></div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-stat"><div class="hud-val" style="color:var(--gold)"     id="scoreVal">0</div><div class="hud-lbl">XP</div></div>
+      <div class="hud-stat"><div class="hud-val" style="color:var(--green-lt)" id="scoreDisp">0/16</div><div class="hud-lbl">Score</div></div>
+    </div>
+  </div>
+
+  <div class="prog-zone">
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <video class="prog-runner" id="progRunner" autoplay loop muted playsinline src="video/YOUR_RUNNER.mp4" style="left:0" onerror="this.style.display='none'"></video>
+    <div class="prog-steps" id="progSteps"></div>
+  </div>
+
+  <div class="q-zone">
+    <div class="round-strip">
+      <div class="round-tag"><div class="rdot"></div><span id="roundLbl">Q 1 / 16</span></div>
+      <div class="cat-tag concept" id="catTag">Level 1</div>
+    </div>
+    <div class="q-card" id="qCard">
+      <div class="q-level-tag" id="qLevelTag">— Level 1 · Basic Logic —</div>
+      <div class="q-scenario" id="qScenario"></div>
+      <div class="q-text"     id="qText"></div>
+    </div>
+    <div class="answer-row" id="answerRow">
+      <button class="answer-btn" id="btnA" onclick="answer('a')">
+        <div class="btn-label">Option A</div>
+        <span id="labelA"></span>
+      </button>
+      <button class="answer-btn" id="btnB" onclick="answer('b')">
+        <div class="btn-label">Option B</div>
+        <span id="labelB"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Fork arena -->
+  <div class="fork-arena" id="forkArena">
+    <div class="env-flash" id="envFlash"></div>
+    <svg class="fork-svg" viewBox="0 0 400 220" preserveAspectRatio="1" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="200" cy="215" rx="195" ry="12" fill="rgba(61,107,57,.1)"/>
+      <path d="M200 220 Q200 160 200 130" stroke="rgba(139,104,64,.45)" stroke-width="24" fill="none" stroke-linecap="round"/>
+      <path d="M200 220 Q200 160 200 130" stroke="rgba(212,147,26,.25)"  stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="M200 130 Q180 90 100 60 Q50 40 10 30"  stroke="rgba(61,107,57,.6)"   stroke-width="22" fill="none" stroke-linecap="round"/>
+      <path d="M200 130 Q180 90 100 60 Q50 40 10 30"  stroke="rgba(123,184,110,.4)" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="6 8"/>
+      <path d="M200 130 Q220 90 300 60 Q350 40 390 30" stroke="rgba(184,74,26,.55)"  stroke-width="22" fill="none" stroke-linecap="round"/>
+      <path d="M200 130 Q220 90 300 60 Q350 40 390 30" stroke="rgba(232,146,106,.4)" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="6 8"/>
+      <circle cx="200" cy="130" r="9" fill="rgba(139,104,64,.25)"/>
+      <circle cx="200" cy="130" r="5" fill="rgba(212,147,26,.4)"/>
+    </svg>
+    <div class="rock r1"></div><div class="rock r2"></div><div class="rock r3"></div><div class="rock r4"></div><div class="rock r5"></div>
+    <div class="g-leaf gl1"></div><div class="g-leaf gl2"></div><div class="g-leaf gl3"></div><div class="g-leaf gl4"></div>
+    <div class="path-zone left-zone"  id="leftGlow"><div class="path-glow"></div></div>
+    <div class="path-zone right-zone" id="rightGlow"><div class="path-glow"></div></div>
+    <div class="dino-spot">
+      <div class="dino-bubble" id="dinoBubble">Which path?</div>
+      <video class="dino-vid idle" id="dinoVid" autoplay loop muted playsinline src="video/YOUR_CHAR_IDLE.mp4" onerror="this.style.display='none'"></video>
+    </div>
+  </div>
+
+  <div class="bottom-strip">
+    <div class="fb-row" id="fbRow">
+      <video class="fb-vid" id="fbVid" autoplay loop muted playsinline src="" onerror="this.style.display='none'"></video>
+      <span id="fbTxt"></span>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="nextQ()">Next Path →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="resultScreen">
+  <div class="res-title" id="resTitle">Amazing!</div>
+  <video class="res-dino" id="resDino" autoplay loop muted playsinline src="video/YOUR_CHAR_CELEBRATE.mp4" onerror="this.style.background='rgba(200,116,14,.07)';this.style.borderRadius='14px'"></video>
+  <div class="res-score-row">
+    <div class="score-ring">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" stroke="rgba(44,32,21,.08)" stroke-width="7"/>
+        <circle cx="50" cy="50" r="42" stroke="url(#rg)" stroke-width="7" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" id="ringC" style="transition:stroke-dashoffset 1.1s cubic-bezier(.34,1.56,.64,1);transform:rotate(-90deg);transform-origin:50px 50px"/>
+        <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#3D6B39"/><stop offset="100%" stop-color="#D4931A"/></linearGradient></defs>
+      </svg>
+      <div class="ring-inner"><div class="ring-n" id="ringN">0</div><div class="ring-of" id="ringOf">of 16</div></div>
+    </div>
+    <div class="res-details">
+      <div class="res-xp" id="resXP">+0 XP</div>
+      <div class="stars-row">
+        <div class="star-vid-wrap" id="star1"><video class="star-el" id="starEl1" autoplay loop muted playsinline src="video/star_full.mp4" onerror="this.style.display='none'"></video></div>
+        <div class="star-vid-wrap" id="star2"><video class="star-el" id="starEl2" autoplay loop muted playsinline src="video/star_full.mp4" onerror="this.style.display='none'"></video></div>
+        <div class="star-vid-wrap" id="star3"><video class="star-el" id="starEl3" autoplay loop muted playsinline src="video/star_full.mp4" onerror="this.style.display='none'"></video></div>
+      </div>
+      <video class="trophy-el" id="trophyEl" autoplay loop muted playsinline src="video/trophy.mp4" onerror="this.style.display='none'"></video>
+    </div>
+  </div>
+  <div class="res-msg" id="resMsg"></div>
+  <div class="res-btns">
+    <button class="rb s" onclick="replayGame()">Play Again</button>
+    <button class="rb p" onclick="unlockLesson5AndGo()">Back to Lesson</button>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bar">
+  <div class="bi">
+    <img id="imgBarIcon" src="image/png" style="width:20px;height:20px;border-radius:50%;object-fit:cover" alt="" onerror="this.style.display='none'">
+    <span class="bv" style="color:var(--orange)">Lesson 04</span>
+  </div>
+  <div class="bi"><span class="bv" style="color:var(--gold)">ELSE Statement</span></div>
+  <div class="bi"><span class="bv" style="color:var(--green-lt)" id="barScoreBar">0/16</span><span>&nbsp;Score</span></div>
+</div>
+
+<script>
+const V={
+  nav_logo:'images/logo.png',bar_icon:'images/bar_icon.png',
+  intro:'YOUR_INTRO_CHARACTER.mp4',runner:'YOUR_RUNNER.mp4',
+  idle:'YOUR_CHAR_IDLE.mp4',happy:'videos/dino_happy.mp4',sad:'videos/dino_sad.mp4',
+  fb_ok:'videos/fb_ok.mp4',fb_no:'videos/fb_no.mp4',
+  celebrate:'YOUR_CHAR_CELEBRATE.mp4',
+  star_full:'star_full.mp4',star_empty:'star_empty.mp4',trophy:'trophy.mp4',
+};
+function setVid(el,src){if(el){el.src=src;el.load();}}
+document.getElementById('imgNavLogo').src=V.nav_logo;
+document.getElementById('imgBarIcon').src=V.bar_icon;
+setVid(document.getElementById('introVid'),V.intro);
+setVid(document.getElementById('progRunner'),V.runner);
+setVid(document.getElementById('dinoVid'),V.idle);
+setVid(document.getElementById('resDino'),V.celebrate);
+['star1','star2','star3'].forEach(id=>setVid(document.getElementById(id).querySelector('.star-el'),V.star_full));
+setVid(document.getElementById('trophyEl'),V.trophy);
+
+/* Leaf particle field (replaces star dots) */
+const sf=document.getElementById('starField');
+['rgba(200,116,14,.18)','rgba(123,184,110,.2)','rgba(212,147,26,.15)','rgba(94,140,90,.15)','rgba(201,187,154,.22)'].forEach(c=>{
+  for(let i=0;i<12;i++){const s=document.createElement('div');s.className='star-dot';const sz=Math.random()*3.5+1.5;s.style.cssText=`width:${sz}px;height:${sz}px;background:${c};border-radius:50%;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${Math.random()*.4+.1};animation-duration:${Math.random()*14+8}s;animation-delay:-${Math.random()*14}s`;sf.appendChild(s);}
+});
+
+function setDino(state){const v=document.getElementById('dinoVid');v.className='dino-vid';setVid(v,state==='happy'?V.happy:state==='sad'?V.sad:V.idle);v.classList.add(state);}
+
+const Qs=[
+  {level:'🟢 Level 1 · Basic Logic',cat:'concept',scenario:'IF it is raining  →  Take umbrella ☂️\nELSE  →  Wear sunglasses 😎',q:'It is NOT raining right now.\nWhat does the dino do?',a:'Take umbrella ☂️',b:'Wear sunglasses 😎',ans:'b',ok:'Correct! It is NOT raining, so ELSE runs → Wear sunglasses! 😎',no:'Not quite! It is NOT raining, so ELSE runs → Wear sunglasses!'},
+  {level:'🟢 Level 1 · Basic Logic',cat:'concept',scenario:'IF light is green  →  Go 🚗\nELSE  →  Stop 🛑',q:'The light IS green.\nWhat does the dino do?',a:'Go 🚗',b:'Stop 🛑',ans:'a',ok:'Yes! Green light means IF is TRUE → Go! 🚗',no:'The light IS green, so IF is TRUE → Go!'},
+  {level:'🟢 Level 1 · Basic Logic',cat:'concept',scenario:'IF you are hungry  →  Eat food 🍕\nELSE  →  Play 🎮',q:'You ARE hungry right now.\nWhat do you do?',a:'Eat food 🍕',b:'Play 🎮',ans:'a',ok:'Right! You ARE hungry, so IF is TRUE → Eat food! 🍕',no:'You ARE hungry, so IF is TRUE → Eat food!'},
+  {level:'🟢 Level 1 · Basic Logic',cat:'concept',scenario:'IF it is night  →  Sleep 🌙\nELSE  →  Stay awake ☀️',q:'It is NOT night.\nWhat does the dino do?',a:'Sleep 🌙',b:'Stay awake ☀️',ans:'b',ok:'Correct! It is NOT night, so ELSE runs → Stay awake! ☀️',no:'It is NOT night, so ELSE runs → Stay awake!'},
+  {level:'🟡 Level 2 · Daily Life',cat:'concept',scenario:'IF homework is done  →  Watch TV 📺\nELSE  →  Finish homework 📚',q:'Homework is NOT done yet.\nWhat should you do?',a:'Watch TV 📺',b:'Finish homework 📚',ans:'b',ok:'Correct! Homework is NOT done, so ELSE runs → Finish homework! 📚',no:'Homework is NOT done, so ELSE runs → Finish homework!'},
+  {level:'🟡 Level 2 · Daily Life',cat:'concept',scenario:'IF it is Monday  →  Go to school 🏫\nELSE  →  Stay at home 🏠',q:'Today IS Monday.\nWhat does the dino do?',a:'Go to school 🏫',b:'Stay at home 🏠',ans:'a',ok:'Yes! Today IS Monday, so IF is TRUE → Go to school! 🏫',no:'Today IS Monday, so IF is TRUE → Go to school!'},
+  {level:'🟡 Level 2 · Daily Life',cat:'concept',scenario:'IF water is hot  →  Don\'t touch 🔥\nELSE  →  Safe to touch 💧',q:'The water IS hot.\nWhat should you do?',a:'Don\'t touch 🔥',b:'Safe to touch 💧',ans:'a',ok:'Correct! Water IS hot, so IF is TRUE → Don\'t touch! 🔥',no:'Water IS hot, so IF is TRUE → Don\'t touch!'},
+  {level:'🟡 Level 2 · Daily Life',cat:'concept',scenario:'IF you are tired  →  Rest 😴\nELSE  →  Keep playing 🎮',q:'You are NOT tired.\nWhat do you do?',a:'Rest 😴',b:'Keep playing 🎮',ans:'b',ok:'Yes! NOT tired means ELSE runs → Keep playing! 🎮',no:'NOT tired means ELSE runs → Keep playing!'},
+  {level:'🔵 Level 3 · Math',cat:'math',scenario:'IF 5 > 3  →  Correct path ✅\nELSE  →  Wrong path ❌',q:'Is 5 bigger than 3?\nWhich path does the dino take?',a:'Correct path ✅',b:'Wrong path ❌',ans:'a',ok:'Yes! 5 > 3 is TRUE → Correct path! ✅',no:'5 IS bigger than 3, so IF is TRUE → Correct path!'},
+  {level:'🔵 Level 3 · Math',cat:'math',scenario:'IF 10 < 2  →  Jump 🐸\nELSE  →  Stop ✋',q:'Is 10 less than 2?\nWhat does the dino do?',a:'Jump 🐸',b:'Stop ✋',ans:'b',ok:'Correct! 10 < 2 is FALSE, so ELSE runs → Stop! ✋',no:'10 is NOT less than 2, so ELSE runs → Stop!'},
+  {level:'🔵 Level 3 · Math',cat:'math',scenario:'IF number is even  →  Go left ⬅️\nELSE  →  Go right ➡️',q:'Number = 4. Is 4 even?\nWhich way does the dino go?',a:'Go left ⬅️',b:'Go right ➡️',ans:'a',ok:'Yes! 4 IS even, so IF is TRUE → Go left! ⬅️',no:'4 IS even, so IF is TRUE → Go left!'},
+  {level:'🔵 Level 3 · Math',cat:'math',scenario:'IF 7 + 3 = 10  →  Win 🏆\nELSE  →  Try again 🔄',q:'Does 7 + 3 equal 10?\nWhat happens to the dino?',a:'Win 🏆',b:'Try again 🔄',ans:'a',ok:'Yes! 7 + 3 = 10 is TRUE → Win! 🏆',no:'7 + 3 DOES equal 10, so IF is TRUE → Win!'},
+  {level:'🦕 Level 4 · Dino World',cat:'dino',scenario:'IF dino is hungry  →  Eat leaves 🌿\nELSE  →  Sleep 💤',q:'The dino IS hungry.\nWhat does the dino do?',a:'Eat leaves 🌿',b:'Sleep 💤',ans:'a',ok:'Yes! Dino IS hungry, so IF is TRUE → Eat leaves! 🌿',no:'Dino IS hungry, so IF is TRUE → Eat leaves!'},
+  {level:'🦕 Level 4 · Dino World',cat:'dino',scenario:'IF volcano is active  →  Run away 🌋\nELSE  →  Stay and relax 😌',q:'The volcano is NOT active.\nWhat does the dino do?',a:'Run away 🌋',b:'Stay and relax 😌',ans:'b',ok:'Correct! Volcano NOT active, so ELSE runs → Stay and relax! 😌',no:'Volcano is NOT active, so ELSE runs → Stay and relax!'},
+  {level:'🦕 Level 4 · Dino World',cat:'dino',scenario:'IF egg is cracked  →  Baby dino comes out 🐣\nELSE  →  Wait and watch 👀',q:'The egg IS cracked.\nWhat happens?',a:'Baby dino comes out 🐣',b:'Wait and watch 👀',ans:'a',ok:'Yes! Egg IS cracked, so IF is TRUE → Baby dino appears! 🐣',no:'Egg IS cracked, so IF is TRUE → Baby dino comes out!'},
+  {level:'🦕 Level 4 · Dino World',cat:'dino',scenario:'IF dino finds food  →  Happy dance 🎉\nELSE  →  Sad face 😢',q:'The dino did NOT find food.\nHow does it feel?',a:'Happy dance 🎉',b:'Sad face 😢',ans:'b',ok:'Correct! No food found, so ELSE runs → Sad face! 😢',no:'Dino did NOT find food, so ELSE runs → Sad face!'},
+];
+
+const bubbles=['Umbrella or shades?','Go or stop?','Hungry? 🍕','Bedtime?','TV or homework?','Monday!','Hot water!','Tired?','Math check! 🔢','10 < 2?','Even number?','7 + 3 = ?','Hungry dino! 🦕','Volcano! 🌋','Cracked egg! 🥚','Find food?'];
+
+let qi=0,score=0,lives=3,streak=0,done=false;
+const MAX=3,results=[];
+
+function go(url){location.href=url;}
+function unlockLesson5AndGo(){localStorage.setItem('p3_lesson05Completed','yes');localStorage.setItem('part3_progress','5');go('quest3.html');}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+function startGame(){qi=0;score=0;lives=MAX;streak=0;done=false;results.length=0;showScreen('gameScreen');buildSteps();renderLives();renderQ();}
+
+function buildSteps(){const w=document.getElementById('progSteps');w.innerHTML='';Qs.forEach((_,i)=>{const d=document.createElement('div');d.className='pstep'+(i===0?' cur':'');w.appendChild(d);});}
+
+function updateProg(){
+  document.querySelectorAll('.pstep').forEach((d,i)=>{d.classList.remove('done','fail','cur');if(i<qi)d.classList.add(results[i]?'done':'fail');else if(i===qi){if(done&&results[i]!==undefined)d.classList.add(results[i]?'done':'fail');else d.classList.add('cur');}});
+  const completed=Math.min(qi+(done?1:0),Qs.length);
+  const pct=(completed/Qs.length)*100;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progRunner').style.left=`calc(${Math.min(100,Math.max(0,pct))}% - 19px)`;
+}
+
+function renderLives(){const row=document.getElementById('livesRow');row.innerHTML='';for(let i=0;i<MAX;i++){const d=document.createElement('div');d.className='life-dot'+(i>=lives?' lost':'');row.appendChild(d);}}
+
+function updateHUD(){document.getElementById('scoreVal').textContent=score;document.getElementById('scoreDisp').textContent=Math.round(score/10)+'/'+Qs.length;document.getElementById('barScoreBar').textContent=Math.round(score/10)+'/'+Qs.length;document.getElementById('streakLbl').textContent=streak>=3?'🔥 x'+streak:'';renderLives();}
+
+function renderQ(){
+  done=false;const q=Qs[qi];
+  document.getElementById('roundLbl').textContent='Q '+(qi+1)+' / '+Qs.length;
+  const ct=document.getElementById('catTag');ct.textContent=q.cat.charAt(0).toUpperCase()+q.cat.slice(1);ct.className='cat-tag '+q.cat;
+  document.getElementById('qLevelTag').textContent='— '+q.level+' —';
+  document.getElementById('qScenario').textContent=q.scenario;
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('labelA').textContent=q.a;
+  document.getElementById('labelB').textContent=q.b;
+  const btnA=document.getElementById('btnA'),btnB=document.getElementById('btnB');
+  btnA.className='answer-btn';btnA.disabled=false;btnB.className='answer-btn';btnB.disabled=false;
+  document.getElementById('leftGlow').className='path-zone left-zone';
+  document.getElementById('rightGlow').className='path-zone right-zone';
+  document.getElementById('fbRow').className='fb-row';
+  document.getElementById('nextBtn').className='next-btn';
+  document.getElementById('envFlash').className='env-flash';
+  setDino('idle');
+  document.getElementById('dinoBubble').textContent=bubbles[qi]||'Which path?';
+  const qc=document.getElementById('qCard');qc.style.animation='none';void qc.offsetWidth;qc.style.animation='fadeUp .35s ease';
+  updateProg();updateHUD();
+}
+
+function answer(pick){
+  if(done)return;done=true;
+  const q=Qs[qi],correct=(pick===q.ans);
+  const btnA=document.getElementById('btnA'),btnB=document.getElementById('btnB');
+  btnA.disabled=true;btnB.disabled=true;
+  const chosenBtn=pick==='a'?btnA:btnB,correctBtn=q.ans==='a'?btnA:btnB;
+  const leftGlow=document.getElementById('leftGlow'),rightGlow=document.getElementById('rightGlow');
+  if(correct){
+    score+=10+(streak>=2?5:0);streak++;results[qi]=true;
+    chosenBtn.classList.add('correct-ans');
+    (pick==='a'?leftGlow:rightGlow).classList.add('activated-ok');
+    document.getElementById('envFlash').className='env-flash ok';
+    document.getElementById('dinoBubble').textContent=streak>=3?'On fire! '+streak+' in a row! 🔥':'Great choice! 🎉';
+    setDino('happy');showFB(true,q.ok);spawnP(true);
+  }else{
+    lives--;streak=0;results[qi]=false;
+    chosenBtn.classList.add('wrong-ans');correctBtn.classList.add('reveal-ans');
+    (pick==='a'?leftGlow:rightGlow).classList.add('activated-fail');
+    document.getElementById('envFlash').className='env-flash no';
+    document.getElementById('dinoBubble').textContent='Oops! Try to remember! 💪';
+    setDino('sad');showFB(false,q.no);spawnP(false);
+  }
+  updateHUD();updateProg();
+  const nb=document.getElementById('nextBtn');nb.textContent=(qi===Qs.length-1||lives<=0)?'See Results! 🏆':'Next Path →';nb.classList.add('show');
+}
+
+function showFB(ok,msg){const fr=document.getElementById('fbRow'),fv=document.getElementById('fbVid');setVid(fv,ok?V.fb_ok:V.fb_no);document.getElementById('fbTxt').innerHTML=msg;fr.className='fb-row show '+(ok?'ok':'no');}
+
+function nextQ(){if(lives<=0||qi===Qs.length-1){showResults();return;}qi++;renderQ();}
+
+function showResults(){
+  const total=Qs.length,cor=results.filter(Boolean).length;
+  let tt,tc,msg;
+  if(cor===total){tt='PERFECT!';tc='perfect';msg='Wow! Every path right — you are an ELSE champion! 🏆';}
+  else if(cor>=12){tt='Amazing!';tc='great';msg='Fantastic! Your dino is super proud of you! 🦕';}
+  else if(cor>=8){tt='Good Job!';tc='good';msg='Nice try! Play again to boost your score! 💪';}
+  else{tt='Try Again!';tc='tryagain';msg='No worries — great coders always practice more! 🌟';}
+  showScreen('resultScreen');
+  document.getElementById('resTitle').textContent=tt;document.getElementById('resTitle').className='res-title '+tc;
+  document.getElementById('ringN').textContent=cor;document.getElementById('ringOf').textContent='of '+total;
+  document.getElementById('resXP').textContent='+'+score+' XP';document.getElementById('resMsg').textContent=msg;
+  setVid(document.getElementById('resDino'),V.celebrate);
+  setTimeout(()=>{document.getElementById('ringC').style.strokeDashoffset=264*(1-cor/total);},300);
+  const sc=cor===total?3:cor>=total*.75?2:cor>=total*.5?1:0;
+  ['star1','star2','star3'].forEach((id,i)=>{const el=document.getElementById(id);const vid=el.querySelector('.star-el');setVid(vid,i<sc?V.star_full:V.star_empty);el.className='star-vid-wrap'+(i>=sc?' dim':'');if(i<sc)setTimeout(()=>el.classList.add('show'),480+i*240);else setTimeout(()=>el.classList.add('dim'),100);});
+  const tr=document.getElementById('trophyEl');setVid(tr,V.trophy);if(cor===total)tr.classList.add('show');else tr.classList.remove('show');
+  if(cor>=12)launchConfetti();
+  if(cor>=total*.75)localStorage.setItem('p3_lesson04GameDone','yes');
+  const prev=parseInt(localStorage.getItem('p3_lesson04Best'))||0;if(score>prev)localStorage.setItem('p3_lesson04Best',score);
+  localStorage.setItem('part3_progress','5');
+}
+
+function replayGame(){startGame();}
+
+function spawnP(ok){
+  const cols=ok?['#3D6B39','#7BB86E','#D4931A','#EDE3CC']:['#B84A1A','#E57373','#C8740E'];
+  for(let i=0;i<(ok?14:6);i++){
+    const p=document.createElement('div'),sz=Math.random()*5+2.5;
+    const ang=Math.random()*360,d=Math.random()*(ok?150:90)+45;
+    const tx=Math.cos(ang*Math.PI/180)*d,ty=Math.sin(ang*Math.PI/180)*d-45;
+    const col=cols[Math.floor(Math.random()*cols.length)],dur=(Math.random()*.5+.4)+'s';
+    const ks=document.createElement('style');ks.textContent=`@keyframes pf${i}k{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(${tx}px,${ty}px) scale(0);opacity:0}}`;
+    document.head.appendChild(ks);
+    p.style.cssText=`position:fixed;border-radius:50%;pointer-events:none;z-index:60;width:${sz}px;height:${sz}px;background:${col};box-shadow:0 0 ${sz*2}px ${col};left:50%;top:52%;animation:pf${i}k ${dur} ease-out forwards;`;
+    document.body.appendChild(p);setTimeout(()=>{p.remove();ks.remove();},700);
+  }
+}
+
+const cc=document.getElementById('ccvs'),cx=cc.getContext('2d');let cps=[];
+function launchConfetti(){
+  cc.style.display='block';cc.width=innerWidth;cc.height=innerHeight;
+  cps=Array.from({length:110},()=>({x:Math.random()*innerWidth,y:-15,w:Math.random()*9+3,h:Math.random()*5+2.5,r:Math.random()*360,dr:Math.random()*7-3.5,vx:(Math.random()-.5)*3.5,vy:Math.random()*2.5+1.2,col:['#3D6B39','#D4931A','#C8740E','#7BB86E','#EDE3CC','#4DB6AC'][Math.floor(Math.random()*6)],life:1}));
+  animC();setTimeout(()=>{cc.style.display='none';cps=[];},4000);
+}
+function animC(){if(!cps.length)return;cx.clearRect(0,0,cc.width,cc.height);cps.forEach((p,i)=>{p.y+=p.vy;p.x+=p.vx;p.r+=p.dr;p.life-=.004;if(p.life<=0||p.y>innerHeight){cps.splice(i,1);return;}cx.save();cx.globalAlpha=p.life;cx.translate(p.x,p.y);cx.rotate(p.r*Math.PI/180);cx.fillStyle=p.col;cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cx.restore();});if(cps.length)requestAnimationFrame(animC);else cc.style.display='none';}
+</script>
+</body>
+</html>
+
+
+

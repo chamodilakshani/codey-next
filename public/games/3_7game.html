@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>CODEPLAY — Dino Heart Catcher!</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Nunito:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --orange:#C85A1A;--orange2:#A84310;--gold:#8B6914;--amber:#D4A840;
+  --red:#C0392B;--red-lt:#C0604A;--pink:#A0503A;
+  --green:#3A6B2A;--green-lt:#5A9A4A;--teal:#2A7A6A;--cream:#F7F0DC;
+  --brown:#4A2E14;--brown2:#6B3F1A;--fossil:#8B7355;
+  --head:'Baloo 2',cursive;--body:'Nunito',sans-serif;--mono:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;height:100%;overflow:hidden;
+  background:#F5EFE0;
+  font-family:var(--body);color:var(--brown);position:fixed;inset:0;
+}
+
+/* ── PAGE BG — warm Jurassic parchment ── */
+.page-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 35% at 50% 95%,rgba(200,90,26,.18),transparent 65%),
+    radial-gradient(ellipse 40% 28% at 5% 92%,rgba(139,105,20,.12),transparent 55%),
+    linear-gradient(180deg,#F7F0DC 0%,#F0E8C8 20%,#EDE0B8 55%,#E2D098 85%,#DBC888 100%);
+}
+
+/* Leaf/spore particles */
+.star-dot{position:fixed;border-radius:50%;pointer-events:none;z-index:1;animation:twinkle linear infinite;}
+
+@keyframes twinkle{0%,100%{opacity:1}50%{opacity:.07}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(.3);opacity:0}65%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes shine{to{left:160%}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes catchPop{0%{transform:scale(1);opacity:1}40%{transform:scale(2.5);opacity:.8}100%{transform:scale(0);opacity:0}}
+@keyframes scoreFloat{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-60px)}}
+@keyframes flashG{0%,100%{background:transparent}40%{background:rgba(58,107,42,.15)}}
+@keyframes flashR{0%,100%{background:transparent}40%{background:rgba(192,57,43,.12)}}
+@keyframes flashP{0%,100%{background:transparent}40%{background:rgba(200,90,26,.15)}}
+@keyframes dinoHappy{0%{transform:scale(1) translateY(0)}30%{transform:scale(1.25) translateY(-16px)}70%{transform:scale(.96) translateY(0)}100%{transform:scale(1) translateY(0)}}
+@keyframes dinoSad{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(8deg)}60%{transform:rotate(-4deg)}}
+@keyframes countNum{0%{opacity:0;transform:scale(.4)}50%{transform:scale(1.3)}100%{opacity:1;transform:scale(1)}}
+@keyframes goIn{0%{opacity:0;transform:scale(.8)}60%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+@keyframes arrowBounce{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
+@keyframes arrowBounceL{0%,100%{transform:translateX(0)}50%{transform:translateX(-10px)}}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;height:48px;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;padding:0 12px;
+  background:rgba(42,22,8,.97);
+  backdrop-filter:blur(16px);
+  border-bottom:2px solid rgba(180,130,40,.35);
+  box-shadow:0 2px 16px rgba(0,0,0,.18);
+}
+.nav-logo-wrap{display:flex;align-items:center;gap:7px;}
+.nav-logo-vid{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(212,168,64,.5);background:rgba(212,168,64,.1);flex-shrink:0;box-shadow:0 0 10px rgba(212,168,64,.25);}
+.nav-logo-text{font-family:var(--head);font-size:.88rem;font-weight:900;color:#ff8c00}
+.nav-title{font-family:var(--head);font-size:.65rem;font-weight:800;color:#D4A840;letter-spacing:.06em;}
+.btn-back{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;border:1.5px solid rgba(212,168,64,.4);background:rgba(212,168,64,.1);color:#F7F0DC;font-family:var(--body);font-size:.7rem;font-weight:800;cursor:pointer;transition:all .2s;}
+.btn-back:hover{background:rgba(212,168,64,.2);}
+.btn-back svg{width:10px;height:10px;stroke:#F7F0DC;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ── BOTTOM BAR ── */
+.bar{
+  position:fixed;bottom:0;left:0;right:0;height:42px;z-index:200;
+  background:rgba(42,22,8,.97);
+  backdrop-filter:blur(16px);
+  border-top:2px solid rgba(180,130,40,.3);
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  box-shadow:0 -2px 12px rgba(0,0,0,.12);
+}
+.bi{display:flex;align-items:center;gap:4px;font-size:.62rem;color:rgba(247,240,220,.45);}
+.bv{font-family:var(--head);font-weight:900;font-size:.68rem;}
+
+/* ── SCREENS ── */
+.screen{display:none;position:fixed;top:48px;left:0;right:0;bottom:42px;z-index:10;overflow:hidden;flex-direction:column;align-items:center;}
+.screen.on{display:flex;}
+
+/* ══ INTRO ══ */
+#introScreen{justify-content:space-evenly;padding:8px 18px;}
+.intro-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(200,90,26,.1);border:1.5px solid rgba(200,90,26,.4);
+  padding:3px 14px;border-radius:99px;
+  font-family:var(--head);font-size:.58rem;font-weight:800;
+  color:var(--orange);letter-spacing:.14em;text-transform:uppercase;flex-shrink:0;
+}
+.intro-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange);animation:blink 1.4s infinite;}
+.intro-title{
+  font-family:var(--head);font-size:clamp(1.5rem,4.5vw,2.4rem);font-weight:900;
+  color:var(--brown);text-align:center;line-height:1.05;flex-shrink:0;
+}
+.intro-title span{color:var(--orange);}
+.intro-sub{font-family:var(--head);font-size:.8rem;font-weight:800;color:var(--gold);text-align:center;flex-shrink:0;}
+.intro-char-wrap{
+  width:clamp(100px,22vw,148px);height:clamp(100px,22vw,148px);aspect-ratio:1;
+  border-radius:50%;border:3px solid rgba(200,90,26,.45);
+  background:rgba(200,90,26,.07);overflow:hidden;
+  box-shadow:0 0 24px rgba(200,90,26,.2),0 6px 20px rgba(0,0,0,.12);
+  flex-shrink:0;animation:popIn .6s ease both;
+}
+.intro-char-vid{width:100%;height:100%;object-fit:cover;display:block;}
+.intro-items-row{display:flex;gap:10px;justify-content:center;flex-shrink:0;}
+.intro-item-ex{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:rgba(255,248,232,.7);border:1.5px solid rgba(139,99,40,.2);
+  border-radius:12px;padding:8px 12px;min-width:62px;
+  box-shadow:0 2px 8px rgba(74,46,20,.08);
+}
+.intro-item-icon{font-size:1.6rem;}
+.intro-item-lbl{font-family:var(--head);font-size:.52rem;color:var(--fossil);letter-spacing:.06em;text-align:center;}
+.how-card{
+  background:rgba(255,248,232,.85);
+  border:1.5px solid rgba(139,99,40,.2);
+  border-radius:14px;padding:9px 14px;width:100%;max-width:400px;flex-shrink:0;
+  box-shadow:0 3px 16px rgba(74,46,20,.08);
+}
+.how-lbl{font-size:.5rem;letter-spacing:.2em;color:var(--fossil);text-transform:uppercase;margin-bottom:5px;font-weight:800;}
+.how-rows{display:flex;flex-direction:column;gap:5px;}
+.how-row{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--brown);line-height:1.3;font-weight:700;}
+.how-n{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(200,90,26,.12);border:1.5px solid rgba(200,90,26,.4);
+  display:grid;place-items:center;font-family:var(--head);font-size:.62rem;font-weight:900;
+  color:var(--orange);flex-shrink:0;
+}
+.start-btn{
+  width:100%;max-width:400px;padding:14px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  color:#F7F0DC;font-family:var(--head);font-size:.95rem;font-weight:900;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  box-shadow:0 4px 20px rgba(200,90,26,.35),0 2px 0 rgba(80,20,0,.3);
+  transition:all .2s;position:relative;overflow:hidden;flex-shrink:0;
+}
+.start-btn:hover{transform:translateY(-2px);}
+.start-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);animation:shine 1.8s linear infinite;}
+
+/* ══ GAME SCREEN ══ */
+#gameScreen{justify-content:flex-start;align-items:stretch;}
+
+/* HUD */
+.game-hud{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+  padding:5px 12px;
+  background:rgba(255,248,232,.9);
+  border-bottom:1.5px solid rgba(139,99,40,.2);
+  box-shadow:0 2px 8px rgba(74,46,20,.06);
+}
+.hud-hearts{display:flex;gap:3px;align-items:center;}
+.life-vid-wrap{
+  width:26px;height:26px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  transition:all .35s;
+  background:rgba(200,90,26,.15);border:1.5px solid rgba(200,90,26,.45);
+}
+.life-vid-wrap.lost{opacity:.18;transform:scale(.75);filter:grayscale(1);}
+.life-vid{width:100%;height:100%;object-fit:cover;display:block;}
+.hud-right{display:flex;align-items:center;gap:14px;}
+.hud-stat{display:flex;flex-direction:column;align-items:center;}
+.hud-val{font-family:var(--head);font-size:.82rem;font-weight:900;line-height:1;color:var(--brown);}
+.hud-lbl{font-size:.4rem;letter-spacing:.14em;color:var(--fossil);text-transform:uppercase;}
+
+/* Live code strip */
+.code-hud{
+  flex:0 0 auto;
+  background:rgba(42,22,8,.88);
+  border-bottom:1px solid rgba(139,99,40,.15);
+  padding:5px 14px;font-family:var(--mono);
+  font-size:clamp(.68rem,1.8vw,.82rem);color:rgba(240,225,195,.82);
+  white-space:nowrap;overflow:hidden;
+}
+.ckw{color:#e88a6a;font-weight:700;}.cvar{color:#e8b870;}.cnum{color:#8ec47a;}.cstr{color:#D4A840;}
+
+/* Item legend */
+.legend-strip{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:0;
+  padding:4px 8px;
+  background:rgba(255,248,232,.75);
+  border-bottom:1px solid rgba(139,99,40,.12);
+}
+.legend-item{display:flex;align-items:center;gap:4px;padding:0 9px;}
+.leg-icon{font-size:1.1rem;line-height:1;}
+.leg-badge{font-family:var(--head);font-size:.48rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:1px 5px;border-radius:4px;}
+.leg-badge.good{background:rgba(58,107,42,.14);border:1px solid rgba(58,107,42,.38);color:var(--green);}
+.leg-badge.bad {background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.35);color:var(--red);}
+.leg-badge.skip{background:rgba(139,99,40,.1);border:1px solid rgba(139,99,40,.2);color:var(--fossil);}
+.leg-desc{font-family:var(--head);font-size:.58rem;font-weight:800;color:var(--fossil);}
+.leg-sep{width:1px;height:20px;background:rgba(139,99,40,.15);flex-shrink:0;}
+
+/* ══ THE ARENA ══ */
+.arena{
+  flex:1 1 0;min-height:0;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#F0E8C8 0%,#EDE0B8 60%,#E2D098 100%);
+  cursor:grab;user-select:none;
+}
+.arena:active{cursor:grabbing;}
+
+/* subtle leaf pattern overlay */
+.arena::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+  background-image:
+    radial-gradient(ellipse 1px 4px at 15% 30%,rgba(58,107,42,.08) 0%,transparent 100%),
+    radial-gradient(ellipse 1px 4px at 75% 60%,rgba(58,107,42,.06) 0%,transparent 100%),
+    radial-gradient(ellipse 1px 4px at 45% 80%,rgba(58,107,42,.05) 0%,transparent 100%);
+}
+
+/* falling items */
+.fall-item{
+  position:absolute;font-size:clamp(1.8rem,5.5vw,2.6rem);
+  line-height:1;pointer-events:none;z-index:10;width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 3px 6px rgba(0,0,0,.2));
+}
+
+/* catch burst */
+.catch-burst{
+  position:absolute;font-size:2rem;pointer-events:none;z-index:25;
+  animation:catchPop .4s ease forwards;
+}
+
+/* score float */
+.score-float{
+  position:fixed;font-family:var(--head);font-size:1.3rem;font-weight:900;
+  pointer-events:none;z-index:90;
+  animation:scoreFloat .9s ease forwards;
+  text-shadow:0 2px 8px rgba(0,0,0,.2);white-space:nowrap;
+}
+
+/* ground zone */
+.arena-ground{
+  position:absolute;bottom:0;left:0;right:0;height:90px;
+  background:linear-gradient(0deg,rgba(200,90,26,.06),transparent);
+  border-top:1px solid rgba(200,90,26,.12);
+  pointer-events:none;z-index:4;
+}
+
+/* ── DINO ── */
+.dino-wrap{
+  position:absolute;bottom:8px;
+  width:clamp(72px,15vw,104px);height:clamp(72px,15vw,104px);
+  border-radius:50%;overflow:hidden;z-index:15;
+  background:rgba(200,90,26,.08);
+  border:3px solid rgba(200,90,26,.5);
+  box-shadow:0 0 20px rgba(200,90,26,.25),0 4px 12px rgba(0,0,0,.12);
+  pointer-events:none;
+  transition:left .06s linear;
+}
+.dino-wrap.happy{animation:dinoHappy .5s ease forwards;}
+.dino-wrap.sad  {animation:dinoSad   .45s ease forwards;}
+.dino-vid{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* drag hint */
+.drag-hint{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:18px;z-index:30;pointer-events:none;
+  transition:opacity .5s;
+}
+.drag-hint.hidden{opacity:0;}
+.drag-arr{font-size:1.8rem;opacity:.6;color:var(--orange);}
+.drag-arr.left {animation:arrowBounceL 1s ease-in-out infinite;}
+.drag-arr.right{animation:arrowBounce  1s ease-in-out infinite;}
+.drag-label{font-family:var(--head);font-size:.78rem;font-weight:900;color:var(--brown);opacity:.75;letter-spacing:.06em;text-align:center;line-height:1.3;}
+
+/* Feedback row */
+.fb-strip{
+  flex:0 0 auto;padding:4px 12px 5px;display:flex;flex-direction:column;gap:3px;
+  background:rgba(255,248,232,.9);
+  border-top:1px solid rgba(139,99,40,.15);
+}
+.fb-row{display:flex;align-items:center;gap:7px;border-radius:9px;padding:5px 10px;font-family:var(--head);font-size:clamp(.66rem,1.7vw,.8rem);font-weight:800;opacity:0;transition:opacity .2s;min-height:30px;}
+.fb-row.show{opacity:1;animation:fadeUp .2s ease;}
+.fb-row.ok{background:rgba(58,107,42,.08);border:1.5px solid rgba(58,107,42,.28);color:var(--green);}
+.fb-row.no{background:rgba(192,57,43,.07);border:1.5px solid rgba(192,57,43,.25);color:var(--red);}
+.fb-vid-wrap{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgba(139,99,40,.1);}
+.fb-vid{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ── ENV FLASH ── */
+#envFlash{position:fixed;inset:0;z-index:40;pointer-events:none;}
+#envFlash.fG{animation:flashG .4s ease forwards;}
+#envFlash.fR{animation:flashR .4s ease forwards;}
+#envFlash.fP{animation:flashP .4s ease forwards;}
+
+/* ── COUNTDOWN ── */
+#cdOverlay{
+  position:fixed;top:48px;left:0;right:0;bottom:42px;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:rgba(247,240,220,.88);backdrop-filter:blur(6px);pointer-events:none;
+}
+#cdOverlay.hidden{display:none;}
+.cd-tip{
+  font-family:var(--head);font-size:clamp(.9rem,2.5vw,1.1rem);font-weight:900;
+  color:var(--brown);text-align:center;
+  background:rgba(200,90,26,.1);border:2px solid rgba(200,90,26,.4);
+  border-radius:14px;padding:8px 22px;
+}
+.cd-num{
+  font-family:var(--head);font-size:clamp(4rem,14vw,6rem);font-weight:900;
+  color:var(--orange);text-shadow:0 0 24px rgba(200,90,26,.35);
+  line-height:1;animation:countNum .4s ease;
+}
+.cd-sub{font-family:var(--head);font-size:.78rem;font-weight:800;color:var(--fossil);letter-spacing:.1em;}
+
+/* ── GAME OVER ── */
+#gameoverOverlay{
+  position:fixed;top:48px;left:0;right:0;bottom:42px;z-index:60;
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(247,240,220,.95);backdrop-filter:blur(10px);padding:20px;
+}
+#gameoverOverlay.show{display:flex;animation:goIn .5s ease both;}
+.go-title{
+  font-family:var(--head);font-size:clamp(2rem,6vw,3rem);font-weight:900;
+  color:var(--brown);text-shadow:0 2px 8px rgba(74,46,20,.2);line-height:1;text-align:center;
+}
+.go-char-wrap{
+  width:clamp(100px,24vw,150px);height:clamp(100px,24vw,150px);aspect-ratio:1;
+  border-radius:50%;overflow:hidden;flex-shrink:0;
+  border:3px solid rgba(200,90,26,.4);background:rgba(200,90,26,.07);
+  box-shadow:0 0 24px rgba(200,90,26,.2),0 4px 16px rgba(0,0,0,.1);
+  animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+.go-char-vid{width:100%;height:100%;object-fit:cover;display:block;}
+.go-score-row{display:flex;align-items:center;gap:18px;}
+.go-ring{width:80px;height:80px;position:relative;flex-shrink:0;}
+.go-ring svg{position:absolute;inset:0;width:100%;height:100%;}
+.go-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.go-ring-n{font-family:var(--head);font-size:1.5rem;font-weight:900;color:var(--brown);line-height:1;}
+.go-ring-lbl{font-size:.48rem;color:var(--fossil);letter-spacing:.1em;}
+.go-right{display:flex;flex-direction:column;gap:7px;align-items:flex-start;}
+.go-xp{
+  font-family:var(--head);font-size:.82rem;font-weight:900;color:var(--amber);
+  background:rgba(212,168,64,.1);border:1.5px solid rgba(212,168,64,.35);
+  padding:4px 12px;border-radius:99px;
+}
+.go-stars{display:flex;gap:6px;}
+.star-wrap{
+  width:34px;height:34px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  opacity:0;transform:scale(0) rotate(-20deg);
+  transition:all .38s cubic-bezier(.34,1.56,.64,1);
+  background:rgba(212,168,64,.1);border:1.5px solid rgba(212,168,64,.25);
+}
+.star-wrap.show{opacity:1;transform:scale(1) rotate(0);}
+.star-wrap.dim{opacity:.2;transform:scale(1);}
+.star-vid{width:100%;height:100%;object-fit:cover;display:block;}
+.trophy-wrap{
+  width:48px;height:48px;border-radius:10px;overflow:hidden;display:none;flex-shrink:0;
+  border:1.5px solid rgba(212,168,64,.35);background:rgba(212,168,64,.08);
+}
+.trophy-wrap.show{display:block;animation:popIn .45s cubic-bezier(.34,1.56,.64,1) both;}
+.trophy-vid{width:100%;height:100%;object-fit:cover;display:block;}
+.go-msg{font-size:clamp(.66rem,1.8vw,.78rem);color:var(--fossil);line-height:1.5;text-align:center;max-width:340px;font-weight:700;}
+.go-btns{display:flex;gap:8px;width:100%;max-width:360px;}
+.gb{
+  flex:1;padding:11px;border-radius:11px;font-family:var(--head);
+  font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;border:1.5px solid;text-align:center;
+}
+.gb.p{
+  background:linear-gradient(135deg,var(--orange),var(--orange2));
+  border-color:transparent;color:#F7F0DC;
+  box-shadow:0 3px 0 rgba(80,20,0,.25);
+}
+.gb.p:hover{transform:translateY(-2px);}
+.gb.s{background:transparent;border-color:rgba(74,46,20,.18);color:var(--fossil);}
+.gb.s:hover{border-color:rgba(74,46,20,.4);color:var(--brown);}
+
+#ccvs{position:fixed;inset:0;z-index:300;pointer-events:none;display:none;}
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div id="starField"></div>
+<div id="envFlash"></div>
+<canvas id="ccvs"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo-wrap">
+    <video class="nav-logo-vid" autoplay loop muted playsinline src="video/nav_logo.mp4" onerror="this.style.display='none'"></video>
+    <span class="nav-logo-text">CODEPLAY</span>
+  </div>
+  <span class="nav-title">Lesson 07 — Game Lives</span>
+  <button class="btn-back" onclick="go('3_7lesson.html')">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<!-- ══ INTRO ══ -->
+<div class="screen on" id="introScreen">
+  <div class="intro-badge">Lesson 07 · Game Lives</div>
+  <div class="intro-title">Dino<br><span>Heart Catcher!</span></div>
+  <div class="intro-sub">Drag the dino left and right to catch!</div>
+
+  <div class="intro-char-wrap">
+    <video class="intro-char-vid" autoplay loop muted playsinline src="video/YOUR_INTRO_CHARACTER.mp4" onerror="this.style.background='rgba(200,90,26,.1)'"></video>
+  </div>
+
+  <div class="intro-items-row">
+    <div class="intro-item-ex"><div class="intro-item-icon">❤️</div><div class="intro-item-lbl">Catch → +1 Life</div></div>
+    <div class="intro-item-ex"><div class="intro-item-icon">⭐</div><div class="intro-item-lbl">Catch → +5 pts</div></div>
+    <div class="intro-item-ex"><div class="intro-item-icon">☄️</div><div class="intro-item-lbl">Dodge! -1 Life</div></div>
+    <div class="intro-item-ex"><div class="intro-item-icon">💀</div><div class="intro-item-lbl">Dodge! -3 pts</div></div>
+  </div>
+
+  <div class="how-card">
+    <div class="how-lbl">How to play</div>
+    <div class="how-rows">
+      <div class="how-row"><div class="how-n">1</div><span>Drag or slide your finger left and right</span></div>
+      <div class="how-row"><div class="how-n">2</div><span>Move the dino to catch ❤️ hearts and ⭐ stars</span></div>
+      <div class="how-row"><div class="how-n">3</div><span>Dodge ☄️ meteors and 💀 skulls!</span></div>
+      <div class="how-row"><div class="how-n">4</div><span>Survive 30 seconds before lives hit 0!</span></div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Start Catching!</button>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen" id="gameScreen">
+
+  <div class="game-hud">
+    <div class="hud-hearts" id="heartsRow"></div>
+    <div class="hud-right">
+      <div class="hud-stat"><div class="hud-val" style="color:var(--orange)" id="hudLevel">Lv 1</div><div class="hud-lbl">Level</div></div>
+      <div class="hud-stat"><div class="hud-val" style="color:var(--amber)"  id="hudScore">0</div><div class="hud-lbl">Score</div></div>
+      <div class="hud-stat"><div class="hud-val" style="color:var(--teal)"   id="hudTimer">30</div><div class="hud-lbl">Secs</div></div>
+    </div>
+  </div>
+
+  <div class="code-hud">
+    <span class="cvar">lives</span> <span class="ckw">=</span> <span class="cnum" id="cdLives">3</span>&nbsp;&nbsp;
+    <span class="ckw">if</span> <span class="cvar">lives</span> <span class="ckw">==</span> <span class="cnum">0</span><span class="ckw">:</span>&nbsp;
+    <span class="cstr" id="cdStatus">"Keep playing!"</span>
+  </div>
+
+  <div class="legend-strip">
+    <div class="legend-item"><span class="leg-icon">❤️</span><span class="leg-badge good">CATCH</span><span class="leg-desc">+1 Life</span></div>
+    <div class="leg-sep"></div>
+    <div class="legend-item"><span class="leg-icon">⭐</span><span class="leg-badge good">CATCH</span><span class="leg-desc">+5 pts</span></div>
+    <div class="leg-sep"></div>
+    <div class="legend-item"><span class="leg-icon">☄️</span><span class="leg-badge bad">DODGE</span><span class="leg-desc">-1 Life</span></div>
+    <div class="leg-sep"></div>
+    <div class="legend-item"><span class="leg-icon">💀</span><span class="leg-badge skip">DODGE</span><span class="leg-desc">-3 pts</span></div>
+  </div>
+
+  <div class="arena" id="arena">
+    <div class="arena-ground"></div>
+    <div class="drag-hint" id="dragHint">
+      <span class="drag-arr left">◀</span>
+      <span class="drag-label">Drag to move<br>the dino!</span>
+      <span class="drag-arr right">▶</span>
+    </div>
+    <div class="dino-wrap" id="dinoWrap">
+      <video class="dino-vid" id="dinoVid" autoplay loop muted playsinline
+        src="video/YOUR_RUNNER.mp4" onerror="this.style.background='rgba(200,90,26,.12)'"></video>
+    </div>
+  </div>
+
+  <div class="fb-strip">
+    <div class="fb-row" id="fbRow">
+      <div class="fb-vid-wrap"><video class="fb-vid" id="fbVid" autoplay loop muted playsinline src="" onerror="this.style.display='none'"></video></div>
+      <span id="fbTxt"></span>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="cdOverlay" class="hidden">
+  <div class="cd-tip">Drag the dino to catch items!</div>
+  <div class="cd-num" id="cdNum">3</div>
+  <div class="cd-sub">Get ready...</div>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameoverOverlay">
+  <div class="go-title" id="goTitle">Game Over!</div>
+  <div class="go-char-wrap">
+    <video class="go-char-vid" id="goCharVid" autoplay loop muted playsinline src="video/YOUR_CHAR_CELEBRATE.mp4" onerror="this.style.background='rgba(200,90,26,.08)'"></video>
+  </div>
+  <div class="go-score-row">
+    <div class="go-ring">
+      <svg viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="42" stroke="rgba(74,46,20,.1)" stroke-width="7"/>
+        <circle cx="50" cy="50" r="42" stroke="url(#rg)" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+          id="goRing" style="transition:stroke-dashoffset 1.1s cubic-bezier(.34,1.56,.64,1);transform:rotate(-90deg);transform-origin:50px 50px"/>
+        <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#C85A1A"/>
+          <stop offset="100%" stop-color="#D4A840"/>
+        </linearGradient></defs>
+      </svg>
+      <div class="go-ring-inner">
+        <div class="go-ring-n" id="goScore">0</div>
+        <div class="go-ring-lbl">Score</div>
+      </div>
+    </div>
+    <div class="go-right">
+      <div class="go-xp" id="goXP">+0 XP</div>
+      <div class="go-stars">
+        <div class="star-wrap" id="gs1"><video class="star-vid" id="gsv1" autoplay loop muted playsinline src="video/star_full.mp4" onerror="this.style.display='none'"></video></div>
+        <div class="star-wrap" id="gs2"><video class="star-vid" id="gsv2" autoplay loop muted playsinline src="video/star_full.mp4" onerror="this.style.display='none'"></video></div>
+        <div class="star-wrap" id="gs3"><video class="star-vid" id="gsv3" autoplay loop muted playsinline src="video/star_full.mp4" onerror="this.style.display='none'"></video></div>
+      </div>
+      <div class="trophy-wrap" id="trophyWrap"><video class="trophy-vid" autoplay loop muted playsinline src="video/trophy.mp4" onerror="this.style.display='none'"></video></div>
+    </div>
+  </div>
+  <div class="go-msg" id="goMsg"></div>
+  <div class="go-btns">
+    <button class="gb s" onclick="replayGame()">Play Again</button>
+    <button class="gb p" onclick="unlockLesson8AndGo('quest3.html')">Next Lesson</button>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bar">
+  <div class="bi"><span class="bv" style="color:#D4A840">Lesson 07</span></div>
+  <div class="bi"><span class="bv" style="color:#F7F0DC">Heart Catcher</span></div>
+  <div class="bi"><span class="bv" style="color:#5A9A4A" id="barScore">0 pts</span></div>
+</div>
+
+<script>
+/* ── VIDEO PATHS ── */
+const V={
+  nav_logo:'videos/nav_logo.mp4',intro_char:'YOUR_INTRO_CHARACTER.mp4',
+  dino_idle:'YOUR_RUNNER.mp4',dino_happy:'YOUR_CHAR_HAPPY.mp4',dino_sad:'YOUR_CHAR_SAD.mp4',
+  fb_ok:'videos/fb_ok.mp4',fb_no:'videos/fb_no.mp4',
+  celebrate:'YOUR_CHAR_CELEBRATE.mp4',tryagain:'YOUR_CHAR_SAD.mp4',
+  star_full:'star_full.mp4',star_empty:'star_empty.mp4',
+  trophy:'videos/trophy.mp4',life_heart:'videos/life_heart.mp4',
+};
+function setVid(el,src){if(el){el.src=src;el.load();}}
+function go(url){location.href=url;}
+function unlockLesson8AndGo(url){ localStorage.setItem('p3_lesson08Completed', 'yes'); localStorage.setItem('part3_progress', '8'); go(url); }
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+/* ── LEAF/SPORE PARTICLES BG ── */
+const sf=document.getElementById('starField');
+['rgba(212,168,64,.35)','rgba(200,90,26,.28)','rgba(58,107,42,.22)','rgba(139,99,40,.2)'].forEach(c=>{
+  for(let i=0;i<10;i++){
+    const s=document.createElement('div');s.className='star-dot';
+    const sz=Math.random()*2.2+.4;
+    s.style.cssText=`width:${sz}px;height:${sz}px;background:${c};left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${Math.random()*.35+.06};animation-duration:${Math.random()*4+2}s;animation-delay:${Math.random()*5}s`;
+    sf.appendChild(s);
+  }
+});
+
+/* ══════════════════════════════
+   GAME CONFIG
+══════════════════════════════ */
+const MAX_LIVES = 3;
+const DURATION  = 30;
+const ITEM_SIZE = 56;
+const DINO_W    = 96;
+
+const TYPES = {
+  heart:  { e:'❤️', pts:0,  life:+1 },
+  star:   { e:'⭐', pts:5,  life: 0 },
+  meteor: { e:'☄️', pts:0,  life:-1 },
+  skull:  { e:'💀', pts:-3, life: 0 },
+};
+
+/* ── STATE ── */
+let lives=MAX_LIVES, score=0, timeLeft=DURATION;
+let gameActive=false, level=1;
+let spawnTimer=null, tickTimer=null, rafId=null;
+const items = new Map();
+let nextId = 0;
+
+let dinoX = 0;
+let dinoY = 0;
+let arenaW= 0;
+let arenaH= 0;
+const DINO_RADIUS = 48;
+
+let isDragging = false;
+let lastPointerX = 0;
+
+function initInput(){
+  const arena = document.getElementById('arena');
+  arena.addEventListener('pointerdown', e => {
+    isDragging = true;
+    lastPointerX = e.clientX;
+    arena.setPointerCapture(e.pointerId);
+  });
+  arena.addEventListener('pointermove', e => {
+    if(!isDragging || !gameActive) return;
+    const dx = e.clientX - lastPointerX;
+    lastPointerX = e.clientX;
+    moveDino(dinoX + dx);
+  });
+  arena.addEventListener('pointerup',   () => { isDragging = false; });
+  arena.addEventListener('pointercancel',()=>{ isDragging = false; });
+}
+
+function moveDino(newX){
+  const half = DINO_RADIUS;
+  dinoX = Math.max(half, Math.min(arenaW - half, newX));
+  const dw = document.getElementById('dinoWrap');
+  dw.style.left = (dinoX - half) + 'px';
+}
+
+/* ── HELPERS ── */
+function flash(cls){
+  const ef=document.getElementById('envFlash');
+  ef.className=cls;
+  clearTimeout(ef._t);ef._t=setTimeout(()=>ef.className='',450);
+}
+function popup(txt,col,x,y){
+  const p=document.createElement('div');p.className='score-float';
+  p.textContent=txt;p.style.color=col;p.style.left=x+'px';p.style.top=y+'px';
+  document.body.appendChild(p);setTimeout(()=>p.remove(),950);
+}
+function setDino(state){
+  const w=document.getElementById('dinoWrap'),v=document.getElementById('dinoVid');
+  w.classList.remove('happy','sad');
+  if(state!=='idle') w.classList.add(state);
+  setVid(v,state==='happy'?V.dino_happy:state==='sad'?V.dino_sad:V.dino_idle);
+  if(state!=='idle') setTimeout(()=>{w.classList.remove('happy','sad');setVid(v,V.dino_idle);},600);
+}
+function renderHearts(){
+  const row=document.getElementById('heartsRow');row.innerHTML='';
+  for(let i=0;i<MAX_LIVES;i++){
+    const w=document.createElement('div');
+    w.className='life-vid-wrap'+(i>=lives?' lost':'');
+    const v=document.createElement('video');
+    v.className='life-vid';v.autoplay=true;v.loop=true;v.muted=true;
+    v.setAttribute('playsinline','');v.src=V.life_heart;
+    v.onerror=function(){this.style.display='none';w.style.background='rgba(200,90,26,.4)';};
+    w.appendChild(v);row.appendChild(w);
+  }
+}
+function updateHUD(){
+  document.getElementById('hudScore').textContent=score;
+  document.getElementById('barScore').textContent=score+' pts';
+  document.getElementById('cdLives').textContent=lives;
+  const st=document.getElementById('cdStatus');
+  if(lives<=0){st.textContent='"Game Over!"';st.style.color='#C0604A';}
+  else if(lives===1){st.textContent='"Last life!"';st.style.color='#C85A1A';}
+  else{st.textContent='"Keep playing!"';st.style.color='#D4A840';}
+}
+function showFB(ok,msg){
+  const row=document.getElementById('fbRow');
+  setVid(document.getElementById('fbVid'),ok?V.fb_ok:V.fb_no);
+  document.getElementById('fbTxt').textContent=msg;
+  row.className='fb-row show '+(ok?'ok':'no');
+  clearTimeout(row._t);row._t=setTimeout(()=>row.className='fb-row',2000);
+}
+
+/* ════════════════════════════════
+   MAIN GAME LOOP
+════════════════════════════════ */
+function gameLoop(){
+  if(!gameActive){rafId=null;return;}
+  items.forEach((item,id)=>{
+    item.y += item.speed;
+    item.el.style.top = item.y + 'px';
+    const itemCX = item.x + ITEM_SIZE/2;
+    const itemCY = item.y + ITEM_SIZE/2;
+    const dinoTopY = dinoY - DINO_RADIUS * 2;
+    const hitH = itemCY >= dinoTopY && itemCY <= (dinoY + 20);
+    const hitW = Math.abs(itemCX - dinoX) < (DINO_RADIUS + ITEM_SIZE/2 - 8);
+    if(hitH && hitW){
+      items.delete(id);
+      spawnCatchBurst(item.el, item.type);
+      item.el.remove();
+      onCatch(item.type, item.x + ITEM_SIZE/2, item.y);
+      return;
+    }
+    if(item.y > arenaH + 20){
+      items.delete(id);
+      item.el.remove();
+      onMiss(item.type);
+    }
+  });
+  rafId = requestAnimationFrame(gameLoop);
+}
+
+function spawnCatchBurst(refEl, type){
+  const burst = document.createElement('div');
+  burst.className = 'catch-burst';
+  burst.textContent = TYPES[type].e;
+  burst.style.left = refEl.style.left;
+  burst.style.top  = refEl.style.top;
+  document.getElementById('arena').appendChild(burst);
+  setTimeout(()=>burst.remove(), 420);
+}
+
+function onCatch(type, cx, cy){
+  const cfg = TYPES[type];
+  if(cfg.life !== 0){
+    lives = Math.min(MAX_LIVES, Math.max(0, lives + cfg.life));
+    renderHearts();
+  }
+  score = Math.max(0, score + cfg.pts);
+  updateHUD();
+  if(type==='heart'){
+    flash('fP');setDino('happy');
+    popup('+1 Life!','#C85A1A',cx,cy);
+    showFB(true,'Heart caught!  lives += 1');
+    spawnParticles('#C85A1A',cx,cy);
+  } else if(type==='star'){
+    flash('fG');setDino('happy');
+    popup('+5 pts','#D4A840',cx,cy);
+    showFB(true,'Star caught!  score += 5');
+    spawnParticles('#D4A840',cx,cy);
+  } else if(type==='meteor'){
+    flash('fR');setDino('sad');
+    popup('-1 Life!','#C0392B',cx,cy);
+    showFB(false,'Meteor caught!  lives -= 1');
+    spawnParticles('#C0392B',cx,cy);
+  } else {
+    flash('fR');setDino('sad');
+    popup('-3 pts','#8B7355',cx,cy);
+    showFB(false,'Skull caught!  score -= 3');
+  }
+  if(lives<=0) endGame();
+}
+
+function onMiss(type){
+  if(!gameActive) return;
+  if(type==='heart') showFB(false,'Heart missed!  catch it next time!');
+}
+
+function spawnItem(){
+  if(!gameActive) return;
+  const r = Math.random();
+  let type;
+  if(lives===1 && r<.5)  type='heart';
+  else if(r<.30)         type='heart';
+  else if(r<.55)         type='star';
+  else if(r<.82)         type='meteor';
+  else                   type='skull';
+
+  const cfg  = TYPES[type];
+  const id   = ++nextId;
+  const xPos = 10 + Math.random() * (arenaW - ITEM_SIZE - 20);
+  const speed= (type==='meteor' ? 3.2 : 2.0) + (level-1)*0.5 + Math.random()*0.8;
+
+  const el = document.createElement('div');
+  el.className = 'fall-item';
+  el.textContent = cfg.e;
+  el.style.left = xPos + 'px';
+  el.style.top  = '-60px';
+  document.getElementById('arena').appendChild(el);
+
+  items.set(id, { el, x:xPos, y:-60, speed, type });
+  const delay = Math.max(600, 1100-(level-1)*130) + Math.random()*300;
+  spawnTimer = setTimeout(spawnItem, delay);
+}
+
+function startTick(){
+  tickTimer = setInterval(()=>{
+    if(!gameActive){clearInterval(tickTimer);return;}
+    timeLeft--;
+    document.getElementById('hudTimer').textContent = timeLeft;
+    if(timeLeft===20){ level=2; document.getElementById('hudLevel').textContent='Lv 2'; }
+    if(timeLeft===10){ level=3; document.getElementById('hudLevel').textContent='Lv 3'; }
+    if(timeLeft<=0) endGame();
+  },1000);
+}
+
+function startGame(){
+  lives=MAX_LIVES; score=0; timeLeft=DURATION;
+  gameActive=false; level=1; nextId=0;
+  items.clear();
+  document.querySelectorAll('.fall-item,.catch-burst').forEach(e=>e.remove());
+  showScreen('gameScreen');
+  document.getElementById('gameoverOverlay').classList.remove('show');
+  renderHearts(); updateHUD();
+  document.getElementById('hudTimer').textContent = DURATION;
+  document.getElementById('hudLevel').textContent = 'Lv 1';
+  document.getElementById('fbRow').className = 'fb-row';
+  setVid(document.getElementById('dinoVid'), V.dino_idle);
+
+  const arena = document.getElementById('arena');
+  requestAnimationFrame(()=>{
+    arenaW = arena.clientWidth;
+    arenaH = arena.clientHeight;
+    const dw = document.getElementById('dinoWrap');
+    const dSize = dw.offsetWidth;
+    dinoX = arenaW / 2;
+    dinoY = arenaH - dSize/2 - 8;
+    moveDino(dinoX);
+
+    const hint = document.getElementById('dragHint');
+    hint.classList.remove('hidden');
+    setTimeout(()=>hint.classList.add('hidden'),2500);
+
+    const ov  = document.getElementById('cdOverlay');
+    const num = document.getElementById('cdNum');
+    ov.classList.remove('hidden');
+    num.textContent='3';
+    let c=3;
+    const ci=setInterval(()=>{
+      c--;
+      if(c>0){
+        num.style.animation='none';void num.offsetWidth;
+        num.style.animation='countNum .4s ease';
+        num.textContent=c;
+      } else {
+        clearInterval(ci);
+        ov.classList.add('hidden');
+        gameActive=true;
+        rafId=requestAnimationFrame(gameLoop);
+        startTick();
+        spawnTimer=setTimeout(spawnItem,600+Math.random()*400);
+      }
+    },1000);
+  });
+}
+
+function replayGame(){
+  cleanup();
+  startGame();
+}
+
+function cleanup(){
+  clearTimeout(spawnTimer);
+  clearInterval(tickTimer);
+  if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+  items.clear();
+  document.querySelectorAll('.fall-item,.catch-burst').forEach(e=>e.remove());
+}
+
+function endGame(){
+  if(!gameActive) return;
+  gameActive=false;
+  cleanup();
+  setTimeout(showGameOver, 300);
+}
+
+function showGameOver(){
+  const ov=document.getElementById('gameoverOverlay');
+  let title,charVid,msg;
+  if(score>=50)     {title='Amazing!';   charVid=V.celebrate; msg='Heart Catcher champion! lives tracking mastered!';}
+  else if(score>=25){title='Great Job!'; charVid=V.celebrate; msg='Brilliant! You kept those lives going strong!';}
+  else if(score>=10){title='Good Try!';  charVid=V.tryagain;  msg='Nice effort! Dodge meteors and catch more hearts!';}
+  else              {title='Try Again!'; charVid=V.tryagain;  msg='Every great coder tries again. You can do it!';}
+
+  document.getElementById('goTitle').textContent = title;
+  document.getElementById('goScore').textContent = score;
+  document.getElementById('goXP').textContent    = '+'+(score*2)+' XP';
+  document.getElementById('goMsg').textContent   = msg;
+  setVid(document.getElementById('goCharVid'), charVid);
+  setTimeout(()=>{document.getElementById('goRing').style.strokeDashoffset=264*(1-Math.min(1,score/60));},300);
+
+  const sc = score>=50?3:score>=25?2:score>=10?1:0;
+  ['gs1','gs2','gs3'].forEach((id,i)=>{
+    const w=document.getElementById(id);
+    setVid(document.getElementById('gsv'+(i+1)), i<sc?V.star_full:V.star_empty);
+    w.className='star-wrap'+(i>=sc?' dim':'');
+    if(i<sc) setTimeout(()=>w.classList.add('show'),480+i*250);
+    else     setTimeout(()=>w.classList.add('dim'),100);
+  });
+  const tw=document.getElementById('trophyWrap');
+  if(score>=60) tw.classList.add('show'); else tw.classList.remove('show');
+
+  ov.classList.add('show');
+  if(score>=25) launchConfetti();
+  if(score>=10) localStorage.setItem('p3_lesson07GameDone','yes');
+  const prev=parseInt(localStorage.getItem('p3_lesson07Best'))||0;
+  if(score>prev) localStorage.setItem('p3_lesson07Best',score);
+}
+
+function spawnParticles(col,cx,cy){
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');
+    const sz=Math.random()*6+3;
+    const ang=Math.random()*360, d=Math.random()*100+40;
+    const tx=Math.cos(ang*Math.PI/180)*d, ty=Math.sin(ang*Math.PI/180)*d-40;
+    const dur=(Math.random()*.4+.35)+'s';
+    const ks=document.createElement('style');
+    ks.textContent=`@keyframes pp${nextId}_${i}{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(${tx}px,${ty}px) scale(0);opacity:0}}`;
+    document.head.appendChild(ks);
+    p.style.cssText=`position:fixed;border-radius:50%;pointer-events:none;z-index:70;width:${sz}px;height:${sz}px;background:${col};left:${cx}px;top:${cy}px;animation:pp${nextId}_${i} ${dur} ease-out forwards`;
+    document.body.appendChild(p);
+    setTimeout(()=>{p.remove();ks.remove();},700);
+  }
+}
+
+const cc=document.getElementById('ccvs'),cx2=cc.getContext('2d');let cps=[];
+function launchConfetti(){
+  cc.style.display='block';cc.width=innerWidth;cc.height=innerHeight;
+  cps=Array.from({length:120},()=>({
+    x:Math.random()*innerWidth,y:-15,w:Math.random()*9+3,h:Math.random()*5+2,
+    r:Math.random()*360,dr:Math.random()*7-3.5,vx:(Math.random()-.5)*3.5,
+    vy:Math.random()*2.5+1.2,
+    col:['#C85A1A','#D4A840','#3A6B2A','#8B7355','#2A7A6A','#F7F0DC'][Math.floor(Math.random()*6)],
+    life:1
+  }));
+  animC();setTimeout(()=>{cc.style.display='none';cps=[];},4500);
+}
+function animC(){
+  if(!cps.length)return;cx2.clearRect(0,0,cc.width,cc.height);
+  cps.forEach((p,i)=>{p.y+=p.vy;p.x+=p.vx;p.r+=p.dr;p.life-=.003;
+    if(p.life<=0||p.y>innerHeight){cps.splice(i,1);return;}
+    cx2.save();cx2.globalAlpha=p.life;cx2.translate(p.x,p.y);cx2.rotate(p.r*Math.PI/180);
+    cx2.fillStyle=p.col;cx2.fillRect(-p.w/2,-p.h/2,p.w,p.h);cx2.restore();
+  });
+  if(cps.length)requestAnimationFrame(animC);else cc.style.display='none';
+}
+
+initInput();
+</script>
+</body>
+</html>
+
+
+

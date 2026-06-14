@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>CODEPLAY — Lesson 06 Game: print() Adventure</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:         #e8f5e2;
+  --surface:    #ffffff;
+  --surface2:   #f4faf0;
+  --surface3:   #eaf6e4;
+  --border:     rgba(80,140,60,.18);
+  --green-dark: #1e5c1e;
+  --green-mid:  #2e7d32;
+  --green-leaf: #4caf50;
+  --green-light:#a5d6a7;
+  --gold:       #f5c800;
+  --gold-soft:  #ffe066;
+  --orange:     #ff8c00;
+  --orange-soft:#ffb74d;
+  --correct:    #27c76f;
+  --wrong:      #e84040;
+  --coral:      #ff6b6b;
+  --purple:     #9c6fff;
+  --cyan:       #3da8d8;
+  --text:       #1a3d1a;
+  --text-mid:   #2e5c2e;
+  --text-muted: #6a9a6a;
+  --mono:       'Share Tech Mono', monospace;
+  --head:       'Fredoka One', cursive;
+  --body:       'Nunito', sans-serif;
+  --shadow-card:0 4px 24px rgba(46,125,50,.10), 0 1px 4px rgba(46,125,50,.06);
+  --shadow-strong:0 8px 40px rgba(46,125,50,.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;min-height:100vh;overflow-x:hidden}
+body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Forest background ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 700px 500px at 10% 15%, rgba(180,230,160,.45) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 90% 80%, rgba(200,235,170,.4) 0%, transparent 65%),
+    radial-gradient(ellipse 400px 300px at 55% 50%, rgba(255,255,220,.3) 0%, transparent 60%);
+  pointer-events:none;
+}
+.leaf-deco{position:fixed;pointer-events:none;z-index:0;opacity:.08;user-select:none;animation:leafFloat 8s ease-in-out infinite alternate}
+.leaf-deco:nth-child(1){top:6%;left:2%;font-size:3rem;animation-delay:0s}
+.leaf-deco:nth-child(2){top:22%;right:3%;font-size:2.5rem;animation-delay:1.5s}
+.leaf-deco:nth-child(3){bottom:22%;left:5%;font-size:3.5rem;animation-delay:3s}
+.leaf-deco:nth-child(4){bottom:38%;right:2%;font-size:2rem;animation-delay:2s}
+
+@keyframes leafFloat{0%{transform:translateY(0) rotate(-5deg)}100%{transform:translateY(-18px) rotate(8deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes shine{to{left:160%}}
+@keyframes arrowPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+@keyframes bigPop{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+@keyframes trophySpin{0%{transform:scale(0) rotate(-180deg)}70%{transform:scale(1.2) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes cfFall{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(105vh) rotate(620deg);opacity:0}}
+@keyframes pulseSoft{50%{transform:scale(1.06)}}
+@keyframes screenIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes unlockPulse{0%,100%{box-shadow:0 0 0 0 rgba(39,199,111,.4)}50%{box-shadow:0 0 0 12px rgba(39,199,111,0)}}
+@keyframes gradShift{0%{background-position:0%}100%{background-position:200%}}
+
+/* ── TOP BAR ── */
+.topbar{
+  position:sticky;top:0;z-index:200;
+  background:rgba(30,92,30,.97);backdrop-filter:blur(20px);
+  border-bottom:2px solid rgba(165,214,167,.25);
+  box-shadow:0 2px 20px rgba(30,92,30,.18);
+  padding:0 24px;height:64px;
+  display:flex;align-items:center;gap:16px;
+}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--head);font-size:1.3rem;color:#ff8c00;letter-spacing:.04em;text-shadow:0 2px 8px rgba(255,140,0,.3)}
+.logo-leaf{font-size:1.4rem;animation:leafFloat 4s ease-in-out infinite alternate}
+.game-title-bar{font-family:var(--body);font-size:.75rem;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.06em;flex:1}
+.star-count{
+  font-family:var(--head);font-size:.9rem;color:var(--gold-soft);
+  display:flex;align-items:center;gap:6px;
+  background:rgba(245,200,0,.15);border:1.5px solid rgba(245,200,0,.4);
+  border-radius:30px;padding:5px 16px;letter-spacing:.04em;
+}
+.progress-row{display:flex;gap:6px;align-items:center}
+.prog-dot{
+  width:26px;height:26px;border-radius:50%;
+  border:2px solid rgba(165,214,167,.3);background:rgba(255,255,255,.08);
+  font-family:var(--head);font-size:.65rem;font-weight:700;
+  display:grid;place-items:center;color:rgba(255,255,255,.4);transition:all .3s;
+}
+.prog-dot.done{background:var(--correct);border-color:var(--correct);color:#fff}
+.prog-dot.active{background:var(--gold-soft);border-color:var(--gold);color:var(--green-dark);box-shadow:0 0 12px rgba(245,200,0,.5)}
+.btn-back-top{
+  display:flex;align-items:center;gap:7px;padding:7px 16px;border-radius:99px;
+  border:1.5px solid rgba(165,214,167,.4);background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.8);font-family:var(--body);font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-back-top:hover{border-color:rgba(165,214,167,.7);color:#fff;background:rgba(255,255,255,.15)}
+.btn-back-top svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── SCREENS ── */
+.screen{display:none;opacity:0;max-width:760px;margin:0 auto;padding:32px 20px 90px;position:relative;z-index:1;animation:screenIn .45s cubic-bezier(.22,1,.36,1) both}
+.screen.active{display:block;opacity:1}
+
+/* ── HEADINGS ── */
+.big-head{font-family:var(--head);font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.15;margin-bottom:8px;text-align:center;color:var(--green-dark);letter-spacing:.02em}
+.big-sub{text-align:center;font-size:1rem;font-weight:600;color:var(--text-muted);margin-bottom:28px;letter-spacing:.02em}
+
+/* ── MAIN BUTTON ── */
+.next-btn{
+  display:block;width:100%;max-width:380px;margin:22px auto 0;
+  background:linear-gradient(135deg,#43a047,#2e7d32);
+  border:none;border-radius:14px;padding:18px 32px;
+  font-family:var(--head);font-size:1.05rem;color:#fff;
+  cursor:pointer;letter-spacing:.04em;
+  box-shadow:0 6px 24px rgba(46,125,50,.35);transition:all .2s;
+  text-align:center;position:relative;overflow:hidden;
+}
+.next-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:shine 2.5s linear infinite}
+.next-btn:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(46,125,50,.45)}
+.next-btn:active{transform:translateY(0)}
+.next-btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.next-btn:disabled::after{display:none}
+
+/* ── GAME CARD ── */
+.game-card{
+  width:100%;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:20px;padding:12px 11px;margin-bottom:20px;
+  position:relative;overflow:hidden;
+  box-shadow:var(--shadow-card);
+}
+
+/* ── WATCH SCREEN ── */
+.watch-computer{
+  background:var(--surface);border:2px solid rgba(76,175,80,.3);
+  border-radius:18px;padding:22px;margin-bottom:20px;text-align:center;
+  box-shadow:var(--shadow-strong);
+  position:relative;overflow:hidden;
+}
+.watch-computer::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--green-leaf),var(--gold-soft),var(--green-leaf));
+  background-size:200% 100%;animation:gradShift 3s linear infinite;
+}
+.wc-screen{
+  background:var(--green-dark);border:1.5px solid rgba(76,175,80,.3);
+  border-radius:12px;padding:20px;margin-bottom:16px;
+  font-family:var(--mono);min-height:75px;
+  display:flex;flex-direction:column;justify-content:center;gap:10px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.1);
+}
+.wc-code{font-size:clamp(1.05rem,3.5vw,1.4rem);font-weight:600;display:flex;align-items:center;justify-content:center;flex-wrap:wrap}
+.wc-kw{color:#81c784}.wc-pn{color:rgba(165,214,167,.5)}.wc-q{color:var(--gold-soft)}.wc-msg{color:#fff}
+.wc-arrow{font-size:1.6rem;color:var(--correct);margin:10px 0;animation:arrowPulse 1.3s ease-in-out infinite}
+.wc-output{font-size:clamp(1.15rem,3.8vw,1.55rem);font-weight:900;color:var(--gold-soft)}
+.wc-output.pop{animation:bigPop .5s cubic-bezier(.22,1,.36,1) both}
+
+/* Parts pills */
+.parts-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:20px}
+.part-pill{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:30px;padding:10px 18px;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:all .2s;position:relative;
+  color:var(--text);box-shadow:var(--shadow-card);
+}
+.part-pill:hover{transform:scale(1.05);box-shadow:var(--shadow-strong)}
+.part-pill.glow-purple{border-color:rgba(156,111,255,.45);box-shadow:0 0 14px rgba(156,111,255,.15)}
+.part-pill.glow-green{border-color:rgba(76,175,80,.5);box-shadow:0 0 14px rgba(76,175,80,.15)}
+.part-pill.glow-yellow{border-color:rgba(245,200,0,.5);box-shadow:0 0 14px rgba(245,200,0,.15)}
+.part-pill.glow-blue{border-color:rgba(61,168,216,.5);box-shadow:0 0 14px rgba(61,168,216,.15)}
+.pill-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.pill-bubble{
+  position:absolute;bottom:calc(100% + 14px);left:50%;transform:translateX(-50%);
+  background:var(--green-dark);border:1.5px solid rgba(165,214,167,.3);
+  border-radius:14px;padding:14px 18px;width:240px;
+  font-size:.84rem;font-weight:600;color:rgba(255,255,255,.9);
+  box-shadow:0 8px 32px rgba(30,92,30,.3);
+  opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;text-align:center;line-height:1.6;
+}
+.pill-bubble::after{content:'';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);border:9px solid transparent;border-top-color:var(--green-dark);border-bottom:0}
+.part-pill:hover .pill-bubble,.part-pill.open .pill-bubble{opacity:1;pointer-events:all}
+
+/* Watch steps */
+.watch-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+.wstep{
+  display:flex;align-items:flex-start;gap:14px;
+  background:var(--surface2);border-radius:14px;padding:16px 18px;
+  border-left:4px solid transparent;border:1.5px solid var(--border);
+  opacity:.4;transition:all .4s;
+}
+.wstep.active{opacity:1;border-left:4px solid var(--green-leaf);border-color:rgba(76,175,80,.3);background:var(--surface)}
+.wstep-num{
+  width:30px;height:30px;border-radius:50%;
+  background:rgba(76,175,80,.1);border:2px solid rgba(76,175,80,.25);
+  display:grid;place-items:center;font-family:var(--head);font-size:.8rem;color:var(--green-mid);
+  flex-shrink:0;transition:all .3s;
+}
+.wstep.active .wstep-num{background:var(--green-leaf);border-color:var(--green-leaf);color:#fff;box-shadow:0 0 14px rgba(76,175,80,.4)}
+.wstep-text{font-size:.92rem;color:var(--text-mid);line-height:1.6;font-weight:500}
+
+/* ── DRAG & DROP ── */
+.dd-instructions{
+  background:rgba(255,140,0,.08);border:1.5px solid rgba(255,140,0,.3);
+  border-radius:14px;padding:16px;margin-bottom:20px;
+  font-size:.9rem;color:var(--text-mid);text-align:center;font-weight:600;line-height:1.6;
+}
+.dd-container{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:16px;padding:24px;margin-bottom:24px;width: 700px;
+}
+.dd-code-line{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;min-height:60px;margin-bottom:20px}
+.dd-slot{
+  min-width:100px;height:48px;border:2px dashed rgba(76,175,80,.3);border-radius:10px;
+  background:rgba(76,175,80,.05);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:1rem;font-weight:600;color:var(--text-muted);
+  transition:all .3s;padding:0 10px;
+}
+.dd-slot.drag-over{border-color:var(--green-leaf);background:rgba(76,175,80,.1)}
+.dd-slot.filled{border-style:solid;border-color:var(--green-leaf);background:rgba(76,175,80,.12);color:var(--green-dark)}
+.dd-choices{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.dd-item{
+  padding:11px 18px;border-radius:10px;
+  border:2px solid var(--border);background:var(--surface);
+  font-family:var(--mono);font-size:1rem;font-weight:700;
+  cursor:grab;transition:all .2s;user-select:none;
+  color:var(--text);box-shadow:var(--shadow-card);
+}
+.dd-item:hover{transform:scale(1.07);border-color:var(--green-leaf);box-shadow:var(--shadow-strong)}
+.dd-item:active{cursor:grabbing}
+.dd-item.used{opacity:.25;cursor:not-allowed;pointer-events:none}
+.dd-item.kw{color:var(--purple)}.dd-item.pn{color:var(--text-muted)}.dd-item.str{color:var(--green-mid)}
+.dd-check-btn{
+  display:block;width:100%;max-width:280px;margin:0 auto;
+  background:var(--green-leaf);border:none;border-radius:12px;padding:14px 28px;
+  font-family:var(--head);font-size:1rem;color:#fff;
+  cursor:pointer;letter-spacing:.04em;
+  box-shadow:0 4px 18px rgba(76,175,80,.3);transition:all .2s;
+}
+.dd-check-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(76,175,80,.45)}
+.dd-check-btn:disabled{opacity:.3;cursor:not-allowed;transform:none}
+.dd-feedback{margin-top:18px;padding:16px 20px;border-radius:12px;text-align:center;font-size:.95rem;font-weight:700;display:none;animation:fadeUp .4s ease both}
+.dd-feedback.show{display:block}
+.dd-feedback.correct{background:rgba(39,199,111,.1);border:1.5px solid rgba(39,199,111,.35);color:var(--correct)}
+.dd-feedback.wrong{background:rgba(232,64,64,.08);border:1.5px solid rgba(232,64,64,.3);color:var(--wrong)}
+
+/* ── GOOD / BAD ── */
+.gnb-progress{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
+.gnbpd{width:28px;height:8px;border-radius:4px;background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.2);transition:all .3s}
+.gnbpd.active{background:var(--gold);box-shadow:0 0 8px rgba(245,200,0,.4)}
+.gnbpd.done-good{background:var(--correct)}.gnbpd.done-bad{background:var(--coral)}
+.gnb-code{
+  font-family:var(--mono);font-size:clamp(1.1rem,4vw,1.45rem);font-weight:700;
+  text-align:center;padding:20px;margin-bottom:18px;
+  background:var(--green-dark);border:1.5px solid rgba(76,175,80,.3);border-radius:12px;
+  color:var(--green-light);
+}
+.gnb-row{display:flex;gap:14px;justify-content:center;margin-bottom:12px}
+.gnb-btn{
+  flex:1;max-width:180px;padding:18px 12px;border-radius:14px;
+  border:2px solid var(--border);background:var(--surface);
+  cursor:pointer;transition:all .2s;
+  display:flex;flex-direction:column;align-items:center;gap:8px;font-size:2rem;
+  box-shadow:var(--shadow-card);
+}
+.gnb-btn:hover{transform:scale(1.05);box-shadow:var(--shadow-strong)}
+.gnb-btn.locked{opacity:.5;cursor:not-allowed}
+.gnb-btn.selected-correct{background:rgba(39,199,111,.1);border-color:var(--correct);box-shadow:0 0 20px rgba(39,199,111,.2)}
+.gnb-btn.selected-wrong{background:rgba(232,64,64,.08);border-color:var(--wrong);box-shadow:0 0 20px rgba(232,64,64,.15)}
+.gnb-btn.reveal-correct{animation:pulseSoft .6s ease 3}
+.gnb-label{font-family:var(--head);font-size:.82rem;font-weight:700;letter-spacing:.04em;color:var(--text)}
+.gnb-explain{
+  padding:16px 20px;border-radius:12px;
+  background:rgba(245,200,0,.08);border:1.5px solid rgba(245,200,0,.3);
+  font-size:.9rem;font-weight:600;color:var(--text-mid);line-height:1.6;text-align:center;
+  display:none;animation:fadeUp .4s ease both;
+}
+.gnb-explain.show{display:block}
+
+/* ── OWN MESSAGE ── */
+.msg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:22px}
+.msg-card{
+  padding:14px 10px;border-radius:14px;
+  border:2px solid var(--border);background:var(--surface);
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  cursor:pointer;transition:all .2s;box-shadow:var(--shadow-card);
+}
+.msg-card:hover{transform:scale(1.05);box-shadow:var(--shadow-strong)}
+.msg-card.selected{transform:scale(1.08)}
+.msg-emoji{font-size:1.8rem}
+.msg-text{font-family:var(--head);font-size:.78rem;font-weight:700;letter-spacing:.02em;text-align:center}
+.pf-container{
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:16px;padding:22px;margin-bottom:24px;
+}
+.pf-label{font-size:.75rem;letter-spacing:.14em;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px;text-align:center;font-family:var(--head);font-weight:700}
+.pf-code{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.pf-static{font-family:var(--mono);font-size:1.2rem;font-weight:700}
+.pf-slot{
+  min-width:150px;padding:10px 16px;
+  border:2px dashed rgba(76,175,80,.3);border-radius:10px;
+  background:rgba(76,175,80,.05);
+  font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--text-muted);
+  text-align:center;transition:all .3s;
+}
+.pf-slot.has-msg{border-style:solid;border-color:var(--green-leaf);background:rgba(76,175,80,.1);color:var(--green-dark)}
+.run-btn{
+  display:block;width:100%;max-width:220px;margin:0 auto 20px;
+  background:var(--surface2);border:2px solid var(--border);border-radius:12px;
+  padding:14px 28px;font-family:var(--head);font-size:1rem;font-weight:700;
+  color:var(--text-muted);cursor:not-allowed;letter-spacing:.04em;transition:all .2s;
+}
+.run-btn.ready{
+  background:var(--green-leaf);border-color:var(--green-leaf);color:#fff;cursor:pointer;
+  box-shadow:0 4px 18px rgba(76,175,80,.3);
+}
+.run-btn.ready:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(76,175,80,.45)}
+.out-label{font-size:.72rem;letter-spacing:.14em;color:var(--text-muted);text-transform:uppercase;margin-bottom:10px;text-align:center;font-family:var(--head);font-weight:700}
+.out-screen{
+  background:var(--green-dark);border:1.5px solid rgba(76,175,80,.3);
+  border-radius:12px;padding:20px;min-height:70px;
+  display:flex;align-items:center;justify-content:center;
+}
+.out-text{font-family:var(--mono);font-size:1.3rem;font-weight:900;color:rgba(165,214,167,.35);opacity:0;transform:scale(.9);transition:all .3s}
+.out-text.visible{opacity:1;transform:scale(1)}
+
+/* ── COMPLETE ── */
+.trophy{font-size:5rem;text-align:center;margin-bottom:16px;animation:trophySpin 1.5s ease}
+.complete-stats{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.cstat{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:16px 28px;text-align:center;box-shadow:var(--shadow-card)}
+.cstat-val{font-family:var(--head);font-size:1.8rem;color:var(--green-dark)}
+.cstat-label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;font-weight:600}
+.complete-msg{
+  background:rgba(76,175,80,.08);border:1.5px solid rgba(76,175,80,.3);
+  border-radius:14px;padding:18px 22px;text-align:center;
+  font-size:.95rem;font-weight:500;color:var(--text-mid);line-height:1.7;margin-bottom:28px;
+}
+.complete-msg strong{color:var(--green-mid);font-weight:800}
+.unlock-badge{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:rgba(39,199,111,.1);border:1.5px solid var(--correct);
+  border-radius:99px;padding:10px 22px;
+  font-family:var(--head);font-size:.72rem;color:var(--correct);
+  margin-bottom:24px;letter-spacing:.06em;
+  animation:unlockPulse 1.8s ease-in-out infinite;
+}
+.btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-secondary{
+  padding:14px 28px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--surface2);
+  font-family:var(--head);font-size:.9rem;font-weight:700;color:var(--text-mid);
+  cursor:pointer;letter-spacing:.04em;transition:all .2s;
+}
+.btn-secondary:hover{border-color:rgba(76,175,80,.4);background:var(--surface);transform:translateY(-2px)}
+.next-btn.primary-go{
+  background:linear-gradient(135deg,var(--orange),#d04000);
+  box-shadow:0 4px 18px rgba(255,140,0,.3);
+}
+
+/* CONFETTI */
+.cf{position:fixed;pointer-events:none;z-index:9999;animation:cfFall linear forwards}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  height:52px;background:rgba(30,92,30,.97);
+  backdrop-filter:blur(20px);border-top:1.5px solid rgba(165,214,167,.2);
+  box-shadow:0 -2px 20px rgba(30,92,30,.15);
+  display:flex;align-items:center;justify-content:center;gap:40px;
+}
+.sitem{display:flex;align-items:center;gap:7px;font-size:.78rem;letter-spacing:.06em;color:rgba(255,255,255,.75);font-weight:600}
+.sval{font-family:var(--head);font-size:.82rem;letter-spacing:.03em}
+
+@media(max-width:640px){
+  .topbar{padding:0 14px;height:58px}
+  .screen{padding:22px 14px 80px}
+  .big-head{font-size:1.5rem}
+  .next-btn{font-size:1rem;padding:15px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating leaves -->
+<div class="leaf-deco">🍃</div>
+<div class="leaf-deco">🌿</div>
+<div class="leaf-deco">🍀</div>
+<div class="leaf-deco">🌱</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo"><span class="logo-leaf">🌿</span><span>CODEPLAY</span></div>
+  <div class="game-title-bar">Lesson 06 · 🐍 print() Adventure</div>
+  <div class="star-count">⭐ <span id="starNum">0</span></div>
+  <div class="progress-row" id="progressDots"></div>
+  <button class="btn-back-top" onclick="location.href='lesson6.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </button>
+</div>
+
+<!-- SCREEN 0: INTRO -->
+<div class="screen active" id="screen0">
+  <h1 class="big-head">🎮 Let's Master print()!</h1>
+  <p class="big-sub">Work through 4 fun games to become a print() pro!</p>
+  <div class="game-card">
+    <div style="text-align:center;font-size:1rem;color:var(--text-mid);line-height:1.9;margin-bottom:14px;font-weight:500">
+      You will <strong style="color:var(--green-mid)">watch</strong>, <strong style="color:var(--correct)">build</strong>,
+      <strong style="color:var(--orange)">judge</strong>, and <strong style="color:var(--purple)">create</strong>!<br>
+      <span style="font-size:.9rem;color:var(--text-muted)">Earn ⭐ stars by completing each game!</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:6px">
+      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;font-size:.85rem;color:var(--text-mid);font-weight:600">👀 Watch &amp; Learn</div>
+      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;font-size:.85rem;color:var(--text-mid);font-weight:600">🧩 Build the Code</div>
+      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;font-size:.85rem;color:var(--text-mid);font-weight:600">✅ Judge the Code</div>
+      <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:12px 18px;text-align:center;font-size:.85rem;color:var(--text-mid);font-weight:600">✨ Create Your Own</div>
+    </div>
+  </div>
+  <button class="next-btn" onclick="goScreen(1)">START ADVENTURE! 🚀</button>
+</div>
+
+<!-- SCREEN 1: WATCH -->
+<div class="screen" id="screen1">
+  <h2 class="big-head">👀 Watch &amp; Learn</h2>
+  <p class="big-sub">See exactly how print() works!</p>
+  <div class="watch-computer">
+    <div class="wc-screen">
+      <div class="wc-code">
+        <span class="wc-kw">print</span><span class="wc-pn">(</span><span class="wc-q">"</span><span class="wc-msg">Hello!</span><span class="wc-q">"</span><span class="wc-pn">)</span>
+      </div>
+      <div class="wc-arrow" id="wcArrow" style="display:none">⬇️</div>
+      <div class="wc-output" id="wcOutput"></div>
+    </div>
+  </div>
+  <div class="parts-row">
+    <div class="part-pill glow-purple"><div class="pill-dot" style="background:var(--purple)"></div><span>print</span><div class="pill-bubble">The command — tells Python what to do</div></div>
+    <div class="part-pill glow-blue"><div class="pill-dot" style="background:var(--cyan)"></div><span>( )</span><div class="pill-bubble">Brackets hold your message inside</div></div>
+    <div class="part-pill glow-green"><div class="pill-dot" style="background:var(--green-leaf)"></div><span>" "</span><div class="pill-bubble">Quotes make it a text string</div></div>
+    <div class="part-pill glow-yellow"><div class="pill-dot" style="background:var(--gold)"></div><span>Hello!</span><div class="pill-bubble">Your actual message to display</div></div>
+  </div>
+  <div class="watch-steps">
+    <div class="wstep active" id="wstep1"><div class="wstep-num">1</div><div class="wstep-text">You write the code</div></div>
+    <div class="wstep" id="wstep2"><div class="wstep-num">2</div><div class="wstep-text">Python reads it top to bottom</div></div>
+    <div class="wstep" id="wstep3"><div class="wstep-num">3</div><div class="wstep-text">The computer displays your message!</div></div>
+  </div>
+  <button class="next-btn" onclick="initDnd();goScreen(2)">I GET IT! NEXT GAME 🎯</button>
+</div>
+
+<!-- SCREEN 2: DRAG & DROP -->
+<div class="screen" id="screen2">
+  <h2 class="big-head">🧩 Build the Code</h2>
+  <p class="big-sub">Drag the parts to make print() work!</p>
+  <div class="dd-instructions">
+    <strong>Goal:</strong> Put the pieces in the right order to build
+    <code style="background:rgba(76,175,80,.1);padding:2px 8px;border-radius:6px;font-family:var(--mono);color:var(--green-mid)">print("Wow!")</code>
+  </div>
+  <div class="game-card">
+    <div class="dd-container">
+      <div class="dd-code-line">
+        <div class="dd-slot" id="slot1" data-correct="kw">keyword</div>
+        <div class="dd-slot" id="slot2" data-correct="p1">(</div>
+        <div class="dd-slot" id="slot3" data-correct="q1">"</div>
+        <div class="dd-slot" id="slot4" data-correct="msg">message</div>
+        <div class="dd-slot" id="slot5" data-correct="q2">"</div>
+        <div class="dd-slot" id="slot6" data-correct="p2">)</div>
+      </div>
+      <div class="dd-choices" id="ddChoices">
+        <div class="dd-item kw" draggable="true" data-id="kw">print</div>
+        <div class="dd-item pn" draggable="true" data-id="p1">(</div>
+        <div class="dd-item str" draggable="true" data-id="q1">"</div>
+        <div class="dd-item" draggable="true" data-id="msg" style="color:var(--orange)">Wow!</div>
+        <div class="dd-item str" draggable="true" data-id="q2">"</div>
+        <div class="dd-item pn" draggable="true" data-id="p2">)</div>
+      </div>
+    </div>
+    <button class="dd-check-btn" id="ddCheckBtn" onclick="checkDnd()" disabled>CHECK MY CODE ✓</button>
+    <div class="dd-feedback" id="ddFeedback"></div>
+  </div>
+  <button class="next-btn" id="dndNext" onclick="initGnb();goScreen(3)" disabled>NEXT GAME 🎯</button>
+</div>
+
+<!-- SCREEN 3: GOOD / BAD -->
+<div class="screen" id="screen3">
+  <h2 class="big-head">✅ Judge the Code</h2>
+  <p class="big-sub">Is this print() code correct or broken?</p>
+  <div class="gnb-progress" id="gnbProgress"></div>
+  <div id="gnbArea"></div>
+  <button class="next-btn" id="gnbNext" onclick="nextGnb()" disabled>NEXT CODE →</button>
+</div>
+
+<!-- SCREEN 4: OWN MESSAGE -->
+<div class="screen" id="screen4">
+  <h2 class="big-head">✨ Create Your Own!</h2>
+  <p class="big-sub">Pick a message and run your first Python program!</p>
+  <div class="game-card">
+    <div style="font-size:.9rem;color:var(--text-muted);text-align:center;margin-bottom:18px;font-weight:500">Pick a message you want Python to print:</div>
+    <div class="msg-grid" id="msgGrid"></div>
+    <div class="pf-container">
+      <div class="pf-label">Your Code:</div>
+      <div class="pf-code">
+        <span class="pf-static" style="color:var(--purple)">print</span>
+        <span class="pf-static" style="color:var(--text-muted)">(</span>
+        <span class="pf-static" style="color:var(--green-mid)">"</span>
+        <span class="pf-slot" id="pfSlot">your message</span>
+        <span class="pf-static" style="color:var(--green-mid)">"</span>
+        <span class="pf-static" style="color:var(--text-muted)">)</span>
+      </div>
+      <button class="run-btn" id="runBtn" onclick="runOwn()">▶️ RUN CODE</button>
+      <div class="out-label">Output:</div>
+      <div class="out-screen">
+        <div class="out-text" id="ownOutput">waiting...</div>
+      </div>
+    </div>
+  </div>
+  <button class="next-btn" id="ownNext" onclick="showCelebration()" disabled>FINISH! 🎊</button>
+</div>
+
+<!-- SCREEN COMPLETE -->
+<div class="screen" id="screencomplete">
+  <div class="trophy">🏆</div>
+  <h2 class="big-head">YOU DID IT!</h2>
+  <p class="big-sub">You've mastered print() — for real!</p>
+  <div class="complete-stats">
+    <div class="cstat"><div class="cstat-val" id="finalStars">0</div><div class="cstat-label">⭐ Stars Earned</div></div>
+    <div class="cstat"><div class="cstat-val">+100</div><div class="cstat-label">⚡ XP Gained</div></div>
+  </div>
+  <div class="complete-msg">
+    🎉 <strong>Congratulations!</strong> You've completed the print() adventure and unlocked <strong>Lesson 07</strong>! You're becoming a real Python programmer!
+  </div>
+  <div class="unlock-badge">🔓 Lesson 07 Unlocked in CodePlay!</div>
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="restartAll()">🔄 Play Again</button>
+    <button class="next-btn primary-go" style="max-width:280px;margin:0" onclick="finishAndUnlock()">GO TO LESSONS 🚀</button>
+  </div>
+  <div id="redirectNote" style="text-align:center;margin-top:16px;font-size:.75rem;color:var(--text-muted);letter-spacing:.04em;font-weight:500">
+    Redirecting in <span id="countdownSpan" style="color:var(--green-mid);font-family:var(--head)">8</span>s…
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="sitem">📍 <span class="sval" style="color:var(--gold-soft)">Part 1</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.72rem">Lesson 06</span></div>
+  <div class="sitem">⭐ <span class="sval" style="color:var(--gold-soft)" id="statStars">0</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.72rem">stars</span></div>
+  <div class="sitem">🎮 <span class="sval" id="statGame" style="color:#fff">1/4</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.72rem">Games</span></div>
+  <div class="sitem">🔓 <span class="sval" style="color:var(--correct)">Lesson 07</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.72rem">on finish</span></div>
+</div>
+
+<script>
+let stars=0;
+let redirectTimer=null;
+
+function buildProgressDots(){
+  const el=document.getElementById('progressDots');
+  [1,2,3,4].forEach(i=>{
+    const d=document.createElement('div');
+    d.className='prog-dot';d.textContent=i;d.id='progDot'+i;
+    el.appendChild(d);
+  });
+}
+
+function updateStars(n){
+  stars+=n;
+  document.getElementById('starNum').textContent=stars;
+  document.getElementById('statStars').textContent=stars;
+}
+
+let currentScreen=0;
+function goScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen'+n).classList.add('active');
+  currentScreen=n;
+  document.querySelectorAll('.prog-dot').forEach(d=>d.classList.remove('active'));
+  if(n>=1&&n<=4)document.getElementById('progDot'+n).classList.add('active');
+  document.getElementById('statGame').textContent=n+'/4';
+  if(n===1)startWatchDemo();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function startWatchDemo(){
+  const steps=[
+    {step:1,delay:0},{step:2,delay:1600},{step:3,delay:3200,showArrow:true},{step:3,delay:4400,showOutput:true}
+  ];
+  steps.forEach(s=>{
+    setTimeout(()=>{
+      if(s.step){document.querySelectorAll('.wstep').forEach(w=>w.classList.remove('active'));document.getElementById('wstep'+s.step).classList.add('active')}
+      if(s.showArrow)document.getElementById('wcArrow').style.display='block';
+      if(s.showOutput){
+        const out=document.getElementById('wcOutput');
+        out.textContent='Hello!';out.classList.add('pop');
+        updateStars(10);popMini();
+      }
+    },s.delay);
+  });
+}
+
+let dndState={};
+function initDnd(){
+  dndState={};
+  document.querySelectorAll('.dd-slot').forEach(slot=>{
+    slot.textContent=slot.dataset.correct;slot.classList.remove('filled','drag-over');
+    slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('drag-over')});
+    slot.addEventListener('dragleave',()=>slot.classList.remove('drag-over'));
+    slot.addEventListener('drop',e=>{
+      e.preventDefault();slot.classList.remove('drag-over');
+      const itemId=e.dataTransfer.getData('text/plain');
+      const item=document.querySelector(`.dd-item[data-id="${itemId}"]`);
+      if(!item||item.classList.contains('used'))return;
+      Object.keys(dndState).forEach(sid=>{if(dndState[sid]===itemId){delete dndState[sid];document.getElementById(sid).textContent=document.getElementById(sid).dataset.correct;document.getElementById(sid).classList.remove('filled')}});
+      dndState[slot.id]=itemId;
+      slot.textContent=item.textContent;slot.classList.add('filled');
+      item.classList.add('used');checkDndFill();
+    });
+  });
+  document.querySelectorAll('.dd-item').forEach(item=>{
+    item.classList.remove('used');
+    item.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',item.dataset.id)});
+  });
+  document.getElementById('ddFeedback').classList.remove('show');
+  document.getElementById('ddCheckBtn').disabled=true;
+  document.getElementById('dndNext').disabled=true;
+}
+function checkDndFill(){document.getElementById('ddCheckBtn').disabled=Object.keys(dndState).length<6}
+function checkDnd(){
+  let correct=true;
+  document.querySelectorAll('.dd-slot').forEach(slot=>{if(dndState[slot.id]!==slot.dataset.correct)correct=false});
+  const fb=document.getElementById('ddFeedback');fb.classList.add('show');
+  if(correct){
+    fb.className='dd-feedback correct show';
+    fb.textContent='🎉 Perfect! You built print("Wow!") correctly!';
+    updateStars(20);popBig();
+    document.getElementById('dndNext').disabled=false;
+    document.getElementById('progDot2').classList.add('done');
+  }else{
+    fb.className='dd-feedback wrong show';
+    fb.textContent='❌ Not quite! Try again. Remember: print("Wow!")';
+  }
+}
+
+const GNB=[
+  {code:'print("Hi!")',good:true,explain:'✅ Perfect! Lowercase print, brackets, and quotes — all correct!'},
+  {code:'print(Hello!)',good:false,explain:'❌ Missing quotes! Text must be inside " " — try: print("Hello!")'},
+  {code:'Print("Hello!")',good:false,explain:'❌ print must be lowercase! Python is case-sensitive.'},
+  {code:'print("I love Python!")',good:true,explain:'✅ Excellent! Every part is in exactly the right place!'},
+  {code:'print("Wow!"',good:false,explain:'❌ Missing closing bracket! Every ( needs a matching ).'},
+  {code:"print(\"Let's code!\")",good:true,explain:'✅ Great code! Everything is correctly written.'},
+];
+let gnbIdx=0,gnbLocked=false;
+
+function initGnb(){gnbIdx=0;gnbLocked=false;buildGnbProgress();renderGnb()}
+function buildGnbProgress(){
+  const el=document.getElementById('gnbProgress');el.innerHTML='';
+  GNB.forEach((_,i)=>{const d=document.createElement('div');d.className='gnbpd'+(i===gnbIdx?' active':'');el.appendChild(d)});
+}
+function renderGnb(){
+  gnbLocked=false;document.getElementById('gnbNext').disabled=true;buildGnbProgress();
+  const g=GNB[gnbIdx];
+  let codeHtml=g.code;
+  if(!g.good){
+    if(!g.code.includes('"')&&!g.code.includes("'"))codeHtml=g.code.replace(/\((.+)\)/,'(<span style="color:var(--coral)">$1</span>)');
+    else if(g.code.startsWith('Print'))codeHtml='<span style="color:var(--coral)">P</span>'+g.code.slice(1);
+    else if(!g.code.endsWith(')'))codeHtml=g.code+'<span style="color:var(--coral)">?</span>';
+  }
+  document.getElementById('gnbArea').innerHTML=`
+    <div class="game-card">
+      <div style="font-family:var(--head);font-size:.88rem;color:var(--text-muted);margin-bottom:12px;text-align:center">
+        Code ${gnbIdx+1} of ${GNB.length} — Is this correct?
+      </div>
+      <div class="gnb-code">${codeHtml}</div>
+      <div class="gnb-row">
+        <div class="gnb-btn gnb-good" id="gnbGood" onclick="answerGnb(true)">
+          👍<div class="gnb-label" style="color:var(--correct)">Good Code!</div>
+        </div>
+        <div class="gnb-btn gnb-bad" id="gnbBad" onclick="answerGnb(false)">
+          👎<div class="gnb-label" style="color:var(--coral)">Bad Code!</div>
+        </div>
+      </div>
+      <div class="gnb-explain" id="gnbExplain">${g.explain}</div>
+    </div>`;
+}
+function answerGnb(isGood){
+  if(gnbLocked)return;gnbLocked=true;
+  const g=GNB[gnbIdx];
+  const goodBtn=document.getElementById('gnbGood');
+  const badBtn=document.getElementById('gnbBad');
+  [goodBtn,badBtn].forEach(b=>b.classList.add('locked'));
+  document.getElementById('gnbExplain').classList.add('show');
+  const correct=isGood===g.good;
+  if(correct){(isGood?goodBtn:badBtn).classList.add('selected-correct');updateStars(8);popMini()}
+  else{(isGood?goodBtn:badBtn).classList.add('selected-wrong');(g.good?goodBtn:badBtn).classList.add('reveal-correct')}
+  const nextBtn=document.getElementById('gnbNext');nextBtn.disabled=false;
+  if(gnbIdx===GNB.length-1){
+    nextBtn.textContent='LAST GAME! 🎉';
+    nextBtn.onclick=()=>{initOwn();goScreen(4)};
+    document.getElementById('progDot3').classList.add('done');
+  }
+}
+function nextGnb(){if(gnbIdx<GNB.length-1){gnbIdx++;renderGnb()}}
+
+const MESSAGES=[
+  {emoji:'🍕',text:'Pizza is yummy!',color:'var(--orange)'},
+  {emoji:'🦖',text:'ROARRR!',color:'var(--coral)'},
+  {emoji:'⭐',text:'I love coding!',color:'#b8860b'},
+  {emoji:'🌈',text:'Hello, World!',color:'var(--green-mid)'},
+  {emoji:'🚀',text:'To the moon!',color:'var(--cyan)'},
+  {emoji:'🦄',text:'Magic is real!',color:'var(--purple)'},
+  {emoji:'🎮',text:'Gaming time!',color:'var(--purple)'},
+  {emoji:'🐍',text:'Python is cool!',color:'var(--green-mid)'},
+  {emoji:'💡',text:'I am a coder!',color:'#b8860b'},
+];
+let selectedMsg=null,ownRan=false;
+
+function initOwn(){
+  selectedMsg=null;ownRan=false;
+  const slot=document.getElementById('pfSlot');slot.textContent='your message';slot.className='pf-slot';slot.style.color='';
+  document.getElementById('runBtn').className='run-btn';
+  const out=document.getElementById('ownOutput');out.className='out-text';out.textContent='waiting...';out.style.color='';
+  document.getElementById('ownNext').disabled=true;
+  const grid=document.getElementById('msgGrid');grid.innerHTML='';
+  MESSAGES.forEach(m=>{
+    const card=document.createElement('div');
+    card.className='msg-card';card.style.borderColor=m.color+'55';
+    card.innerHTML=`<span class="msg-emoji">${m.emoji}</span><span class="msg-text" style="color:${m.color}">${m.text}</span>`;
+    card.onclick=()=>selectMsg(card,m);
+    grid.appendChild(card);
+  });
+}
+function selectMsg(card,m){
+  document.querySelectorAll('.msg-card').forEach(c=>{c.classList.remove('selected');c.style.boxShadow=''});
+  card.classList.add('selected');card.style.borderColor=m.color;card.style.boxShadow=`0 0 20px ${m.color}44`;
+  selectedMsg=m;
+  const slot=document.getElementById('pfSlot');slot.textContent=m.text;slot.className='pf-slot has-msg';slot.style.color=m.color;
+  document.getElementById('runBtn').className='run-btn ready';
+}
+function runOwn(){
+  if(!selectedMsg||!document.getElementById('runBtn').classList.contains('ready'))return;
+  const out=document.getElementById('ownOutput');out.className='out-text';out.textContent='';
+  setTimeout(()=>{out.textContent=selectedMsg.text;out.className='out-text visible';out.style.color=selectedMsg.color},150);
+  updateStars(25);popBig();ownRan=true;
+  setTimeout(()=>{document.getElementById('ownNext').disabled=false;document.getElementById('progDot4').classList.add('done')},1000);
+}
+
+function showCelebration(){
+  document.getElementById('finalStars').textContent=stars;
+  goScreen('complete');popBig();setTimeout(popBig,800);
+  localStorage.setItem('lesson06Completed','yes');
+  const cur=parseInt(localStorage.getItem('part1_progress'))||1;
+  if(cur<7)localStorage.setItem('part1_progress','7');
+  let secs=8;const cd=document.getElementById('countdownSpan');
+  redirectTimer=setInterval(()=>{secs--;cd.textContent=secs;if(secs<=0){clearInterval(redirectTimer);window.location.href='quest1.html'}},1000);
+}
+function restartAll(){
+  if(redirectTimer)clearInterval(redirectTimer);
+  stars=0;document.getElementById('starNum').textContent='0';document.getElementById('statStars').textContent='0';
+  document.querySelectorAll('.prog-dot').forEach(d=>d.classList.remove('done','active'));
+  goScreen(0);
+}
+function finishAndUnlock(){
+  if(redirectTimer)clearInterval(redirectTimer);
+  localStorage.setItem('lesson06Completed','yes');
+  const cur=parseInt(localStorage.getItem('part1_progress'))||1;
+  if(cur<7)localStorage.setItem('part1_progress','7');
+  window.location.href='quest1.html';
+}
+
+const CF_COLORS=['#27c76f','#f5e000','#ff6b6b','#4caf50','#ffffff','#ff8c00','#a5d6a7'];
+function popMini(){
+  for(let i=0;i<20;i++){
+    const el=document.createElement('div');const sz=5+Math.random()*7;
+    el.className='cf';
+    el.style.cssText=`left:${20+Math.random()*60}vw;top:30vh;width:${sz}px;height:${sz*(Math.random()>.5?1:.4)}px;background:${CF_COLORS[Math.floor(Math.random()*CF_COLORS.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1+Math.random()*.7}s;animation-delay:${Math.random()*.2}s;`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),2200);
+  }
+}
+function popBig(){
+  for(let i=0;i<65;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');const sz=6+Math.random()*10;
+      el.className='cf';
+      el.style.cssText=`left:${Math.random()*100}vw;top:-10px;width:${sz}px;height:${sz*(Math.random()>.5?1:.4)}px;background:${CF_COLORS[Math.floor(Math.random()*CF_COLORS.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.8+Math.random()*1.3}s;animation-delay:${Math.random()*.4}s;`;
+      document.body.appendChild(el);setTimeout(()=>el.remove(),3500);
+    },i*16);
+  }
+}
+function handleBack(){if(confirm('Go back to lessons? Your progress here will be lost.'))window.location.href='quest1.html'}
+
+buildProgressDots();
+</script>
+</body>
+</html>
+
+
+

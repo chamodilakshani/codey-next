@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>CODEPLAY — Finley's Step Journey!</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow:hidden}
+body{font-family:'Nunito',sans-serif;background:#d6f3ef;color:#1a4e47;height:100dvh;overflow:hidden;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none}
+:root{
+  --teal:#0bb5a4;--lime:#2ecc9a;--gold:#e0a800;
+  --coral:#e85858;--muted:rgba(26,78,71,.52);
+  --card:rgba(255,255,255,.82);--bdr:rgba(11,181,164,.25);
+  --mono:'Share Tech Mono',monospace;
+  --text:#1a4e47;--accent:#0bb5a4;--accent2:#07927f;
+  --bg:#d6f3ef;--bg2:#c0ece7;--bg3:#a8e4de;
+  --surface:rgba(255,255,255,.88);--surface2:rgba(255,255,255,.6);
+}
+
+/* ── SEA BG ── */
+.sea-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.sea-layer{position:absolute;inset:0;background:
+  radial-gradient(ellipse 80% 60% at 20% 10%,rgba(11,181,164,.22) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 80% at 80% 80%,rgba(7,146,127,.15) 0%,transparent 60%),
+  linear-gradient(180deg,#d6f3ef 0%,#b8e9e3 48%,#d6f3ef 100%)}
+.sea-rays{position:absolute;inset:0;background:repeating-conic-gradient(from 260deg at 50% -20%,rgba(11,181,164,.025) 0deg,transparent 4deg,transparent 12deg,rgba(11,181,164,.015) 16deg,transparent 20deg);animation:rayDrift 18s linear infinite alternate}
+.bbg{position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.55),rgba(11,181,164,.08));border:1px solid rgba(11,181,164,.18);animation:bbgUp linear infinite;pointer-events:none}
+
+/* ── KEYFRAMES ── */
+@keyframes rayDrift{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@keyframes bbgUp{0%{opacity:0;transform:translateY(0)}12%{opacity:.5}88%{opacity:.25}100%{opacity:0;transform:translateY(-110vh)}}
+@keyframes bobBig{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes sonarPing{0%{transform:scale(.7);opacity:1}100%{transform:scale(3.2);opacity:0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{0%{transform:scale(.4);opacity:0}65%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 16px rgba(11,181,164,.28)}50%{box-shadow:0 0 34px rgba(11,181,164,.55)}}
+@keyframes scPop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes confFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(540deg);opacity:0}}
+@keyframes starUp{0%{transform:scale(0) rotate(0deg);opacity:1}100%{transform:scale(2) rotate(180deg);opacity:0}}
+@keyframes fishSwim{0%{transform:translateX(110vw) scaleX(-1)}100%{transform:translateX(-14vw) scaleX(-1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes codeLight{0%{background:transparent}50%{background:rgba(11,181,164,.12)}100%{background:transparent}}
+@keyframes stepMove{from{transform:translateX(var(--from))}to{transform:translateX(var(--to))}}
+@keyframes fishBob{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.88) translateY(2px)}}
+@keyframes trailFade{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(.5) translateY(-10px)}}
+@keyframes goalPulse{0%,100%{box-shadow:0 0 14px rgba(224,168,0,.35)}50%{box-shadow:0 0 28px rgba(224,168,0,.6)}}
+@keyframes reachGoal{0%{transform:scale(1)}30%{transform:scale(1.4)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes stepDot{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3);opacity:1}100%{transform:scale(1);opacity:.8}}
+@keyframes runBtnGlow{0%,100%{box-shadow:0 0 16px rgba(11,181,164,.3)}50%{box-shadow:0 0 32px rgba(11,181,164,.6)}}
+@keyframes addBtnPop{0%{transform:scale(1)}35%{transform:scale(.82)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes codeRowFlash{0%{background:rgba(255,255,255,.88)}50%{background:rgba(11,181,164,.12)}100%{background:rgba(255,255,255,.88)}}
+
+/* ── NAV ── */
+nav{flex-shrink:0;height:48px;position:relative;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:rgba(255,255,255,.92);backdrop-filter:blur(18px);border-bottom:1.5px solid rgba(11,181,164,.22);box-shadow:0 2px 12px rgba(11,181,164,.1)}
+.logo{display:flex;align-items:center;gap:6px;font-size:.9rem;font-weight:900;color:#ff8c00;letter-spacing:.08em;text-shadow:none}
+.sonar{position:relative;width:20px;height:20px;flex-shrink:0}
+.sr{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(11,181,164,.4);animation:sonarPing 2.2s ease-out infinite}
+.sr2{animation-delay:.8s}
+.sd{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 7px var(--accent)}
+.nav-c{text-align:center}.nav-t{font-size:.7rem;font-weight:800;color:var(--text)}.nav-s{font-size:.48rem;color:var(--muted);letter-spacing:.1em}
+.back-btn{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;border:1.5px solid rgba(11,181,164,.3);background:rgba(11,181,164,.08);color:var(--accent);font-size:.65rem;font-weight:800;text-decoration:none}
+.back-btn svg{width:10px;height:10px;stroke:var(--accent);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── SCREENS ── */
+.screens{flex:1;min-height:0;overflow:hidden;position:relative;z-index:2;display:flex;flex-direction:column}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex;animation:fadeIn .3s ease both}
+
+/* ── BOTTOM BAR ── */
+.sbar{flex-shrink:0;height:40px;position:relative;z-index:50;display:flex;align-items:center;justify-content:center;gap:28px;background:rgba(255,255,255,.92);backdrop-filter:blur(18px);border-top:1.5px solid rgba(11,181,164,.18);box-shadow:0 -2px 10px rgba(11,181,164,.08)}
+.si{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--muted)}
+.sv{font-weight:800;font-size:.68rem}
+
+/* ══════════════════════════════
+   INTRO
+══════════════════════════════ */
+.intro-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.intro-body::-webkit-scrollbar{display:none}
+.intro-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 16px 12px;gap:10px}
+.cap-big{font-size:clamp(3rem,10vw,5rem);animation:bobBig 3s ease-in-out infinite;filter:drop-shadow(0 4px 18px rgba(11,181,164,.35))}
+.g-title{font-size:clamp(1.2rem,4.5vw,1.9rem);font-weight:900;line-height:1.18;background:linear-gradient(135deg,#07927f,var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.g-sub{font-size:clamp(.76rem,2.5vw,.9rem);color:var(--muted);line-height:1.45}
+.story-box{width:60%;background:rgba(255,255,255,.72);border:1.5px solid rgba(11,181,164,.28);border-radius:14px;padding:14px 15px 12px;text-align:center;position:relative;box-shadow:0 4px 18px rgba(11,181,164,.1)}
+.s-tail{position:absolute;top:-13px;left:16px;font-size:1.4rem;animation:wiggle 2.5s ease-in-out infinite}
+.s-p{font-size:clamp(.76rem,2.5vw,.88rem);line-height:1.6;color:var(--text)}
+.s-p b{color:var(--accent2)}
+.s-p .hl{background:rgba(11,181,164,.15);border-radius:4px;padding:0 5px;color:var(--accent2);font-weight:900}
+.how-row{display:flex;gap:8px;justify-content:center;width:60%;flex-wrap:wrap}
+.how-card{flex:1;min-width:100px;background:rgba(255,255,255,.78);border:1.5px solid rgba(11,181,164,.22);border-radius:12px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;box-shadow:0 2px 10px rgba(11,181,164,.08)}
+.how-n{font-size:.48rem;font-weight:900;color:rgba(11,181,164,.6);letter-spacing:.14em;text-transform:uppercase}
+.how-i{font-size:1.6rem;animation:float 3s ease-in-out infinite}
+.how-t{font-size:clamp(.62rem,2.1vw,.72rem);font-weight:800;color:var(--text);line-height:1.3}
+.how-s{font-size:clamp(.54rem,1.8vw,.62rem);color:var(--muted);line-height:1.3}
+.play-btn{padding:14px 40px;border-radius:13px;border:none;background:linear-gradient(135deg,var(--teal),var(--accent2));color:#fff;font-family:'Nunito',sans-serif;font-size:clamp(.9rem,3vw,1rem);font-weight:900;cursor:pointer;animation:glowPulse 2s ease-in-out infinite;box-shadow:0 4px 20px rgba(11,181,164,.35)}
+
+/* ══════════════════════════════
+   GAME — 5 row grid
+══════════════════════════════ */
+.game-body{flex:1;min-height:0;display:grid;grid-template-rows:38px 54px 1fr 84px 26px;gap:5px;padding:6px 12px 4px;overflow:hidden}
+
+/* HUD */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.score-pill{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.82);border:1.5px solid rgba(11,181,164,.25);border-radius:8px;padding:3px 10px;box-shadow:0 2px 8px rgba(11,181,164,.1)}
+.sc-lbl{font-size:.48rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.sc-val{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--accent2)}
+.sc-val.pop{animation:scPop .3s ease}
+.lvl-pill{font-size:.6rem;font-weight:800;color:var(--accent2);background:rgba(255,255,255,.82);border:1.5px solid rgba(11,181,164,.22);border-radius:7px;padding:3px 10px;white-space:nowrap;box-shadow:0 2px 8px rgba(11,181,164,.08)}
+.hearts{display:flex;gap:3px}
+.heart{font-size:1.1rem;transition:all .3s}
+.heart.gone{filter:grayscale(1);opacity:.22;transform:scale(.72)}
+
+/* Code line */
+.code-row{background:rgba(255,255,255,.88);border:1.5px solid rgba(11,181,164,.25);border-radius:12px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:0;position:relative;overflow:hidden;flex-wrap:nowrap;box-shadow:0 2px 12px rgba(11,181,164,.1)}
+.code-row::after{content:'python';position:absolute;top:4px;right:9px;font-size:.42rem;color:rgba(11,181,164,.3);letter-spacing:.1em}
+.code-row.lit{animation:codeRowFlash .5s ease}
+.tk{font-family:var(--mono);font-size:clamp(.64rem,2.1vw,.8rem);white-space:nowrap}
+.kw{color:#7c3aed}.va{color:#c05c00}.fn{color:var(--accent2)}.op{color:rgba(7,146,127,.7)}
+.tk.ac{color:rgba(26,78,71,.35);overflow:hidden;text-overflow:ellipsis;max-width:30vw}
+
+/* i value badge */
+.i-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:28px;height:24px;border-radius:6px;margin:0 2px;
+  background:rgba(192,92,0,.08);border:1.5px solid rgba(192,92,0,.3);
+  font-family:var(--mono);font-size:clamp(.7rem,2.3vw,.86rem);font-weight:700;
+  color:#c05c00;transition:all .25s;
+}
+.i-badge.active{background:rgba(192,92,0,.18);border-color:#c05c00;box-shadow:0 0 8px rgba(192,92,0,.25)}
+
+/* pos value badge */
+.pos-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:28px;height:24px;border-radius:6px;margin:0 2px;
+  background:rgba(11,181,164,.08);border:1.5px solid rgba(11,181,164,.3);
+  font-family:var(--mono);font-size:clamp(.7rem,2.3vw,.86rem);font-weight:700;
+  color:var(--accent2);transition:all .25s;
+}
+.pos-badge.active{background:rgba(11,181,164,.2);border-color:var(--teal);box-shadow:0 0 8px rgba(11,181,164,.3)}
+
+/* ══ OCEAN STAGE ══ */
+.ocean-stage{
+  background:rgba(255,255,255,.72);border:1.5px solid rgba(11,181,164,.25);border-radius:14px;
+  position:relative;overflow:hidden;min-height:0;
+  display:flex;flex-direction:column;
+  box-shadow:0 4px 20px rgba(11,181,164,.1);
+}
+.ocean-stage::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 40% at 50% 100%,rgba(11,181,164,.12),transparent)}
+/* sea floor */
+.sea-floor{position:absolute;bottom:0;left:0;right:0;height:28%;background:linear-gradient(180deg,transparent,rgba(11,181,164,.12) 40%,rgba(7,146,127,.22))}
+.sea-floor::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(11,181,164,.25),transparent)}
+
+/* step number track */
+.step-track{position:absolute;bottom:12px;left:0;right:0;display:flex;align-items:flex-end;justify-content:space-around;padding:0 12px}
+.step-marker{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;position:relative}
+.step-dot{width:clamp(14px,4vw,20px);height:clamp(14px,4vw,20px);border-radius:50%;background:rgba(11,181,164,.1);border:1.5px solid rgba(11,181,164,.25);display:flex;align-items:center;justify-content:center;transition:all .3s;flex-shrink:0}
+.step-dot.visited{background:rgba(11,181,164,.28);border-color:var(--teal);box-shadow:0 0 8px rgba(11,181,164,.3);animation:stepDot .35s ease both}
+.step-dot.goal{background:rgba(224,168,0,.15);border-color:rgba(224,168,0,.6);animation:goalPulse 1.8s ease-in-out infinite}
+.step-dot.goal.reached{background:rgba(224,168,0,.35);border-color:var(--gold);box-shadow:0 0 16px rgba(224,168,0,.5);animation:reachGoal .5s ease}
+.step-num{font-family:var(--mono);font-size:clamp(.42rem,1.4vw,.52rem);color:rgba(26,78,71,.4);font-weight:700}
+.step-num.visited{color:var(--accent2)}
+.step-num.goal{color:var(--gold)}
+/* connecting line */
+.step-line{position:absolute;bottom:calc(clamp(7px,2vw,10px));left:50%;right:-50%;height:2px;background:rgba(11,181,164,.15);z-index:0}
+.step-line.done{background:rgba(11,181,164,.5)}
+
+/* goal flag */
+.goal-flag{position:absolute;bottom:28px;font-size:clamp(1rem,3.5vw,1.6rem);animation:float 2s ease-in-out infinite;filter:drop-shadow(0 2px 8px rgba(224,168,0,.4));transition:left .4s ease}
+
+/* FISH ACTOR */
+.fish-actor{
+  position:absolute;
+  font-size:clamp(1.8rem,6vw,2.8rem);
+  filter:drop-shadow(0 2px 10px rgba(11,181,164,.35));
+  transition:left .45s cubic-bezier(.34,1.3,.64,1);
+  bottom:22px;
+  animation:fishBob 1.2s ease-in-out infinite;
+  z-index:10;
+}
+.fish-actor.celebrate{animation:bobBig .3s ease-in-out 4}
+
+/* step trail bubble */
+.trail-bub{
+  position:absolute;bottom:30px;width:clamp(16px,4.5vw,22px);height:clamp(16px,4.5vw,22px);
+  border-radius:50%;background:rgba(11,181,164,.15);border:1px solid rgba(11,181,164,.4);
+  animation:trailFade 1.2s ease forwards;pointer-events:none;z-index:5;
+}
+
+/* i label that floats above fish */
+.i-float{
+  position:absolute;font-family:var(--mono);font-size:clamp(.48rem,1.6vw,.6rem);
+  color:rgba(192,92,0,.8);font-weight:700;bottom:52px;
+  background:rgba(255,255,255,.85);border-radius:4px;padding:1px 5px;
+  animation:trailFade 1.2s ease forwards;pointer-events:none;z-index:6;
+  white-space:nowrap;box-shadow:0 1px 5px rgba(11,181,164,.12);
+}
+
+/* top info bar inside ocean */
+.ocean-info{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:5px 10px 3px}
+.oi-label{font-size:clamp(.5rem,1.6vw,.6rem);font-weight:800;letter-spacing:.1em;color:rgba(11,181,164,.5);text-transform:uppercase}
+.oi-val{font-family:var(--mono);font-size:clamp(.6rem,2vw,.72rem);font-weight:700;color:var(--accent2)}
+.stage-middle{flex:1;min-height:0;position:relative}
+
+/* ══ CONTROLS ══ */
+.controls{display:flex;align-items:center;justify-content:center;gap:10px}
+/* step size selector */
+.step-selector{display:flex;flex-direction:column;align-items:center;gap:3px}
+.ss-label{font-size:clamp(.48rem,1.6vw,.58rem);font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.ss-btns{display:flex;gap:5px}
+.ss-btn{
+  width:clamp(36px,9vw,46px);height:clamp(36px,9vw,46px);border-radius:10px;border:1.5px solid rgba(11,181,164,.3);
+  background:rgba(255,255,255,.7);color:var(--accent2);font-family:var(--mono);font-size:clamp(.9rem,3vw,1.15rem);font-weight:900;
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;
+}
+.ss-btn.active{background:rgba(11,181,164,.18);border-color:var(--teal);box-shadow:0 0 10px rgba(11,181,164,.25);color:var(--accent2)}
+.ss-btn:active{transform:scale(.88)}
+
+/* big GO/STEP button */
+.go-btn{
+  width:clamp(70px,18vw,90px);height:clamp(70px,18vw,90px);border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--accent2));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  cursor:pointer;box-shadow:0 4px 20px rgba(11,181,164,.35);animation:runBtnGlow 2s ease-in-out infinite;
+  font-family:'Nunito',sans-serif;transition:all .14s;position:relative;overflow:hidden;border:none;
+}
+.go-btn::before{content:'';position:absolute;top:8px;left:14px;width:16px;height:10px;border-radius:50%;background:rgba(255,255,255,.25)}
+.go-btn:active{transform:scale(.86)}
+.go-btn.disabled{opacity:.3;cursor:not-allowed;animation:none;box-shadow:none}
+.go-icon{font-size:clamp(1.4rem,5vw,2rem);line-height:1}
+.go-label{font-size:clamp(.5rem,1.6vw,.6rem);font-weight:900;color:#fff;letter-spacing:.08em;text-transform:uppercase}
+
+/* reset/run all */
+.side-btns{display:flex;flex-direction:column;gap:6px}
+.side-btn{padding:6px 14px;border-radius:9px;border:1.5px solid rgba(11,181,164,.25);background:rgba(255,255,255,.7);color:var(--accent2);font-family:'Nunito',sans-serif;font-size:clamp(.58rem,1.9vw,.68rem);font-weight:900;cursor:pointer;transition:all .18s;white-space:nowrap}
+.side-btn:active{transform:scale(.9)}
+.side-btn.run-all{background:linear-gradient(135deg,var(--teal),var(--accent2));color:#fff;border:none;box-shadow:0 3px 14px rgba(11,181,164,.28)}
+
+/* steps counter display */
+.steps-display{display:flex;flex-direction:column;align-items:center;gap:2px}
+.sd-label{font-size:clamp(.46rem,1.5vw,.56rem);font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.sd-val{font-family:var(--mono);font-size:clamp(1rem,3.5vw,1.4rem);font-weight:700;color:var(--lime)}
+.sd-of{font-size:clamp(.46rem,1.5vw,.54rem);color:var(--muted);font-family:var(--mono)}
+
+/* TIP */
+.tip-row{display:flex;justify-content:center;align-items:center}
+.tip-pill{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.72);border:1px solid rgba(11,181,164,.2);border-radius:99px;padding:3px 12px;font-size:clamp(.52rem,1.8vw,.62rem);color:var(--accent2);font-weight:800;box-shadow:0 1px 6px rgba(11,181,164,.08)}
+
+/* ══ POPUP ══ */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(26,78,71,.35);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.popup{background:rgba(255,255,255,.97);border:2px solid rgba(11,181,164,.4);border-radius:20px;padding:20px 22px 18px;text-align:center;animation:popIn .38s cubic-bezier(.34,1.56,.64,1) both;max-width:300px;width:90%;box-shadow:0 8px 32px rgba(11,181,164,.18)}
+.pop-em{font-size:3rem;display:block;margin-bottom:7px;animation:wiggle .5s ease}
+.pop-title{font-size:1.05rem;font-weight:900;color:var(--accent2);margin-bottom:5px}
+.pop-title.bad{color:var(--coral)}
+.pop-body{font-size:.8rem;color:var(--muted);line-height:1.55;margin-bottom:12px}
+.pop-code{font-family:var(--mono);font-size:.68rem;color:var(--accent2);background:rgba(11,181,164,.08);border:1px solid rgba(11,181,164,.2);border-radius:6px;padding:5px 10px;margin-bottom:12px;display:block;white-space:pre;text-align:left}
+.pop-btn{padding:10px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--teal),var(--accent2));color:#fff;font-family:'Nunito',sans-serif;font-size:.86rem;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(11,181,164,.28)}
+
+/* ══ WIN ══ */
+.win-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.win-body::-webkit-scrollbar{display:none}
+.win-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 16px 10px;gap:9px}
+.win-cap{font-size:clamp(3rem,11vw,5rem);animation:bobBig 3s ease-in-out infinite;filter:drop-shadow(0 4px 20px rgba(11,181,164,.38))}
+.win-title{font-size:clamp(1.15rem,4.5vw,1.8rem);font-weight:900;background:linear-gradient(135deg,var(--accent2),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.win-sub{font-size:clamp(.72rem,2.5vw,.86rem);color:var(--muted);line-height:1.45}
+.stars-row{font-size:clamp(1.4rem,5.5vw,2rem);letter-spacing:.1em}
+.badge-box{display:flex;flex-direction:column;align-items:center;gap:5px;background:rgba(255,255,255,.82);border:2px solid rgba(11,181,164,.3);border-radius:16px;padding:12px 26px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) .15s both;box-shadow:0 4px 18px rgba(11,181,164,.12)}
+.badge-em{font-size:clamp(1.9rem,7vw,2.8rem);filter:drop-shadow(0 2px 10px rgba(11,181,164,.35))}
+.badge-nm{font-size:clamp(.76rem,2.7vw,.9rem);font-weight:900;color:var(--accent2);letter-spacing:.05em}
+.badge-xp{font-size:clamp(.64rem,2.2vw,.76rem);color:var(--gold);font-weight:800}
+.learn-card{width:60%;background:rgba(255,255,255,.78);border:1.5px solid rgba(11,181,164,.2);border-radius:12px;padding:11px 14px;text-align:left;box-shadow:0 2px 10px rgba(11,181,164,.07)}
+.lc-ttl{font-size:.52rem;letter-spacing:.16em;color:rgba(11,181,164,.5);text-transform:uppercase;margin-bottom:8px}
+.ll-list{display:flex;flex-direction:column;gap:5px}
+.ll-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(11,181,164,.07);border-radius:7px;animation:slideUp .3s ease both}
+.ll-icon{font-size:1.2rem;flex-shrink:0}
+.ll-txt{flex:1;font-size:clamp(.7rem,2.5vw,.82rem);font-weight:800;color:var(--text);line-height:1.3}
+.ll-code{font-family:var(--mono);font-size:clamp(.48rem,1.6vw,.56rem);color:var(--accent2);background:rgba(11,181,164,.1);border-radius:4px;padding:2px 5px;white-space:nowrap}
+.win-btns{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;width:100%}
+.win-btn{padding:10px 20px;border-radius:9px;border:1.5px solid rgba(11,181,164,.28);background:rgba(255,255,255,.72);color:var(--accent2);font-family:'Nunito',sans-serif;font-size:clamp(.74rem,2.7vw,.84rem);font-weight:900;cursor:pointer}
+.win-btn.pri{background:linear-gradient(135deg,var(--teal),var(--accent2));color:#fff;border:none;box-shadow:0 4px 16px rgba(11,181,164,.28)}
+
+.conf-wrap{position:fixed;inset:0;z-index:300;pointer-events:none;overflow:hidden}
+.conf-p{position:absolute;top:-20px;border-radius:3px;animation:confFall linear forwards}
+.star-pop{position:absolute;font-size:1.3rem;animation:starUp .7s ease forwards;pointer-events:none;z-index:400}
+.jelly{position:fixed;right:3%;top:14%;font-size:1.8rem;opacity:.15;animation:float 4s ease-in-out infinite;z-index:1;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="sea-bg"><div class="sea-layer"></div><div class="sea-rays"></div></div>
+<div class="jelly">🪼</div>
+
+<nav>
+  <div class="logo"><div class="sonar"><div class="sr"></div><div class="sr sr2"></div><div class="sd"></div></div>CODEPLAY</div>
+  <div class="nav-c"><div class="nav-t">Finley's Step Journey!</div><div class="nav-s">Part 4 · Lesson 05 · Game</div></div>
+  <a href="quest4.html" class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</a>
+</nav>
+
+<div class="screens">
+
+<!-- ════ INTRO ════ -->
+<div class="screen on" id="s-intro">
+  <div class="intro-body"><div class="intro-inner">
+    <span class="cap-big">🐠</span>
+    <div class="g-title">Finley's Step Journey!</div>
+    <div class="g-sub">Use a <b>for loop</b> to move Finley the Fish step by step to the treasure! 🐠💛</div>
+    <div class="story-box">
+      <div class="s-tail">🐠</div>
+      <p class="s-p">
+        "Hi! I'm <b>Finley the Fish!</b> 🐠<br><br>
+        I need to swim to the <b>treasure chest</b> 🏆 at the end of the ocean floor!<br><br>
+        In Python, a loop can move me <b>one step at a time</b>:<br>
+        <span class="hl">position = position + step</span><br><br>
+        Each time the loop runs, <b>i goes up by 1</b> and <b>I move one step forward!</b><br>
+        Choose the right number of steps to get me <b>exactly to the treasure!</b>"
+      </p>
+    </div>
+    <div class="how-row">
+      <div class="how-card"><span class="how-n">Step 1</span><span class="how-i">👀</span><span class="how-t">See the target steps</span><span class="how-s">e.g. "Reach step 4"</span></div>
+      <div class="how-card"><span class="how-n">Step 2</span><span class="how-i" style="animation-delay:.3s">🔢</span><span class="how-t">Pick step size</span><span class="how-s">How far each loop step moves</span></div>
+      <div class="how-card"><span class="how-n">Step 3</span><span class="how-i" style="animation-delay:.6s">▶️</span><span class="how-t">Press GO! to step</span><span class="how-s">Watch i and position update!</span></div>
+      <div class="how-card"><span class="how-n">Step 4</span><span class="how-i" style="animation-delay:.9s">🏆</span><span class="how-t">Land on treasure!</span><span class="how-s">Not too far, not too close!</span></div>
+    </div>
+    <button class="play-btn" onclick="startGame()">🎮 Let's Swim!</button>
+  </div></div>
+</div>
+
+<!-- ════ GAME ════ -->
+<div class="screen" id="s-game">
+  <div class="game-body">
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="score-pill"><span class="sc-lbl">Score</span><span class="sc-val" id="scVal">0</span></div>
+      <div class="lvl-pill" id="lvlPill">Level 1 of 8</div>
+      <div class="hearts"><span class="heart" id="h0">❤️</span><span class="heart" id="h1">❤️</span><span class="heart" id="h2">❤️</span></div>
+    </div>
+
+    <!-- Code line -->
+    <div class="code-row" id="codeRow">
+      <span class="tk kw">for&nbsp;</span>
+      <span class="tk va">i</span>
+      <span class="tk op">&nbsp;in&nbsp;</span>
+      <span class="tk fn">range(</span><span class="tk va" id="cRangeN">?</span><span class="tk fn">):&nbsp;</span>
+      <span class="tk va">pos</span>
+      <span class="tk op">&nbsp;+=&nbsp;</span>
+      <span class="tk va" id="cStep">1</span>
+      <span class="tk op">&nbsp;&nbsp;#&nbsp;</span>
+      <span class="tk ac" id="cComment">i=?&nbsp;pos=?</span>
+    </div>
+
+    <!-- Ocean stage -->
+    <div class="ocean-stage">
+      <div class="ocean-info">
+        <span class="oi-label">i (loop count)</span>
+        <span class="oi-val" id="iDisplay">i = 0</span>
+        <span class="oi-label">position</span>
+        <span class="oi-val" id="posDisplay">pos = 0</span>
+      </div>
+      <div class="stage-middle" id="stageMiddle">
+        <!-- step track built by JS -->
+        <div class="sea-floor"></div>
+        <div class="step-track" id="stepTrack"></div>
+        <div class="goal-flag" id="goalFlag">🏆</div>
+        <div class="fish-actor" id="fishActor">🐠</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <!-- step size -->
+      <div class="step-selector">
+        <div class="ss-label">Step size</div>
+        <div class="ss-btns" id="ssBtns"></div>
+      </div>
+
+      <!-- big GO button -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+        <button class="go-btn" id="goBtn" onclick="doStep()">
+          <span class="go-icon">👟</span>
+          <span class="go-label">Step!</span>
+        </button>
+      </div>
+
+      <!-- steps counter -->
+      <div class="steps-display">
+        <span class="sd-label">Steps taken</span>
+        <span class="sd-val" id="stepsVal">0</span>
+        <span class="sd-of" id="stepsOf">/ ?</span>
+      </div>
+
+      <!-- side buttons -->
+      <div class="side-btns">
+        <button class="side-btn run-all" onclick="runAll()">Auto Run</button>
+        <button class="side-btn" onclick="resetLevel()">↩ Reset</button>
+      </div>
+    </div>
+
+    <!-- Tip -->
+    <div class="tip-row"><div class="tip-pill" id="tipPill">💡 Each step: i goes up by 1, pos moves forward!</div></div>
+
+  </div>
+</div>
+
+<!-- ════ WIN ════ -->
+<div class="screen" id="s-win">
+  <div class="win-body"><div class="win-inner">
+    <span class="win-cap">🐠</span>
+    <div class="win-title" id="winTitle">Ocean Explorer! 🌟</div>
+    <div class="win-sub" id="winSub">Finley reached every treasure!</div>
+    <div class="stars-row" id="starsRow">⭐⭐⭐</div>
+    <div class="badge-box"><span class="badge-em">🏆</span><span class="badge-nm">Step Navigator!</span><span class="badge-xp">⚡ +90 XP Earned!</span></div>
+    <div class="learn-card">
+      <div class="lc-ttl">🌊 What You Learned About Loop Movement!</div>
+      <div class="ll-list">
+        <div class="ll-item" style="animation-delay:.00s"><span class="ll-icon">🔄</span><div class="ll-txt">Each loop repeat <b>i goes up by 1</b> (0, 1, 2…)</div><span class="ll-code">i += 1</span></div>
+        <div class="ll-item" style="animation-delay:.07s"><span class="ll-icon">📍</span><div class="ll-txt"><b>pos += step</b> moves Finley forward each repeat</div><span class="ll-code">pos += step</span></div>
+        <div class="ll-item" style="animation-delay:.14s"><span class="ll-icon">🔢</span><div class="ll-txt"><b>range(N)</b> controls how many steps the loop takes</div><span class="ll-code">range(4)</span></div>
+        <div class="ll-item" style="animation-delay:.21s"><span class="ll-icon">🎯</span><div class="ll-txt">Final position = step size × number of steps</div><span class="ll-code">pos = step×N</span></div>
+        <div class="ll-item" style="animation-delay:.28s"><span class="ll-icon">🚀</span><div class="ll-txt">Loops let you repeat movement without writing it N times!</div><span class="ll-code">DRY code</span></div>
+      </div>
+    </div>
+    <div class="win-btns">
+      <button class="win-btn" onclick="goHome()">Home</button>
+      <button class="win-btn pri" onclick="playAgain()">🔄 Go to Next Lesson</button>
+    </div>
+  </div></div>
+</div>
+
+</div><!-- /screens -->
+
+<div class="sbar">
+  <div class="si">🎮 <span class="sv" style="color:var(--accent)">Step Journey</span></div>
+  <div class="si">⚡ <span class="sv" style="color:var(--gold)" id="xpDisp">0 XP</span></div>
+  <div class="si">🔥 <span class="sv" style="color:#e05c00" id="strDisp">—</span></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="popup">
+    <span class="pop-em" id="popEm">🎉</span>
+    <div class="pop-title" id="popTitle">Reached it!</div>
+    <div class="pop-body" id="popBody"></div>
+    <span class="pop-code" id="popCode" style="display:none"></span>
+    <button class="pop-btn" id="popBtn" onclick="closePopup()">Next Level! 🌊</button>
+  </div>
+</div>
+<div class="conf-wrap" id="confWrap"></div>
+
+<script>
+const LEVELS = [
+  { goal:3,  stepSize:1, msg:'Each step moves 1 position — 3 steps to reach step 3!',  tip:'1 step at a time × 3 = position 3!',   code:'for i in range(3):\n    pos += 1\n# i goes: 0→1→2, pos goes: 0→1→2→3' },
+  { goal:4,  stepSize:1, msg:'4 steps of size 1 each — Finley reached step 4!',         tip:'range(4) repeats 4 times, pos ends at 4!', code:'for i in range(4):\n    pos += 1\n# Final pos = 4' },
+  { goal:6,  stepSize:2, msg:'3 steps of size 2 — pos goes 0, 2, 4, 6!',               tip:'Step size 2 × 3 repeats = pos 6!',      code:'for i in range(3):\n    pos += 2\n# pos: 0→2→4→6' },
+  { goal:5,  stepSize:1, msg:'5 steps of size 1 — Finley swam all the way!',            tip:'range(5) × step 1 = reach position 5!', code:'for i in range(5):\n    pos += 1\n# Final pos = 5' },
+  { goal:8,  stepSize:2, msg:'4 steps of size 2 — pos doubles each time!',              tip:'2 + 2 + 2 + 2 = 8 — range(4) does it!', code:'for i in range(4):\n    pos += 2\n# pos: 0→2→4→6→8' },
+  { goal:6,  stepSize:3, msg:'2 big steps of size 3 — range(2) gets there!',            tip:'3 + 3 = 6 in just 2 loop steps!',       code:'for i in range(2):\n    pos += 3\n# pos: 0→3→6' },
+  { goal:9,  stepSize:3, msg:'3 giant steps of size 3 each — position 9!',              tip:'range(3) × step 3 = pos 9!',            code:'for i in range(3):\n    pos += 3\n# pos: 0→3→6→9' },
+  { goal:8,  stepSize:4, msg:'Just 2 huge steps of 4 — pow! Finley is there!',          tip:'4 + 4 = 8 — only range(2) needed!',     code:'for i in range(2):\n    pos += 4\n# pos: 0→4→8' },
+];
+
+let lvl=0, score=0, lives=3, mistakes=0, popCb=null;
+let pos=0, iCount=0, totalSteps=0, stepSize=1, autoRunning=false;
+let xp=parseInt(localStorage.getItem('finley_xp')||'0');
+document.getElementById('xpDisp').textContent=xp+' XP';
+document.getElementById('strDisp').textContent=localStorage.getItem('streak')||'—';
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')}
+
+function startGame(){
+  lvl=0;score=0;lives=3;mistakes=0;
+  [0,1,2].forEach(i=>{const h=document.getElementById('h'+i);h.classList.remove('gone');h.textContent='❤️'});
+  document.getElementById('scVal').textContent='0';
+  show('s-game');
+  loadLevel(0);
+}
+
+function loadLevel(idx){
+  if(idx>=LEVELS.length){endGame();return;}
+  const L=LEVELS[idx];
+  pos=0; iCount=0; stepSize=L.stepSize; autoRunning=false;
+  totalSteps = L.goal / L.stepSize;
+
+  document.getElementById('lvlPill').textContent='Level '+(idx+1)+' of '+LEVELS.length;
+  document.getElementById('tipPill').textContent='💡 '+L.tip;
+  document.getElementById('stepsOf').textContent='/ '+totalSteps;
+  document.getElementById('stepsVal').textContent='0';
+
+  updateCodeLine(L);
+  updateDisplays();
+  buildTrack(L);
+  buildStepSizes(L);
+  positionFish(0, L.goal, false);
+  positionGoal(L.goal);
+
+  document.getElementById('goBtn').classList.remove('disabled');
+  document.getElementById('codeRow').classList.remove('lit');
+}
+
+function buildTrack(L){
+  const track = document.getElementById('stepTrack');
+  track.innerHTML='';
+  const total = L.goal + 1;
+  for(let i=0;i<total;i++){
+    const marker = document.createElement('div');
+    marker.className = 'step-marker';
+    marker.id = 'marker-'+i;
+
+    const line = document.createElement('div');
+    line.className = 'step-line';
+    line.id = 'line-'+i;
+    if(i < total-1) marker.appendChild(line);
+
+    const dot = document.createElement('div');
+    dot.className = 'step-dot' + (i===L.goal?' goal':'');
+    dot.id = 'dot-'+i;
+
+    const num = document.createElement('div');
+    num.className = 'step-num' + (i===L.goal?' goal':'');
+    num.textContent = i;
+
+    marker.appendChild(dot);
+    marker.appendChild(num);
+    track.appendChild(marker);
+  }
+}
+
+function buildStepSizes(L){
+  const row = document.getElementById('ssBtns');
+  row.innerHTML='';
+  const el = document.createElement('button');
+  el.className = 'ss-btn active';
+  el.textContent = L.stepSize;
+  el.type = 'button';
+  row.appendChild(el);
+  const info = document.createElement('div');
+  info.style.cssText='font-family:var(--mono);font-size:clamp(.42rem,1.4vw,.52rem);color:rgba(11,181,164,.5);margin-top:2px;text-align:center';
+  info.textContent='pos+=' + L.stepSize;
+  row.appendChild(info);
+}
+
+function positionFish(currentPos, goalPos, animate){
+  const stage = document.getElementById('stageMiddle');
+  const fish  = document.getElementById('fishActor');
+  const W     = stage.offsetWidth;
+  const pad   = 20;
+  const usable= W - pad*2 - 20;
+  const pct   = goalPos > 0 ? currentPos/goalPos : 0;
+  const left  = pad + pct*usable;
+  fish.style.left = left+'px';
+  if(!animate) fish.style.transition='none';
+  else fish.style.transition='left .45s cubic-bezier(.34,1.3,.64,1)';
+}
+
+function positionGoal(goalPos){
+  const stage = document.getElementById('stageMiddle');
+  const flag  = document.getElementById('goalFlag');
+  const W     = stage.offsetWidth;
+  const pad   = 20;
+  const usable= W - pad*2 - 20;
+  flag.style.left = (pad + usable - 10)+'px';
+}
+
+function updateCodeLine(L){
+  document.getElementById('cRangeN').textContent = totalSteps;
+  document.getElementById('cStep').textContent   = L.stepSize;
+  document.getElementById('cComment').textContent= 'i='+iCount+' pos='+pos;
+}
+
+function updateDisplays(){
+  document.getElementById('iDisplay').textContent  = 'i = '+iCount;
+  document.getElementById('posDisplay').textContent= 'pos = '+pos;
+  document.getElementById('stepsVal').textContent  = iCount;
+  document.getElementById('cComment').textContent  = 'i='+iCount+' pos='+pos;
+}
+
+function markDot(position){
+  const dot = document.getElementById('dot-'+position);
+  const num = dot && dot.nextElementSibling;
+  if(dot){dot.classList.add('visited');if(num)num.classList.add('visited');}
+  if(position>0){
+    const line=document.getElementById('line-'+(position-1));
+    if(line)line.classList.add('done');
+  }
+}
+
+function doStep(){
+  if(autoRunning) return;
+  const L = LEVELS[lvl];
+  if(iCount >= totalSteps){ checkResult(); return; }
+
+  iCount++;
+  pos += L.stepSize;
+
+  const cr=document.getElementById('codeRow');
+  cr.classList.remove('lit');void cr.offsetWidth;cr.classList.add('lit');
+
+  positionFish(pos, L.goal, true);
+  markDot(pos);
+  updateDisplays();
+  spawnTrail(pos, L.goal);
+  starBurst(document.getElementById('fishActor'));
+
+  if(iCount >= totalSteps){
+    setTimeout(()=>checkResult(), 550);
+  }
+}
+
+function runAll(){
+  if(autoRunning) return;
+  const L=LEVELS[lvl];
+  if(iCount >= totalSteps){ checkResult(); return; }
+  autoRunning=true;
+  document.getElementById('goBtn').classList.add('disabled');
+
+  function nextStep(){
+    if(iCount >= totalSteps){
+      autoRunning=false;
+      setTimeout(()=>checkResult(), 550);
+      return;
+    }
+    iCount++; pos+=L.stepSize;
+    const cr=document.getElementById('codeRow');
+    cr.classList.remove('lit');void cr.offsetWidth;cr.classList.add('lit');
+    positionFish(pos,L.goal,true);
+    markDot(pos);
+    updateDisplays();
+    spawnTrail(pos,L.goal);
+    setTimeout(nextStep, 500);
+  }
+  nextStep();
+}
+
+function resetLevel(){
+  autoRunning=false;
+  pos=0;iCount=0;
+  const L=LEVELS[lvl];
+  updateDisplays();
+  positionFish(0,L.goal,false);
+  document.querySelectorAll('.step-dot').forEach(d=>{d.classList.remove('visited');});
+  document.querySelectorAll('.step-num').forEach(n=>{n.classList.remove('visited');});
+  document.querySelectorAll('.step-line').forEach(l=>{l.classList.remove('done');});
+  document.querySelectorAll('.trail-bub,.i-float').forEach(e=>e.remove());
+  document.getElementById('goBtn').classList.remove('disabled');
+  document.getElementById('codeRow').classList.remove('lit');
+  document.getElementById('cComment').textContent='i=0 pos=0';
+}
+
+function checkResult(){
+  const L=LEVELS[lvl];
+  if(pos===L.goal){
+    const pts=lives===3?150:lives===2?100:60;
+    score+=pts;
+    const sv=document.getElementById('scVal');
+    sv.textContent=score;sv.classList.remove('pop');void sv.offsetWidth;sv.classList.add('pop');
+    const fish=document.getElementById('fishActor');
+    fish.classList.add('celebrate');
+    fish.textContent='🐠';
+    const gDot=document.getElementById('dot-'+L.goal);
+    if(gDot){gDot.classList.remove('goal');gDot.classList.add('goal','reached');}
+    confetti();
+    popCb=()=>{lvl++;loadLevel(lvl)};
+    showPopup(true,'🏆','Treasure Reached! 🎉',
+      'Finley reached position '+L.goal+'!\n\n'+L.msg+'\n\n+'+pts+' points! 🌟',
+      L.code);
+  } else if(pos>L.goal){
+    lives=Math.max(0,lives-1);mistakes++;
+    updateHearts();
+    popCb=null;
+    showPopup(false,'😬','Overshot! Try again! 💪',
+      'Finley went to pos '+pos+' but the treasure is at pos '+L.goal+'!\n\nTry fewer steps or a smaller step size.',null);
+    setTimeout(()=>resetLevel(),200);
+  } else {
+    popCb=null;
+    showPopup(false,'🌊','Not quite there! 💪',
+      'Finley is at pos '+pos+' but needs to reach pos '+L.goal+'!\n\nKeep stepping!',null);
+  }
+}
+
+function spawnTrail(position, goal){
+  const stage=document.getElementById('stageMiddle');
+  const W=stage.offsetWidth;
+  const pad=20,usable=W-pad*2-20;
+  const pct=goal>0?position/goal:0;
+  const left=pad+pct*usable;
+
+  const bub=document.createElement('div');
+  bub.className='trail-bub';
+  bub.style.left=(left-8)+'px';
+  stage.appendChild(bub);
+  setTimeout(()=>bub.remove(),1300);
+
+  const ifloat=document.createElement('div');
+  ifloat.className='i-float';
+  ifloat.textContent='i='+(iCount-1);
+  ifloat.style.left=(left-12)+'px';
+  stage.appendChild(ifloat);
+  setTimeout(()=>ifloat.remove(),1300);
+}
+
+function updateHearts(){[0,1,2].forEach(i=>document.getElementById('h'+i).classList.toggle('gone',i>=lives));}
+
+function showPopup(good,emoji,title,body,code){
+  document.getElementById('popEm').textContent=emoji;
+  document.getElementById('popTitle').textContent=title;
+  document.getElementById('popTitle').className='pop-title'+(good?'':' bad');
+  document.getElementById('popBody').textContent=body;
+  const c=document.getElementById('popCode');
+  if(code){c.style.display='block';c.textContent=code}else c.style.display='none';
+  document.getElementById('popBtn').textContent=good?'Next Level! 🌊':'Try Again! 💪';
+  document.getElementById('overlay').classList.add('on');
+}
+function closePopup(){
+  document.getElementById('overlay').classList.remove('on');
+  if(popCb){const cb=popCb;popCb=null;cb();}
+  else if(lives<=0){endGame();}
+}
+
+function endGame(){
+  xp+=90;localStorage.setItem('finley_xp',xp);document.getElementById('xpDisp').textContent=xp+' XP';
+  const stars=mistakes===0?'⭐⭐⭐':mistakes<=3?'⭐⭐':'⭐';
+  document.getElementById('starsRow').textContent=stars;
+  const[t,s]=mistakes===0?['Ocean Explorer! 🌟','Perfect! Finley reached every treasure! 🐠']:
+               mistakes<=3?['Great Navigator! 🎉','Finley made it through all 8 levels!']:
+                            ['Good Try! 🌊','All levels done! Keep practising!'];
+  document.getElementById('winTitle').textContent=t;document.getElementById('winSub').textContent=s;
+  show('s-win');if(mistakes===0)confetti();
+}
+function playAgain(){
+  localStorage.setItem('p4_lesson05Completed','yes');
+  const cur=parseInt(localStorage.getItem('part4_progress'))||1;
+  if(cur<6) localStorage.setItem('part4_progress','6');
+  window.location.href='quest4.html';
+}
+function goHome(){show('s-intro');}
+
+function starBurst(el){
+  const r=el.getBoundingClientRect();
+  ['⭐','✨','💛'].forEach((s,i)=>{
+    const p=document.createElement('div');p.className='star-pop';p.textContent=s;
+    p.style.cssText='position:fixed;left:'+(r.left+r.width/2-10+(Math.random()-.5)*34)+'px;top:'+(r.top+r.height/2-10+(Math.random()-.5)*24)+'px;animation-delay:'+(i*.09)+'s;z-index:400';
+    document.body.appendChild(p);setTimeout(()=>p.remove(),800);
+  });
+}
+function confetti(){
+  const w=document.getElementById('confWrap');
+  const c=['#0bb5a4','#2ecc9a','#e0a800','#7c3aed','#e85858','#c0ece7'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');p.className='conf-p';const s=Math.random()*7+4;
+    p.style.cssText='left:'+Math.random()*100+'%;width:'+s+'px;height:'+s*1.4+'px;background:'+c[~~(Math.random()*c.length)]+';border-radius:'+(Math.random()>.5?'50%':'3px')+';animation-duration:'+(Math.random()*2+1.5)+'s;animation-delay:'+(Math.random()*.8)+'s';
+    w.appendChild(p);}
+  setTimeout(()=>w.innerHTML='',4000);
+}
+(function(){
+  const bg=document.querySelector('.sea-bg');
+  for(let i=0;i<18;i++){const b=document.createElement('div');b.className='bbg';const s=Math.random()*7+3;b.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;bottom:'+Math.random()*18+'%;animation-duration:'+(Math.random()*10+9)+'s;animation-delay:'+(Math.random()*12)+'s;opacity:'+(Math.random()*.4+.07);bg.appendChild(b);}
+  const fc=document.createElement('div');fc.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden';
+  fc.innerHTML='<div style="position:absolute;font-size:1.1rem;top:64%;animation:fishSwim 26s linear infinite;opacity:.15">🐡</div><div style="position:absolute;font-size:.75rem;top:38%;animation:fishSwim 34s linear infinite 11s;opacity:.1">🦈</div>';
+  document.body.appendChild(fc);
+})();
+
+window.addEventListener('resize',()=>{
+  if(LEVELS[lvl]){
+    positionFish(pos,LEVELS[lvl].goal,false);
+    positionGoal(LEVELS[lvl].goal);
+  }
+});
+</script>
+</body>
+</html>
+
+
+

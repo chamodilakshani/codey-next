@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY — String Collector! Words in Boxes Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Share+Tech+Mono&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  /* Light magical astro palette */
+  --bg:#e8f6f5;
+  --bg2:#d4eef2;
+  --surface:rgba(255,255,255,0.75);
+  --surface2:rgba(255,255,255,0.9);
+  --border:rgba(255,255,255,0.8);
+  --border2:rgba(120,200,210,0.3);
+
+  --cyan:#00a3b4;
+  --cyan-soft:#b2eaf0;
+  --teal:#0cbfb5;
+  --teal-soft:#c5f0ec;
+  --purple:#7c5cbf;
+  --purple-soft:#e2d9f5;
+  --pink:#d4567a;
+  --pink-soft:#fce4ec;
+  --gold:#c8960a;
+  --gold-soft:#fff3cc;
+  --green:#1a9e6a;
+  --green-soft:#d1f5e8;
+  --red:#d0394f;
+  --red-soft:#fde8ec;
+  --orange:#d4620a;
+  --orange-soft:#fdecd6;
+
+  --text:#1a2e35;
+  --text2:#2d4a54;
+  --muted:#6b8e96;
+  --muted2:rgba(107,142,150,0.55);
+
+  --mono:'Share Tech Mono',monospace;
+  --body:'Plus Jakarta Sans','Nunito',sans-serif;
+
+  --shadow-sm:0 1px 3px rgba(0,100,120,0.08),0 1px 2px rgba(0,100,120,0.05);
+  --shadow-md:0 4px 16px rgba(0,100,120,0.1),0 2px 6px rgba(0,100,120,0.07);
+  --shadow-lg:0 10px 36px rgba(0,100,120,0.14),0 4px 12px rgba(0,100,120,0.08);
+  --glow-teal:0 0 20px rgba(12,191,181,0.25);
+  --glow-purple:0 0 20px rgba(124,92,191,0.2);
+  --glow-pink:0 0 20px rgba(212,86,122,0.2);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── BACKGROUND ── */
+.bg-mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%,rgba(100,220,230,0.28),transparent 60%),
+    radial-gradient(ellipse 60% 70% at 90% 10%,rgba(160,200,240,0.22),transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 100%,rgba(180,160,240,0.18),transparent 60%),
+    radial-gradient(ellipse 50% 60% at 80% 70%,rgba(100,230,210,0.15),transparent 55%),
+    linear-gradient(160deg,#dff7f5 0%,#e8f0fb 40%,#f0e8f8 70%,#e0f5f2 100%);
+  animation:meshShift 20s ease-in-out infinite alternate;
+}
+@keyframes meshShift{
+  0%{filter:hue-rotate(0deg) brightness(1)}
+  50%{filter:hue-rotate(8deg) brightness(1.02)}
+  100%{filter:hue-rotate(-5deg) brightness(0.99)}
+}
+
+/* floating orbs */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(60px)}
+.orb1{width:500px;height:500px;top:-150px;left:-100px;background:radial-gradient(circle,rgba(12,191,181,0.18),transparent 65%);animation:orb1 28s ease-in-out infinite alternate}
+.orb2{width:400px;height:400px;bottom:-100px;right:-80px;background:radial-gradient(circle,rgba(124,92,191,0.15),transparent 65%);animation:orb2 22s ease-in-out infinite alternate-reverse}
+.orb3{width:300px;height:300px;top:45%;left:60%;background:radial-gradient(circle,rgba(212,86,122,0.1),transparent 65%);animation:orb3 18s ease-in-out infinite alternate}
+@keyframes orb1{to{transform:translate(30px,20px)scale(1.08)}}
+@keyframes orb2{to{transform:translate(-25px,20px)scale(1.06)}}
+@keyframes orb3{to{transform:translate(-20px,-15px)scale(1.1)}}
+
+/* sparkles */
+.sparkle-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sp{position:absolute;border-radius:50%;animation:spFloat var(--dur,8s) ease-in-out infinite var(--delay,0s)}
+@keyframes spFloat{
+  0%,100%{transform:translateY(0) scale(1);opacity:var(--op,0.4)}
+  50%{transform:translateY(-14px) scale(1.2);opacity:calc(var(--op,0.4)*1.6)}
+}
+
+/* animations */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shine{to{left:160%}}
+@keyframes spinR{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.88);opacity:0}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes bounce{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes confettiFall{to{transform:translateY(110vh)rotate(720deg);opacity:0}}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 rgba(12,191,181,0.35)}70%{box-shadow:0 0 0 8px rgba(12,191,181,0)}}
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;height:58px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+  background:rgba(255,255,255,0.82);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(12,191,181,0.18);
+  box-shadow:0 1px 12px rgba(0,100,120,0.07);
+}
+.logo{
+  font-weight:900;font-size:1.15rem;
+  color:#ff8c00;
+  letter-spacing:-.01em;
+}
+.nav-info{font-size:.78rem;color:var(--muted);font-weight:600}
+.nav-info b{color:var(--text2)}
+.btn-back{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 16px;border-radius:99px;
+  border:1.5px solid rgba(12,191,181,0.3);
+  background:rgba(12,191,181,0.07);
+  color:var(--teal);font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-back:hover{background:rgba(12,191,181,0.15);border-color:var(--teal);box-shadow:var(--glow-teal)}
+.btn-back svg{width:13px;height:13px;stroke:var(--teal);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── SHELL ── */
+.game-shell{
+  position:relative;z-index:2;
+  max-width:600px;width:100%;
+  margin:0 auto;padding:20px 16px 76px;
+  display:flex;flex-direction:column;
+}
+
+/* ── HEADER ── */
+.game-header{text-align:center;margin-bottom:16px;animation:fadeUp .5s ease both}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1.5px solid rgba(12,191,181,0.35);
+  background:rgba(12,191,181,0.08);
+  padding:4px 14px;border-radius:99px;
+  font-size:.65rem;letter-spacing:.18em;
+  color:var(--teal);text-transform:uppercase;
+  margin-bottom:10px;font-weight:800;
+}
+.eyebrow::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal);animation:blink 1.4s infinite}
+.game-title{font-size:clamp(1.25rem,3vw,1.75rem);font-weight:900;color:var(--text);margin-bottom:6px;letter-spacing:-.02em}
+.game-title span{
+  background:linear-gradient(135deg,var(--teal) 0%,var(--purple) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.game-sub{font-size:.88rem;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.6;font-weight:500}
+
+/* ── SCOREBOARD ── */
+.scoreboard{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.spill{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface2);
+  border:1.5px solid var(--border2);
+  border-radius:99px;padding:7px 16px;
+  font-size:.8rem;font-weight:700;color:var(--text2);
+  box-shadow:var(--shadow-sm);
+}
+.spill .v{font-family:var(--mono);font-size:.86rem}
+
+/* ── STAGE LABEL ── */
+.stg-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.stg-name{font-size:.65rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--teal)}
+.stg-dots{display:flex;gap:6px}
+.dot{width:26px;height:5px;border-radius:99px;background:rgba(12,191,181,0.15);transition:background .4s}
+.dot.done{background:var(--green)}
+.dot.active{background:var(--teal)}
+
+/* ── ARENA ── */
+.arena{
+  border-radius:18px;
+  background:var(--surface);
+  backdrop-filter:blur(18px);
+  border:1.5px solid var(--border);
+  box-shadow:var(--shadow-md);
+  padding:18px;margin-bottom:13px;
+  position:relative;overflow:hidden;
+}
+.arena::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:99px 99px 0 0}
+.pa{border-color:rgba(212,86,122,0.25)}.pa::before{background:linear-gradient(90deg,transparent,var(--pink),var(--purple),transparent)}
+.ga{border-color:rgba(200,150,10,0.22)}.ga::before{background:linear-gradient(90deg,transparent,var(--gold),var(--orange),transparent)}
+.ua{border-color:rgba(124,92,191,0.25)}.ua::before{background:linear-gradient(90deg,transparent,var(--purple),var(--cyan),transparent)}
+.ca{border-color:rgba(12,191,181,0.28)}.ca::before{background:linear-gradient(90deg,transparent,var(--teal),var(--purple),transparent)}
+
+/* highlighted question box */
+.qbox{
+  font-size:.94rem;font-weight:800;color:var(--text);
+  text-align:center;line-height:1.45;
+  background:rgba(212,86,122,0.06);
+  border:1.5px solid rgba(212,86,122,0.2);
+  border-radius:12px;padding:11px 14px;margin-bottom:11px;
+}
+.qbox.gold{background:rgba(200,150,10,0.07);border-color:rgba(200,150,10,0.22)}
+.qbox.purple{background:rgba(124,92,191,0.07);border-color:rgba(124,92,191,0.22)}
+.qbox.cyan{background:rgba(12,191,181,0.06);border-color:rgba(12,191,181,0.22)}
+.hint{font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:18px;line-height:1.5;font-weight:500}
+.hint b{color:var(--text2);font-weight:700}
+
+/* ── STAGE 1 — value cards ── */
+.vgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.vcard{
+  border-radius:14px;border:1.5px solid rgba(12,191,181,0.18);
+  background:rgba(255,255,255,0.6);
+  padding:14px 12px;text-align:center;cursor:pointer;
+  transition:all .22s;user-select:none;
+  box-shadow:var(--shadow-sm);
+}
+.vcard:hover{transform:translateY(-3px);border-color:rgba(212,86,122,0.4);background:rgba(212,86,122,0.06);box-shadow:var(--shadow-md)}
+.vcard.ok{border-color:var(--green)!important;background:var(--green-soft)!important;animation:bounce .35s ease;pointer-events:none}
+.vcard.bad{border-color:var(--red)!important;background:var(--red-soft)!important;animation:shake .4s ease;pointer-events:none}
+.vcard.reveal{border-color:rgba(26,158,106,0.6)!important;background:rgba(26,158,106,0.08)!important}
+.vcard.off{pointer-events:none;opacity:.5}
+.vv{font-family:var(--mono);font-size:1.05rem;font-weight:800;margin-bottom:7px}
+.vv .q{color:var(--gold)}
+.vv .tx{color:var(--pink)}
+.vv .nm{color:var(--green)}
+.vlabel{font-size:.68rem;color:var(--muted);font-weight:700;letter-spacing:.04em}
+
+/* ── STAGE 2 — fix bug ── */
+.broken-area{text-align:center;margin-bottom:16px}
+.broken-label{font-size:.62rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:7px}
+.broken-code{
+  display:inline-block;font-family:var(--mono);font-size:.95rem;font-weight:800;
+  color:var(--red);background:var(--red-soft);
+  border:1.5px solid rgba(208,57,79,0.25);
+  padding:9px 22px;border-radius:10px;
+}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fopt{
+  padding:13px;border-radius:12px;
+  border:1.5px solid rgba(12,191,181,0.2);
+  background:rgba(255,255,255,0.65);
+  font-family:var(--mono);font-size:.82rem;color:var(--text2);
+  cursor:pointer;transition:all .22s;font-weight:700;text-align:center;user-select:none;width:100%;
+  box-shadow:var(--shadow-sm);
+}
+.fopt:hover{background:var(--gold-soft);border-color:rgba(200,150,10,0.4);color:var(--gold);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.fopt.ok{background:var(--green-soft)!important;border-color:var(--green)!important;color:var(--green)!important;animation:bounce .3s ease;pointer-events:none}
+.fopt.bad{background:var(--red-soft)!important;border-color:var(--red)!important;color:var(--red)!important;animation:shake .4s ease;pointer-events:none}
+.fopt.reveal{background:rgba(26,158,106,0.08)!important;border-color:rgba(26,158,106,0.5)!important;color:var(--green)!important}
+.fopt.off{pointer-events:none}
+
+/* ── STAGE 3 — type ── */
+.bvisual{display:flex;justify-content:center;margin-bottom:16px}
+.box3d{
+  width:92px;height:92px;border-radius:20px;
+  border:2px solid rgba(124,92,191,0.35);
+  background:linear-gradient(135deg,rgba(124,92,191,0.1),rgba(12,191,181,0.08));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  position:relative;animation:float 3s ease-in-out infinite;
+  box-shadow:0 6px 24px rgba(124,92,191,0.15);
+}
+.bspin{position:absolute;inset:-6px;border-radius:24px;border:2px solid transparent;border-top-color:rgba(124,92,191,0.5);border-right-color:rgba(12,191,181,0.5);animation:spinR 3s linear infinite}
+.bemoji{font-size:2.1rem;line-height:1}
+.btag{font-family:var(--mono);font-size:.66rem;color:var(--gold);background:var(--gold-soft);padding:2px 8px;border-radius:5px;font-weight:700}
+.hchips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:11px}
+.hchip{font-size:.7rem;padding:3px 11px;border-radius:99px;border:1.5px solid rgba(12,191,181,0.2);background:rgba(255,255,255,0.5);color:var(--muted);font-weight:700;transition:all .3s}
+.hchip.pass{border-color:rgba(26,158,106,0.4);background:var(--green-soft);color:var(--green)}
+.hchip.fail{border-color:rgba(208,57,79,0.3);background:var(--red-soft);color:var(--red)}
+.inrow{display:flex;gap:9px;margin-bottom:11px}
+.sinput{
+  flex:1;padding:12px 15px;border-radius:12px;
+  border:1.5px solid rgba(124,92,191,0.25);
+  background:rgba(255,255,255,0.7);color:var(--text);
+  font-family:var(--mono);font-size:.95rem;font-weight:700;outline:none;transition:all .22s;
+  box-shadow:var(--shadow-sm);
+}
+.sinput::placeholder{color:var(--muted2)}
+.sinput:focus{border-color:var(--purple);background:rgba(255,255,255,0.9);box-shadow:0 0 0 3px rgba(124,92,191,0.12)}
+.sinput.valid{border-color:var(--green)!important;background:var(--green-soft)!important}
+.sinput.invalid{border-color:var(--red)!important;background:var(--red-soft)!important;animation:shake .35s ease}
+.bsubmit{
+  padding:12px 18px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--teal),var(--purple));
+  color:#fff;font-size:.86rem;font-weight:800;cursor:pointer;transition:all .22s;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(12,191,181,0.3);
+}
+.bsubmit:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(12,191,181,0.4)}
+.egs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.eg{
+  font-family:var(--mono);font-size:.7rem;padding:4px 10px;border-radius:7px;
+  background:var(--pink-soft);border:1px solid rgba(212,86,122,0.2);
+  color:var(--pink);cursor:pointer;transition:all .18s;font-weight:700;
+}
+.eg:hover{background:rgba(212,86,122,0.15);border-color:var(--pink)}
+
+/* ── STAGE 4 — match ── */
+.matchgrid{display:grid;grid-template-columns:1fr 28px 1fr;gap:12px;align-items:start}
+.mcol-label{font-size:.58rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:center}
+.boxcol{display:flex;flex-direction:column;gap:9px}
+.mbox{
+  border-radius:13px;border:1.5px dashed rgba(12,191,181,0.35);
+  background:rgba(12,191,181,0.04);
+  padding:12px 11px;display:flex;align-items:center;gap:8px;
+  cursor:pointer;transition:all .25s;min-height:52px;user-select:none;
+}
+.mbox:hover:not(.matched){border-color:rgba(12,191,181,0.65);background:rgba(12,191,181,0.09)}
+.mbox.ready{border-color:var(--teal);border-style:solid;background:rgba(12,191,181,0.1);box-shadow:var(--glow-teal);animation:pulseRing 1.5s infinite}
+.mbox.matched{border-color:var(--green);border-style:solid;background:var(--green-soft);cursor:default;pointer-events:none;box-shadow:0 2px 10px rgba(26,158,106,0.15)}
+.mbox.wf{border-color:var(--red);background:var(--red-soft);animation:shake .35s ease}
+.me{font-size:1.25rem;flex-shrink:0}
+.mv{font-family:var(--mono);font-size:.76rem;color:var(--orange);font-weight:700;white-space:nowrap}
+.meq{font-family:var(--mono);font-size:.76rem;color:var(--muted2);margin:0 2px}
+.ms{font-family:var(--mono);font-size:.76rem;color:var(--muted);font-style:italic}
+.ms.filled{color:var(--gold);font-style:normal;font-weight:700}
+.arrowcol{display:flex;align-items:center;justify-content:center;padding-top:20px;font-size:1.1rem;color:rgba(12,191,181,0.5)}
+.strpool{display:flex;flex-direction:column;gap:9px}
+.schip{
+  border-radius:12px;border:1.5px solid rgba(124,92,191,0.25);
+  background:rgba(255,255,255,0.65);
+  padding:10px 13px;font-family:var(--mono);font-size:.83rem;
+  color:var(--gold);font-weight:800;cursor:pointer;
+  transition:all .22s;text-align:center;user-select:none;
+  box-shadow:var(--shadow-sm);
+}
+.schip:hover:not(.used){background:var(--purple-soft);border-color:rgba(124,92,191,0.5);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.schip.sel{background:var(--purple-soft);border-color:var(--purple);box-shadow:var(--glow-purple);transform:scale(1.04)}
+.schip.used{opacity:.25;pointer-events:none;text-decoration:line-through}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:68px;left:50%;
+  transform:translateX(-50%) translateY(22px);
+  z-index:200;padding:11px 22px;border-radius:14px;
+  font-weight:800;font-size:.86rem;opacity:0;
+  transition:all .28s;pointer-events:none;
+  backdrop-filter:blur(18px);white-space:nowrap;
+  max-width:90vw;text-align:center;
+}
+.toast.ok{background:rgba(240,255,250,0.96);border:1.5px solid rgba(26,158,106,0.35);color:var(--green);box-shadow:var(--shadow-md)}
+.toast.bad{background:rgba(255,242,244,0.96);border:1.5px solid rgba(208,57,79,0.3);color:var(--red);box-shadow:var(--shadow-md)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── NEXT BTN ── */
+.nextwrap{display:flex;justify-content:center;margin-top:4px;min-height:50px}
+.bnext{
+  padding:13px 38px;border-radius:13px;border:none;
+  background:linear-gradient(135deg,var(--teal),var(--purple));
+  color:#fff;font-size:.88rem;font-weight:900;cursor:pointer;
+  transition:all .25s;position:relative;overflow:hidden;
+  display:none;align-items:center;gap:8px;letter-spacing:.03em;
+  box-shadow:0 5px 20px rgba(12,191,181,0.3);
+}
+.bnext::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shine 2s linear infinite}
+.bnext:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(12,191,181,0.4)}
+.bnext.show{display:flex;animation:pop .35s ease}
+
+/* ── RESULT ── */
+.result{display:none;text-align:center;padding:36px 16px;animation:fadeUp .5s ease both}
+.result.show{display:block}
+.rtrophy{font-size:5rem;margin-bottom:10px;animation:float 3s ease-in-out infinite;display:block}
+.rtitle{font-size:1.85rem;font-weight:900;color:var(--text);margin-bottom:5px;letter-spacing:-.02em}
+.rsub{font-size:.88rem;color:var(--muted);max-width:360px;margin:0 auto 22px;line-height:1.6;font-weight:500}
+.rstats{display:flex;gap:11px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+.rpill{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:var(--surface2);border:1.5px solid var(--border2);
+  border-radius:14px;padding:14px 18px;min-width:84px;
+  box-shadow:var(--shadow-sm);
+}
+.rpval{font-size:1.45rem;font-weight:900;font-family:var(--mono)}
+.rplabel{font-size:.63rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.rbtns{display:flex;gap:11px;justify-content:center;flex-wrap:wrap}
+.breplay{
+  padding:13px 26px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--purple),#5b3fa0);
+  color:#fff;font-size:.88rem;font-weight:800;cursor:pointer;transition:all .25s;
+  box-shadow:0 4px 14px rgba(124,92,191,0.3);
+}
+.breplay:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,92,191,0.45)}
+.bnextlesson{
+  padding:13px 26px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--teal),var(--purple));
+  color:#fff;font-size:.88rem;font-weight:900;cursor:pointer;transition:all .25s;
+  position:relative;overflow:hidden;
+  box-shadow:0 4px 14px rgba(12,191,181,0.3);
+}
+.bnextlesson::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2s linear infinite}
+.bnextlesson:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(12,191,181,0.45)}
+
+/* ── CONFETTI ── */
+.cp{position:fixed;pointer-events:none;z-index:300;border-radius:2px;animation:confettiFall 2.5s ease-in forwards}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;height:48px;
+  background:rgba(255,255,255,0.9);
+  backdrop-filter:blur(18px);
+  border-top:1px solid rgba(12,191,181,0.18);
+  box-shadow:0 -1px 16px rgba(0,100,120,0.07);
+  display:flex;align-items:center;justify-content:center;gap:36px;
+}
+.si{display:flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);font-weight:700}
+.sv{font-family:var(--mono);font-weight:800;font-size:.78rem}
+
+@media(max-width:560px){
+  .vgrid,.fgrid{grid-template-columns:1fr}
+  .matchgrid{grid-template-columns:1fr}
+  .arrowcol{display:none}
+  .strpool{flex-direction:row;flex-wrap:wrap}
+  .schip{flex:1;min-width:100px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- Sparkle particles -->
+<div class="sparkle-field" id="sparkles"></div>
+
+<nav>
+  <div class="logo">🚀 CODEPLAY</div>
+  <div class="nav-info">Part 2 · Lesson 04 — <b>Words in Boxes</b></div>
+  <button class="btn-back" onclick="location.href='2_4lesson.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<div class="game-shell">
+
+  <div class="game-header">
+    <div class="eyebrow">📝 Strings Game</div>
+    <div class="game-title">String <span>Collector!</span> 🧵</div>
+    <div class="game-sub">4 fun stages — spot the quotes, fix the bug, write a string, match the values!</div>
+  </div>
+
+  <div class="scoreboard">
+    <div class="spill">⚡ <span id="elXP" class="v" style="color:var(--gold)">0</span> <span style="color:var(--muted);font-size:.7rem">XP</span></div>
+    <div class="spill">❤️ <span id="elLives" class="v" style="color:var(--red)">❤️❤️❤️</span></div>
+    <div class="spill">🎯 <span id="elStage" class="v" style="color:var(--pink)">1 / 4</span></div>
+    <div class="spill">🔥 <span id="elStreak" class="v" style="color:var(--orange)">0</span></div>
+  </div>
+
+  <div id="panel"></div>
+
+  <div class="nextwrap">
+    <button class="bnext" id="btnNext" onclick="advanceStage()">Next Stage ➜</button>
+  </div>
+
+  <div class="result" id="result">
+    <span class="rtrophy" id="rTrophy">🏆</span>
+    <div class="rtitle" id="rTitle">String Master!</div>
+    <div class="rsub" id="rSub"></div>
+    <div class="rstats">
+      <div class="rpill"><span class="rpval" id="rXP" style="color:var(--gold)">0</span><span class="rplabel">XP</span></div>
+      <div class="rpill"><span class="rpval" id="rCorrect" style="color:var(--green)">0</span><span class="rplabel">Correct</span></div>
+      <div class="rpill"><span class="rpval" id="rStars" style="color:var(--gold)">⭐</span><span class="rplabel">Stars</span></div>
+    </div>
+    <div class="rbtns">
+      <button class="breplay" onclick="restart()">🔄 Play Again</button>
+      <button class="bnextlesson" onclick="location.href='quest2.html'">Next Lesson</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="stats-bar">
+  <div class="si">📍 <span class="sv" style="color:var(--teal)">Part 2</span></div>
+  <div class="si">📖 <span class="sv" style="color:var(--text)">Lesson 04</span></div>
+  <div class="si">⚡ <span class="sv" style="color:var(--gold)" id="barXP">0 XP</span></div>
+</div>
+
+<script>
+/* ── SPARKLE PARTICLES ── */
+(function(){
+  const field=document.getElementById('sparkles');
+  const colors=['rgba(12,191,181,','rgba(124,92,191,','rgba(212,86,122,','rgba(200,150,10,','rgba(26,158,106,'];
+  for(let i=0;i<28;i++){
+    const el=document.createElement('div');
+    el.className='sp';
+    const c=colors[Math.floor(Math.random()*colors.length)];
+    const op=(0.15+Math.random()*0.3).toFixed(2);
+    const size=3+Math.random()*5;
+    el.style.cssText=`
+      left:${Math.random()*100}%;top:${Math.random()*100}%;
+      width:${size}px;height:${size}px;border-radius:50%;
+      background:${c}${op});
+      --dur:${6+Math.random()*8}s;--delay:${Math.random()*6}s;--op:${op};
+      filter:blur(${Math.random()>0.5?'1px':'0px'});
+    `;
+    field.appendChild(el);
+  }
+})();
+
+/* ── STATE ── */
+let xp=0,lives=3,streak=0,hits=0,stage=0;
+
+/* ── DATA ── */
+const S1=[
+  {q:'Which value is correctly stored as a string?',
+   hint:'Strings (text) always need quote marks around them.',
+   opts:[{v:'"Alex"',ok:true,t:'s'},{v:'Alex',ok:false,t:'x'},{v:'10',ok:false,t:'n'},{v:'name',ok:false,t:'x'}]},
+  {q:'Which one is a string Python will accept?',
+   hint:'Both double " and single \u2019 quotes create a valid string.',
+   opts:[{v:'blue',ok:false,t:'x'},{v:'"blue"',ok:true,t:'s'},{v:'42',ok:false,t:'n'},{v:"'blue",ok:false,t:'x'}]},
+  {q:'A greeting is stored in a variable. Which is correct?',
+   hint:'Any text stored in Python needs quote marks around it.',
+   opts:[{v:'"Hello!"',ok:true,t:'s'},{v:'Hello',ok:false,t:'x'},{v:'7',ok:false,t:'n'},{v:'print',ok:false,t:'x'}]},
+];
+
+const S2=[
+  {broken:'color = blue',   hint:'Add quote marks around the text value.',
+   opts:['color = "blue"','color = Blue','color = (blue)','color = blue!'], ans:0},
+  {broken:'name = "Alex',   hint:'The opening quote must have a closing quote.',
+   opts:['name = Alex"','name = "Alex"',"name = 'Alex'",'name = (Alex)'], ans:1},
+  {broken:'pet = dog',      hint:'Wrap the word in double or single quote marks.',
+   opts:["pet = 'dog'",'"pet" = dog',"pet == 'dog'",'pet = (dog)'], ans:0},
+  {broken:'greeting = Hi!', hint:'Text stored in Python always needs quote marks.',
+   opts:['greeting = "Hi!"','Greeting = Hi!','greeting = [Hi!]','greeting = Hi'], ans:0},
+];
+
+const S3=[
+  {emoji:'👤',tag:'name',    prompt:"Type a Python string for someone's name",    exs:['"Alex"','"Maya"','"Sam"']},
+  {emoji:'🎨',tag:'color',   prompt:'Type a Python string for a favourite colour', exs:['"red"','"blue"','"green"']},
+  {emoji:'👋',tag:'greeting',prompt:'Type a Python string for a greeting',         exs:['"Hi!"','"Hello!"','"Hey!"']},
+  {emoji:'🐾',tag:'animal',  prompt:'Type a Python string for an animal name',     exs:['"cat"','"dog"','"fish"']},
+];
+
+const S4=[
+  {boxes:[{e:'👤',v:'name',a:'"Alex"'},{e:'🎨',v:'color',a:'"blue"'},{e:'👋',v:'greeting',a:'"Hello!"'}],
+   pool:['"Alex"','"blue"','"Hello!"','42','name','"dog"']},
+  {boxes:[{e:'🐾',v:'pet',a:'"dog"'},{e:'🏙️',v:'city',a:'"London"'},{e:'⭐',v:'mood',a:'"happy"'}],
+   pool:['"dog"','London','"London"','"happy"','happy','dog']},
+];
+
+/* ── HELPERS ── */
+function sync(){
+  document.getElementById('elXP').textContent=xp;
+  document.getElementById('elLives').textContent='❤️'.repeat(Math.max(lives,0))||'💀';
+  document.getElementById('elStage').textContent=(stage+1)+' / 4';
+  document.getElementById('elStreak').textContent=streak;
+  document.getElementById('barXP').textContent=xp+' XP';
+}
+
+let toastT;
+function showToast(type,msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className=`toast ${type} show`;
+  clearTimeout(toastT);toastT=setTimeout(()=>t.className=`toast ${type}`,2300);
+}
+
+function showNext(){document.getElementById('btnNext').classList.add('show')}
+function hideNext(){document.getElementById('btnNext').classList.remove('show')}
+
+const stageNames=['🔍 Spot the String','🔧 Fix the Bug','⌨️ Write a String','🎯 Match the Value'];
+function hdr(){
+  return `<div class="stg-label">
+    <span class="stg-name">${stageNames[stage]}</span>
+    <div class="stg-dots">${[0,1,2,3].map(i=>`<div class="dot${i<stage?' done':i===stage?' active':''}"></div>`).join('')}</div>
+  </div>`;
+}
+
+function anim(){
+  const p=document.getElementById('panel');
+  p.style.animation='none';void p.offsetWidth;p.style.animation='pop .38s ease both';
+}
+
+/* ── STAGE 1 ── */
+let s1i=0;
+function drawS1(){
+  hideNext();
+  if(s1i>=S1.length){showNext();return}
+  const r=S1[s1i];
+  document.getElementById('panel').innerHTML=`${hdr()}
+    <div class="arena pa">
+      <div class="qbox">${r.q}</div>
+      <div class="hint">${r.hint}</div>
+      <div class="vgrid" id="vg"></div>
+    </div>`;
+  const grid=document.getElementById('vg');
+  r.opts.forEach((o,i)=>{
+    const card=document.createElement('div');card.className='vcard';
+    const vv=document.createElement('div');vv.className='vv';
+    if(o.t==='s'){
+      const q1=document.createElement('span');q1.className='q';q1.textContent='"';
+      const tx=document.createElement('span');tx.className='tx';tx.textContent=o.v.replace(/"/g,'');
+      const q2=document.createElement('span');q2.className='q';q2.textContent='"';
+      vv.append(q1,tx,q2);
+    } else {
+      const sp=document.createElement('span');sp.className=o.t==='n'?'nm':'tx';sp.textContent=o.v;vv.append(sp);
+    }
+    const lbl=document.createElement('div');lbl.className='vlabel';
+    lbl.textContent=o.t==='s'?'Has quote marks ✓':o.t==='n'?'This is a number':'Missing quotes!';
+    card.append(vv,lbl);
+    card.addEventListener('click',()=>pickS1(i));
+    grid.appendChild(card);
+  });
+  sync();
+}
+
+function pickS1(idx){
+  const r=S1[s1i];
+  const cards=document.querySelectorAll('.vcard');
+  cards.forEach(c=>c.classList.add('off'));
+  if(r.opts[idx].ok){cards[idx].classList.add('ok');xp+=20;streak++;hits++;showToast('ok','✅ Correct! That is a valid string! +20 XP')}
+  else{cards[idx].classList.add('bad');r.opts.forEach((_,i)=>{if(r.opts[i].ok)cards[i].classList.add('reveal')});lives=Math.max(0,lives-1);streak=0;showToast('bad','❌ Strings need quote marks around them!')}
+  s1i++;sync();setTimeout(()=>drawS1(),1000);
+}
+
+/* ── STAGE 2 ── */
+let s2i=0;
+function drawS2(){
+  hideNext();
+  if(s2i>=S2.length){showNext();return}
+  const r=S2[s2i];
+  document.getElementById('panel').innerHTML=`${hdr()}
+    <div class="arena ga">
+      <div class="qbox gold">🔧 Fix this broken string assignment!</div>
+      <div class="hint">${r.hint}</div>
+      <div class="broken-area">
+        <div class="broken-label">⚠️ Broken code:</div>
+        <div class="broken-code" id="bc"></div>
+      </div>
+      <div class="fgrid" id="fg"></div>
+    </div>`;
+  document.getElementById('bc').textContent=r.broken;
+  const grid=document.getElementById('fg');
+  r.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');btn.className='fopt';btn.textContent=opt;
+    btn.addEventListener('click',()=>pickS2(i));grid.appendChild(btn);
+  });
+  sync();
+}
+
+function pickS2(idx){
+  const r=S2[s2i];
+  const btns=document.querySelectorAll('.fopt');
+  btns.forEach(b=>b.classList.add('off'));
+  if(idx===r.ans){btns[idx].classList.add('ok');xp+=20;streak++;hits++;showToast('ok','🔧 Fixed! Great work! +20 XP')}
+  else{btns[idx].classList.add('bad');btns[r.ans].classList.add('reveal');lives=Math.max(0,lives-1);streak=0;showToast('bad','❌ Not quite! Check the quote marks.')}
+  s2i++;sync();setTimeout(()=>drawS2(),1050);
+}
+
+/* ── STAGE 3 ── */
+let s3i=0;
+function drawS3(){
+  hideNext();
+  if(s3i>=S3.length){showNext();return}
+  const r=S3[s3i];
+  document.getElementById('panel').innerHTML=`${hdr()}
+    <div class="arena ua">
+      <div class="qbox purple">${r.prompt}</div>
+      <div class="hint">Wrap your text in <b>"double quotes"</b> or <b>'single quotes'</b></div>
+      <div class="bvisual">
+        <div class="box3d">
+          <div class="bspin"></div>
+          <div class="bemoji">${r.emoji}</div>
+          <div class="btag">${r.tag}</div>
+        </div>
+      </div>
+      <div class="hchips">
+        <span class="hchip" id="h0">starts with " or '</span>
+        <span class="hchip" id="h1">ends with matching quote</span>
+        <span class="hchip" id="h2">has text inside</span>
+      </div>
+      <div class="inrow">
+        <input id="inp" class="sinput" type="text" placeholder='"like this"' maxlength="40" autocomplete="off" spellcheck="false"/>
+        <button class="bsubmit" id="bsub">Check ✓</button>
+      </div>
+      <div style="text-align:center;font-size:.72rem;color:var(--muted);margin-bottom:6px;font-weight:500">💡 Tap an example to use it:</div>
+      <div class="egs" id="egsRow"></div>
+    </div>`;
+  r.exs.forEach(ex=>{
+    const span=document.createElement('span');span.className='eg';span.textContent=ex;
+    span.addEventListener('click',()=>{document.getElementById('inp').value=ex;liveChk()});
+    document.getElementById('egsRow').appendChild(span);
+  });
+  const inp=document.getElementById('inp');
+  inp.addEventListener('input',liveChk);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')submitS3()});
+  document.getElementById('bsub').addEventListener('click',submitS3);
+  inp.focus();sync();
+}
+
+function liveChk(){
+  const v=document.getElementById('inp').value;
+  const inp=document.getElementById('inp');
+  const h0=document.getElementById('h0'),h1=document.getElementById('h1'),h2=document.getElementById('h2');
+  if(!v||!h0){inp&&(inp.className='sinput');return}
+  const starts=/^["']/.test(v),ch=v[0],closes=v.length>1&&v[v.length-1]===ch,has=v.length>2;
+  h0.className='hchip '+(starts?'pass':'fail');
+  h1.className='hchip '+(closes?'pass':'fail');
+  h2.className='hchip '+(has?'pass':'fail');
+  inp.className='sinput '+(starts&&closes&&has?'valid':'');
+}
+
+function isStr(v){const t=v.trim();return(t.startsWith('"')&&t.endsWith('"')&&t.length>2)||(t.startsWith("'")&&t.endsWith("'")&&t.length>2)}
+
+function submitS3(){
+  const inp=document.getElementById('inp');if(!inp)return;
+  const v=inp.value.trim();if(!v)return;
+  if(isStr(v)){inp.className='sinput valid';xp+=25;streak++;hits++;showToast('ok',`🎉 ${v} is a perfect Python string! +25 XP`);s3i++;sync();setTimeout(()=>drawS3(),850)}
+  else{
+    inp.className='sinput invalid';lives=Math.max(0,lives-1);streak=0;
+    showToast('bad',"❌ Add quote marks! Try: \"word\" or 'word'");sync();
+    setTimeout(()=>{
+      if(document.getElementById('inp')){document.getElementById('inp').value='';document.getElementById('inp').className='sinput';['h0','h1','h2'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='hchip'})}
+    },700);
+  }
+}
+
+/* ── STAGE 4 ── */
+let s4r=0,s4sel=null,s4done={};
+function drawS4(){
+  hideNext();if(s4r>=S4.length){showNext();return}
+  s4sel=null;s4done={};const r=S4[s4r];
+  document.getElementById('panel').innerHTML=`${hdr()}
+    <div class="arena ca">
+      <div class="qbox cyan">🎯 Tap a <span style="color:var(--gold)">string</span>, then tap its <span style="color:var(--teal)">matching box</span>!</div>
+      <div class="hint">Each box needs one string. Tap the value first, then the box.</div>
+      <div class="matchgrid">
+        <div><div class="mcol-label">📦 Boxes</div><div class="boxcol" id="boxcol"></div></div>
+        <div class="arrowcol">→</div>
+        <div><div class="mcol-label">🧵 Strings</div><div class="strpool" id="strpool"></div></div>
+      </div>
+    </div>`;
+  r.boxes.forEach((b,i)=>{
+    const el=document.createElement('div');el.className='mbox';el.id='mb'+i;
+    const em=document.createElement('span');em.className='me';em.textContent=b.e;
+    const vr=document.createElement('span');vr.className='mv';vr.textContent=b.v;
+    const eq=document.createElement('span');eq.className='meq';eq.textContent='=';
+    const sl=document.createElement('span');sl.className='ms';sl.id='sl'+i;sl.textContent='drop here';
+    el.append(em,vr,eq,sl);el.addEventListener('click',()=>dropS4(i));
+    document.getElementById('boxcol').appendChild(el);
+  });
+  r.pool.forEach((p,i)=>{
+    const el=document.createElement('span');el.className='schip';el.id='sc'+i;el.textContent=p;
+    el.addEventListener('click',()=>selS4(i));document.getElementById('strpool').appendChild(el);
+  });
+  sync();
+}
+
+function selS4(idx){
+  const r=S4[s4r];
+  document.querySelectorAll('.schip').forEach(c=>c.classList.remove('sel'));
+  s4sel={val:r.pool[idx],idx};document.getElementById('sc'+idx).classList.add('sel');
+  r.boxes.forEach((_,i)=>{const mb=document.getElementById('mb'+i);if(!s4done[i])mb.classList.add('ready')});
+}
+
+function dropS4(boxIdx){
+  if(!s4sel||s4done[boxIdx])return;
+  const r=S4[s4r],box=r.boxes[boxIdx];
+  const mb=document.getElementById('mb'+boxIdx),sl=document.getElementById('sl'+boxIdx),chip=document.getElementById('sc'+s4sel.idx);
+  document.querySelectorAll('.mbox').forEach(b=>b.classList.remove('ready'));
+  document.querySelectorAll('.schip').forEach(c=>c.classList.remove('sel'));
+  if(s4sel.val===box.a){
+    sl.textContent=s4sel.val;sl.className='ms filled';mb.classList.add('matched');chip.classList.add('used');
+    s4done[boxIdx]=true;xp+=20;streak++;hits++;showToast('ok',`✅ "${s4sel.val}" belongs there! +20 XP`);
+    s4sel=null;sync();
+    if(Object.keys(s4done).length>=r.boxes.length){s4r++;setTimeout(()=>{if(s4r>=S4.length)showNext();else drawS4()},650)}
+  } else {
+    mb.classList.add('wf');lives=Math.max(0,lives-1);streak=0;showToast('bad',`❌ "${s4sel.val}" doesn't belong there!`);
+    s4sel=null;sync();setTimeout(()=>mb.classList.remove('wf'),500);
+  }
+}
+
+/* ── FLOW ── */
+function draw(){anim();if(stage===0)drawS1();else if(stage===1)drawS2();else if(stage===2)drawS3();else if(stage===3)drawS4()}
+function advanceStage(){hideNext();stage++;if(stage>=4){showResult();return}draw()}
+
+/* ── RESULT ── */
+function showResult(){
+  document.getElementById('panel').style.display='none';
+  document.querySelector('.nextwrap').style.display='none';
+  const stars=xp>=300?'⭐⭐⭐':xp>=180?'⭐⭐':'⭐';
+  document.getElementById('rTrophy').textContent=xp>=300?'🏆':xp>=180?'🥈':'🥉';
+  document.getElementById('rTitle').textContent=xp>=300?'String Master!':xp>=180?'Great Work!':'Keep Practising!';
+  document.getElementById('rSub').textContent=xp>=300?'You nailed every challenge! Python loves your quotes!':xp>=180?'Solid string skills — keep it up!':'Watch the lesson again and give it another go!';
+  document.getElementById('rXP').textContent=xp;
+  document.getElementById('rCorrect').textContent=hits;
+  document.getElementById('rStars').textContent=stars;
+  document.getElementById('result').classList.add('show');
+  if(xp>=180)confetti();
+  localStorage.setItem('p2_lesson04GameScore',xp);
+  const prev=parseInt(localStorage.getItem('part2_progress'))||1;
+  if(prev<6)localStorage.setItem('part2_progress','6');
+}
+
+function confetti(){
+  const cols=['#0cbfb5','#7c5cbf','#d4567a','#c8960a','#1a9e6a','#60a5fa'];
+  for(let i=0;i<58;i++){
+    const el=document.createElement('div');el.className='cp';
+    el.style.cssText=`left:${Math.random()*100}vw;top:-16px;background:${cols[i%cols.length]};width:${6+Math.random()*7}px;height:${6+Math.random()*7}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-delay:${Math.random()*.8}s;animation-duration:${2+Math.random()*1.4}s`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),3500);
+  }
+}
+
+function restart(){
+  xp=0;lives=3;streak=0;hits=0;stage=0;s1i=0;s2i=0;s3i=0;s4r=0;s4sel=null;s4done={};
+  document.getElementById('panel').style.display='';
+  document.querySelector('.nextwrap').style.display='';
+  document.getElementById('result').classList.remove('show');
+  hideNext();sync();draw();
+}
+
+/* ── BOOT ── */
+sync();draw();
+</script>
+</body>
+</html>
+
+
+

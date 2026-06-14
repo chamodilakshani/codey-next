@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>CODEPLAY — Lesson 07 Game: Counting Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:         #e8f5e2;
+  --surface:    #ffffff;
+  --surface2:   #f4faf0;
+  --border:     rgba(80,140,60,.18);
+  --green-dark: #1e5c1e;
+  --green-mid:  #2e7d32;
+  --green-leaf: #4caf50;
+  --green-light:#a5d6a7;
+  --gold:       #f5c800;
+  --gold-soft:  #ffe066;
+  --orange:     #ff8c00;
+  --orange-soft:#ffb74d;
+  --correct:    #27c76f;
+  --wrong:      #e84040;
+  --coral:      #ff6b6b;
+  --text:       #1a3d1a;
+  --text-mid:   #2e5c2e;
+  --text-muted: #6a9a6a;
+  --head:       'Fredoka One', cursive;
+  --body:       'Nunito', sans-serif;
+  --shadow-card:0 4px 24px rgba(46,125,50,.10), 0 1px 4px rgba(46,125,50,.06);
+  --shadow-strong:0 8px 40px rgba(46,125,50,.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;min-height:100vh;overflow-x:hidden}
+body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Forest background ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 700px 500px at 10% 15%, rgba(180,230,160,.45) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 90% 80%, rgba(200,235,170,.4) 0%, transparent 65%),
+    radial-gradient(ellipse 400px 300px at 55% 50%, rgba(255,255,220,.3) 0%, transparent 60%);
+  pointer-events:none;
+}
+.leaf-deco{position:fixed;pointer-events:none;z-index:0;opacity:.09;user-select:none;animation:leafFloat 8s ease-in-out infinite alternate}
+.leaf-deco:nth-child(1){top:6%;left:2%;font-size:3rem;animation-delay:0s}
+.leaf-deco:nth-child(2){top:22%;right:3%;font-size:2.5rem;animation-delay:1.5s}
+.leaf-deco:nth-child(3){bottom:22%;left:5%;font-size:3.5rem;animation-delay:3s}
+.leaf-deco:nth-child(4){bottom:38%;right:2%;font-size:2rem;animation-delay:2s}
+
+@keyframes leafFloat{0%{transform:translateY(0) rotate(-5deg)}100%{transform:translateY(-18px) rotate(8deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shine{to{left:160%}}
+@keyframes screenIn{from{opacity:0;transform:translateY(22px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes emojiPop{0%{transform:scale(.5) rotate(-5deg);opacity:0}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes feedbackIn{0%{transform:scale(.6) rotate(-8deg);opacity:0}100%{transform:scale(1) rotate(0deg);opacity:1}}
+@keyframes inputShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes correctPop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes trophySpin{0%{transform:scale(0) rotate(-180deg)}70%{transform:scale(1.2) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes cfFall{from{transform:translateY(0) rotate(0deg);opacity:1}to{transform:translateY(110vh) rotate(600deg);opacity:0}}
+@keyframes numBobS{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+@keyframes unlockPulse{0%,100%{box-shadow:0 0 0 0 rgba(39,199,111,.4)}50%{box-shadow:0 0 0 12px rgba(39,199,111,0)}}
+@keyframes gradShift{0%{background-position:0%}100%{background-position:200%}}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  height:64px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(200,200,200,.2);
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+  flex-shrink:0;
+}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--head);font-size:1.3rem;color:#ff8c00;letter-spacing:.04em;text-shadow:0 2px 8px rgba(255,140,0,.3)}
+.logo-leaf{font-size:1.4rem;animation:leafFloat 4s ease-in-out infinite alternate}
+.nav-gtitle{font-family:var(--body);font-size:.75rem;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;flex:1;text-align:center}
+.score-pill{
+  font-family:var(--head);font-size:.85rem;color:var(--gold-soft);
+  display:flex;align-items:center;gap:6px;
+  background:rgba(245,200,0,.15);border:1.5px solid rgba(245,200,0,.4);
+  border-radius:30px;padding:5px 16px;letter-spacing:.04em;
+}
+.btn-back{
+  display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:99px;
+  border:1.5px solid rgba(165,214,167,.4);background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.8);font-family:var(--body);font-size:.78rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
+.btn-back:hover{border-color:rgba(165,214,167,.7);color:#fff;background:rgba(255,255,255,.15)}
+.btn-back svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── ROUND PROGRESS BAR ── */
+.round-bar-wrap{
+  position:sticky;top:64px;z-index:190;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+  padding:8px 24px;border-bottom:1.5px solid rgba(76,175,80,.15);
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 12px rgba(46,125,50,.06);
+}
+.round-label{font-family:var(--body);font-size:.6rem;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;white-space:nowrap;font-weight:700}
+.round-track{flex:1;height:7px;background:rgba(76,175,80,.12);border-radius:99px;overflow:hidden;border:1px solid rgba(76,175,80,.15)}
+.round-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green-leaf),var(--gold-soft));transition:width .5s cubic-bezier(.22,1,.36,1)}
+.round-dots{display:flex;gap:5px}
+.rdot{
+  width:18px;height:18px;border-radius:50%;
+  border:1.5px solid rgba(76,175,80,.25);background:rgba(76,175,80,.08);
+  font-family:var(--head);font-size:.52rem;font-weight:700;
+  display:grid;place-items:center;color:var(--text-muted);
+  transition:all .3s;flex-shrink:0;
+}
+.rdot.done{background:var(--correct);border-color:var(--correct);color:#fff}
+.rdot.active{background:var(--green-leaf);border-color:var(--green-leaf);color:#fff;box-shadow:0 0 10px rgba(76,175,80,.4)}
+
+/* ── SCREEN ── */
+.screen{display:none;opacity:0;max-width:640px;margin:0 auto;padding:36px 20px 90px;position:relative;z-index:1;animation:screenIn .45s cubic-bezier(.22,1,.36,1) both}
+.screen.active{display:block;opacity:1}
+
+/* ── HEADINGS ── */
+.big-head{font-family:var(--head);font-size:clamp(1.7rem,5vw,2.4rem);text-align:center;color:var(--green-dark);letter-spacing:.02em;margin-bottom:8px}
+.big-sub{text-align:center;font-size:1rem;font-weight:600;color:var(--text-muted);margin-bottom:28px}
+
+/* ── GAME CARD ── */
+.game-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:22px;padding:28px 24px;margin-bottom:20px;
+  position:relative;overflow:hidden;
+  box-shadow:var(--shadow-card);
+}
+.game-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--green-leaf),var(--gold-soft),var(--green-leaf));
+  background-size:200% 100%;animation:gradShift 3s linear infinite;
+}
+
+/* ── ROUND LABEL ── */
+.round-tag{text-align:center;font-family:var(--body);font-size:.62rem;letter-spacing:.2em;color:var(--text-muted);text-transform:uppercase;margin-bottom:16px;font-weight:700}
+
+/* ── EMOJI ARENA ── */
+.emoji-arena{
+  min-height:130px;
+  background:var(--surface2);border:1.5px solid rgba(76,175,80,.2);
+  border-radius:16px;padding:20px;margin:18px 0;
+  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;
+  position:relative;overflow:hidden;
+  box-shadow:inset 0 2px 8px rgba(46,125,50,.06);
+}
+.e-item{font-size:clamp(1.8rem,6vw,2.8rem);animation:numBobS ease-in-out infinite alternate;animation-duration:calc(.9s + var(--i)*0.07s)}
+
+/* ── INPUT ── */
+.input-row{display:flex;align-items:center;justify-content:center;gap:14px;margin:20px 0}
+.count-input{
+  width:88px;height:88px;border-radius:16px;
+  border:3px solid rgba(76,175,80,.35);background:var(--surface2);
+  font-family:var(--head);font-size:2rem;font-weight:900;text-align:center;
+  color:var(--green-dark);transition:all .3s;-moz-appearance:textfield;
+  box-shadow:var(--shadow-card);
+}
+.count-input::-webkit-outer-spin-button,.count-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.count-input:focus{outline:none;border-color:var(--green-leaf);box-shadow:0 0 0 4px rgba(76,175,80,.15);transform:scale(1.06)}
+.count-input.shake{animation:inputShake .28s ease}
+.count-input.correct-flash{border-color:var(--correct);background:rgba(39,199,111,.08);animation:correctPop .4s ease}
+.count-input.wrong-flash{border-color:var(--coral);background:rgba(255,107,107,.08)}
+.count-btn{
+  padding:18px 28px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,#43a047,#2e7d32);
+  color:#fff;font-family:var(--head);font-size:.85rem;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 6px 18px rgba(46,125,50,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.count-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2s linear infinite}
+.count-btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(46,125,50,.45)}
+.count-btn:active{transform:translateY(0)}
+
+/* ── FEEDBACK ── */
+.feedback{
+  min-height:44px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-family:var(--head);font-size:1rem;letter-spacing:.03em;text-align:center;
+  border-radius:12px;padding:10px 18px;margin-top:4px;transition:all .3s;opacity:0;
+}
+.feedback.show{opacity:1;animation:feedbackIn .4s cubic-bezier(.22,1,.36,1)}
+.feedback.correct{background:rgba(39,199,111,.1);border:1.5px solid rgba(39,199,111,.35);color:var(--correct)}
+.feedback.wrong{background:rgba(232,64,64,.08);border:1.5px solid rgba(232,64,64,.3);color:var(--wrong)}
+.feedback.reveal{background:rgba(245,200,0,.1);border:1.5px solid rgba(245,200,0,.3);color:#b8860b}
+
+/* ── NEXT ROUND BTN ── */
+.next-round-btn{
+  display:none;width:100%;max-width:360px;margin:20px auto 0;
+  background:linear-gradient(135deg,#43a047,#2e7d32);
+  border:none;border-radius:14px;padding:16px;
+  font-family:var(--head);font-size:.85rem;color:#fff;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 6px 22px rgba(46,125,50,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.next-round-btn.show{display:block}
+.next-round-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.5s linear infinite}
+.next-round-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(46,125,50,.45)}
+
+/* ── INTRO SCREEN ── */
+.intro-features{display:flex;flex-direction:column;gap:12px;margin:24px 0}
+.if-row{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:14px;padding:14px 18px;
+  box-shadow:var(--shadow-card);transition:box-shadow .2s;
+}
+.if-row:hover{box-shadow:var(--shadow-strong)}
+.if-icon{font-size:1.6rem;flex-shrink:0}
+.if-text{font-size:.88rem;color:var(--text-mid);line-height:1.45;font-weight:500}
+.if-text b{color:var(--text)}
+.start-btn{
+  display:block;width:100%;max-width:380px;margin:24px auto 0;
+  background:linear-gradient(135deg,var(--orange),#d04000);
+  border:none;border-radius:14px;padding:18px;
+  font-family:var(--head);font-size:.9rem;color:#fff;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 6px 24px rgba(255,140,0,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.start-btn::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.2s linear infinite}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(255,140,0,.45)}
+
+/* ── COMPLETE SCREEN ── */
+.trophy{font-size:5rem;text-align:center;margin-bottom:16px;animation:trophySpin 1.5s ease}
+.complete-stats{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:28px}
+.cstat{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:16px 28px;text-align:center;box-shadow:var(--shadow-card)}
+.csval{font-family:var(--head);font-size:1.8rem;color:var(--green-dark)}
+.cslbl{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;font-weight:600}
+.complete-msg{
+  background:rgba(76,175,80,.08);border:1.5px solid rgba(76,175,80,.3);
+  border-radius:14px;padding:18px 22px;text-align:center;
+  font-size:.92rem;font-weight:500;color:var(--text-mid);line-height:1.7;margin-bottom:22px;
+}
+.complete-msg b{color:var(--green-mid);font-weight:800}
+.unlock-badge{
+  display:flex;justify-content:center;align-items:center;gap:8px;
+  background:rgba(39,199,111,.1);border:1.5px solid var(--correct);
+  border-radius:99px;padding:10px 22px;
+  font-family:var(--head);font-size:.7rem;color:var(--correct);
+  margin-bottom:28px;animation:unlockPulse 1.8s ease-in-out infinite;letter-spacing:.06em;
+}
+.btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-replay{
+  padding:14px 28px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--surface2);
+  font-family:var(--head);font-size:.8rem;font-weight:700;color:var(--text-mid);
+  cursor:pointer;letter-spacing:.04em;transition:all .2s;
+}
+.btn-replay:hover{border-color:rgba(76,175,80,.4);background:var(--surface);transform:translateY(-2px)}
+.btn-goto{
+  padding:16px 32px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--orange),#d04000);
+  color:#fff;font-family:var(--head);font-size:.85rem;
+  cursor:pointer;letter-spacing:.06em;
+  box-shadow:0 6px 22px rgba(255,140,0,.3);transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.btn-goto::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shine 2.2s linear infinite}
+.btn-goto:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,140,0,.45)}
+.redirect-note{text-align:center;margin-top:16px;font-size:.72rem;color:var(--text-muted);letter-spacing:.04em;font-weight:500}
+.redirect-note span{color:var(--green-mid);font-family:var(--head)}
+
+/* CONFETTI */
+.cf{position:fixed;pointer-events:none;z-index:9999;border-radius:2px;animation:cfFall linear forwards}
+
+/* ── STATS BAR ── */
+.stats-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  height:52px;background:rgba(30,92,30,.97);
+  backdrop-filter:blur(20px);border-top:1.5px solid rgba(165,214,167,.2);
+  box-shadow:0 -2px 20px rgba(30,92,30,.15);
+  display:flex;align-items:center;justify-content:center;gap:44px;
+}
+.si{display:flex;align-items:center;gap:7px;font-size:.76rem;letter-spacing:.06em;color:rgba(255,255,255,.75);font-weight:600}
+.sv{font-family:var(--head);font-size:.8rem;letter-spacing:.03em}
+
+@media(max-width:640px){
+  nav{padding:0 14px}
+  .screen{padding:24px 14px 80px}
+  .round-dots{display:none}
+  .big-head{font-size:1.5rem}
+  .count-input{width:74px;height:74px;font-size:1.6rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Floating leaves -->
+<div class="leaf-deco">🍃</div>
+<div class="leaf-deco">🌿</div>
+<div class="leaf-deco">🍀</div>
+<div class="leaf-deco">🌱</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo"><span class="logo-leaf">🌿</span>CODEPLAY</div>
+  <div class="nav-gtitle">🍎 Counting Quest · Lesson 07</div>
+  <div class="score-pill">⭐ <span id="scoreNum">0</span></div>
+  <button class="btn-back" onclick="location.href='lesson7.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+  </button>
+</nav>
+
+<!-- ROUND PROGRESS BAR -->
+<div class="round-bar-wrap">
+  <div class="round-label" id="roundLabel">Round 1 / 10</div>
+  <div class="round-track"><div class="round-fill" id="roundFill" style="width:0%"></div></div>
+  <div class="round-dots" id="roundDots"></div>
+</div>
+
+<!-- SCREEN 0: INTRO -->
+<div class="screen active" id="screenIntro">
+  <h1 class="big-head">🍎 Counting Quest!</h1>
+  <p class="big-sub">Count the emoji and type the right number!</p>
+  <div class="game-card">
+    <div class="intro-features">
+      <div class="if-row"><div class="if-icon">🔢</div><div class="if-text"><b>10 rounds</b> of counting — each round shows you a group of emoji to count.</div></div>
+      <div class="if-row"><div class="if-icon">⭐</div><div class="if-text">Earn <b>10 stars</b> for every correct answer on your first try!</div></div>
+      <div class="if-row"><div class="if-icon">🔓</div><div class="if-text">Complete all 10 rounds to <b>unlock Lesson 08!</b></div></div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startGame()">START COUNTING! 🚀</button>
+</div>
+
+<!-- SCREEN 1: GAME -->
+<div class="screen" id="screenGame">
+  <div class="game-card">
+    <div class="round-tag" id="roundTag">Round 1 of 10</div>
+    <div class="emoji-arena" id="emojiArena"></div>
+    <div class="input-row">
+      <input class="count-input" type="number" id="countInput" placeholder="?" min="1" max="15"/>
+      <button class="count-btn" onclick="checkAnswer()">✓ CHECK</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-round-btn" id="nextRoundBtn" onclick="nextRound()">NEXT ROUND →</button>
+  </div>
+</div>
+
+<!-- SCREEN COMPLETE -->
+<div class="screen" id="screenComplete">
+  <div class="trophy">🏆</div>
+  <h2 class="big-head">YOU DID IT!</h2>
+  <p class="big-sub">You're a counting champion! 🍎</p>
+  <div class="complete-stats">
+    <div class="cstat"><div class="csval" id="finalScore">0</div><div class="cslbl">⭐ Stars Earned</div></div>
+    <div class="cstat"><div class="csval" id="finalCorrect">0</div><div class="cslbl">✅ Correct</div></div>
+    <div class="cstat"><div class="csval">+100</div><div class="cslbl">⚡ XP Gained</div></div>
+  </div>
+  <div class="complete-msg">🎉 <b>Congratulations!</b> You've mastered counting in Python and unlocked <b>Lesson 08: Mistakes Are OK!</b></div>
+  <div class="unlock-badge">🔓 Lesson 08 Unlocked in CodePlay!</div>
+  <div class="btn-row">
+    <button class="btn-replay" onclick="restartGame()">🔄 Play Again</button>
+    <button class="btn-goto" onclick="goToLessons()">GO TO LESSONS 🚀</button>
+  </div>
+  <div class="redirect-note">Auto-redirecting in <span id="cdSpan">8</span>s…</div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="si">📍 <span class="sv" style="color:var(--gold-soft)">Part 1</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.7rem">Lesson 07</span></div>
+  <div class="si">⭐ <span class="sv" id="statScore" style="color:var(--gold-soft)">0</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.7rem">stars</span></div>
+  <div class="si">🍎 <span class="sv" id="statRound" style="color:#fff">1</span><span style="color:rgba(255,255,255,.4);font-size:.7rem">/10 rounds</span></div>
+  <div class="si">🔓 <span class="sv" style="color:var(--correct)">Lesson 08</span>&nbsp;<span style="color:rgba(255,255,255,.4);font-size:.7rem">on finish</span></div>
+</div>
+
+<script>
+const TOTAL_ROUNDS=10;
+const EMOJIS=['🍎','⭐','🎈','🐱','🦖','🍕','🌟','🐸','🦋','🚀','🍩','🌈','🐧','🦄','🍀'];
+
+let round=0,score=0,correctCount=0,currentAnswer=0,answered=false,redirectTimer=null;
+
+function buildDots(){
+  const el=document.getElementById('roundDots');el.innerHTML='';
+  for(let i=1;i<=TOTAL_ROUNDS;i++){
+    const d=document.createElement('div');d.className='rdot';d.textContent=i;d.id='rdot'+i;el.appendChild(d);
+  }
+}
+buildDots();
+
+function updateDots(){
+  for(let i=1;i<=TOTAL_ROUNDS;i++){
+    const d=document.getElementById('rdot'+i);
+    d.classList.remove('done','active');
+    if(i<round)d.classList.add('done');
+    else if(i===round)d.classList.add('active');
+  }
+}
+
+function updateProgress(){
+  const pct=((round-1)/TOTAL_ROUNDS)*100;
+  document.getElementById('roundFill').style.width=pct+'%';
+  document.getElementById('roundLabel').textContent=`Round ${round} / ${TOTAL_ROUNDS}`;
+  document.getElementById('roundTag').textContent=`Round ${round} of ${TOTAL_ROUNDS}`;
+  document.getElementById('statRound').textContent=round;
+  updateDots();
+}
+
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function startGame(){
+  round=1;score=0;correctCount=0;answered=false;
+  updateScore();updateProgress();
+  goScreen('screenGame');renderRound();
+}
+
+function renderRound(){
+  answered=false;
+  currentAnswer=Math.floor(Math.random()*10)+1;
+  const emoji=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+  const arena=document.getElementById('emojiArena');
+  arena.innerHTML='';arena.style.animation='none';void arena.offsetWidth;
+  arena.style.animation='emojiPop .5s cubic-bezier(.22,1,.36,1)';
+  for(let i=0;i<currentAnswer;i++){
+    const span=document.createElement('span');
+    span.className='e-item';span.textContent=emoji;
+    span.style.setProperty('--i',i);span.style.animationDelay=(i*.05)+'s';
+    arena.appendChild(span);
+  }
+  const inp=document.getElementById('countInput');
+  inp.value='';inp.classList.remove('shake','correct-flash','wrong-flash');
+  setTimeout(()=>inp.focus(),100);
+  const fb=document.getElementById('feedback');fb.className='feedback';fb.textContent='';
+  document.getElementById('nextRoundBtn').classList.remove('show');
+}
+
+function checkAnswer(){
+  if(answered)return;
+  const inp=document.getElementById('countInput');
+  const val=parseInt(inp.value);
+  const fb=document.getElementById('feedback');
+  if(isNaN(val)){inp.classList.add('shake');setTimeout(()=>inp.classList.remove('shake'),300);return}
+  answered=true;
+
+  if(val===currentAnswer){
+    fb.className='feedback correct show';fb.textContent='🌟 Correct! Great counting!';
+    inp.classList.add('correct-flash');score+=10;correctCount++;
+    updateScore();popMini();autoNext();
+  }else{
+    fb.className='feedback wrong show';
+    fb.innerHTML=`❌ Not quite! (The answer was <b style="color:var(--green-mid)">${currentAnswer}</b>)`;
+    inp.classList.add('wrong-flash');
+    setTimeout(()=>{
+      fb.className='feedback reveal show';
+      fb.innerHTML=`💡 There were <b style="color:var(--green-mid)">${currentAnswer}</b> ${document.querySelector('.e-item')?.textContent||'items'}`;
+      document.getElementById('nextRoundBtn').classList.add('show');
+    },1400);
+  }
+}
+
+function autoNext(){setTimeout(()=>document.getElementById('nextRoundBtn').classList.add('show'),900)}
+
+function nextRound(){
+  if(round>=TOTAL_ROUNDS){showComplete();return}
+  round++;updateProgress();renderRound();
+}
+
+function updateScore(){
+  document.getElementById('scoreNum').textContent=score;
+  document.getElementById('statScore').textContent=score;
+}
+
+function showComplete(){
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('finalCorrect').textContent=correctCount+'/'+TOTAL_ROUNDS;
+  goScreen('screenComplete');
+  popBig();setTimeout(popBig,900);
+  localStorage.setItem('lesson07Completed','yes');
+  const cur=parseInt(localStorage.getItem('part1_progress'))||1;
+  if(cur<8)localStorage.setItem('part1_progress','8');
+  let secs=8;const cd=document.getElementById('cdSpan');
+  redirectTimer=setInterval(()=>{secs--;cd.textContent=secs;if(secs<=0){clearInterval(redirectTimer);window.location.href='quest1.html'}},1000);
+}
+
+function goToLessons(){
+  if(redirectTimer)clearInterval(redirectTimer);
+  localStorage.setItem('lesson07Completed','yes');
+  const cur=parseInt(localStorage.getItem('part1_progress'))||1;
+  if(cur<8)localStorage.setItem('part1_progress','8');
+  window.location.href='quest1.html';
+}
+function restartGame(){if(redirectTimer)clearInterval(redirectTimer);startGame()}
+function handleBack(){if(confirm('Go back to lessons?'))window.location.href='quest1.html'}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){if(!answered)checkAnswer();else if(document.getElementById('nextRoundBtn').classList.contains('show'))nextRound()}
+});
+
+const CF=['#f5e000','#27c76f','#ff8c00','#a5d6a7','#ffffff','#4caf50','#ffe066','#ff6b6b'];
+function popMini(){for(let i=0;i<22;i++){const el=document.createElement('div');const sz=5+Math.random()*7;el.className='cf';el.style.cssText=`left:${20+Math.random()*60}vw;top:30vh;width:${sz}px;height:${sz*(Math.random()>.5?1:.4)}px;background:${CF[Math.floor(Math.random()*CF.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1+Math.random()*.7}s;animation-delay:${Math.random()*.2}s`;document.body.appendChild(el);setTimeout(()=>el.remove(),2200)}}
+function popBig(){for(let i=0;i<70;i++)setTimeout(()=>{const el=document.createElement('div');const sz=6+Math.random()*10;el.className='cf';el.style.cssText=`left:${Math.random()*100}vw;top:-10px;width:${sz}px;height:${sz*(Math.random()>.5?1:.4)}px;background:${CF[Math.floor(Math.random()*CF.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.8+Math.random()*1.3}s;animation-delay:${Math.random()*.4}s`;document.body.appendChild(el);setTimeout(()=>el.remove(),3500)},i*16)}
+</script>
+</body>
+</html>
+
+
+

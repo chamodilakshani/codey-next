@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>CODEPLAY — Pearl's Pattern Painter!</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow:hidden}
+body{font-family:'Nunito',sans-serif;background:#e8f8f5;color:#1a4a45;
+  height:100dvh;overflow:hidden;display:flex;flex-direction:column;
+  user-select:none;-webkit-user-select:none}
+:root{
+  --teal:#0d9488;
+  --teal-light:#5eead4;
+  --teal-xlight:#ccfbf1;
+  --teal-pale:#f0fdfa;
+  --lime:#059669;
+  --gold:#d97706;
+  --coral:#e11d48;
+  --muted:rgba(15,60,55,.55);
+  --card:#ffffff;
+  --card-border:rgba(13,148,136,.18);
+  --bdr:rgba(13,148,136,.18);
+  --mono:'Share Tech Mono',monospace;
+  --bg-grad: linear-gradient(135deg,#e0f7f4 0%,#b2ece5 35%,#d4f5f0 65%,#e8faf7 100%);
+}
+
+/* ── OCEAN BG ── */
+.sea-bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.sea-layer{position:absolute;inset:0;background:var(--bg-grad)}
+.sea-dots{position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(13,148,136,.08) 1px,transparent 1px);
+  background-size:32px 32px}
+.sea-rays{position:absolute;inset:0;
+  background:repeating-conic-gradient(from 260deg at 50% -30%,rgba(13,148,136,.03) 0deg,transparent 4deg,transparent 12deg,rgba(13,148,136,.02) 16deg,transparent 20deg);
+  animation:rayDrift 18s linear infinite alternate}
+.bbg{position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.7),rgba(13,148,136,.08));
+  border:1px solid rgba(13,148,136,.14);animation:bbgUp linear infinite;pointer-events:none}
+
+@keyframes rayDrift{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@keyframes bbgUp{0%{opacity:0;transform:translateY(0)}12%{opacity:.6}88%{opacity:.25}100%{opacity:0;transform:translateY(-110vh)}}
+@keyframes bobBig{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+@keyframes sonarPing{0%{transform:scale(.7);opacity:1}100%{transform:scale(3.2);opacity:0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{0%{transform:scale(.4);opacity:0}65%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 16px rgba(13,148,136,.22)}50%{box-shadow:0 0 30px rgba(13,148,136,.46)}}
+@keyframes scPop{0%{transform:scale(1)}40%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes wrongShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes confFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(540deg);opacity:0}}
+@keyframes starUp{0%{transform:scale(0) rotate(0deg);opacity:1}100%{transform:scale(1.8) rotate(180deg);opacity:0}}
+@keyframes fishSwim{0%{transform:translateX(110vw) scaleX(-1)}100%{transform:translateX(-14vw) scaleX(-1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cellPop{0%{transform:scale(0) rotate(-15deg);opacity:0}60%{transform:scale(1.3) rotate(3deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes rowFlash{0%{background:rgba(13,148,136,.0)}50%{background:rgba(13,148,136,.08)}100%{background:rgba(13,148,136,.0)}}
+@keyframes codeHighlight{0%{background:transparent}50%{background:rgba(13,148,136,.12)}100%{background:transparent}}
+@keyframes seahorseBob{0%,100%{transform:translateY(0) rotate(0)}33%{transform:translateY(-6px) rotate(-5deg)}66%{transform:translateY(-3px) rotate(3deg)}}
+@keyframes paintDrop{0%{transform:scale(0);opacity:1}50%{transform:scale(1.4);opacity:.8}100%{transform:scale(.8);opacity:0}}
+@keyframes btnPop{0%{transform:scale(1)}35%{transform:scale(.88)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes rowSlide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes diveIn{0%{background-position:200% center}100%{background-position:0% center}}
+
+/* ── NAV ── */
+nav{flex-shrink:0;height:52px;position:relative;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(13,148,136,.15);
+  box-shadow:0 1px 12px rgba(13,148,136,.08)}
+.logo{display:flex;align-items:center;gap:6px;font-size:.9rem;font-weight:900;color:#ff8c00;letter-spacing:.08em}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 2px rgba(13,148,136,.2)}
+.sonar{position:relative;width:20px;height:20px;flex-shrink:0}
+.sr{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(13,148,136,.3);animation:sonarPing 2.2s ease-out infinite}
+.sr2{animation-delay:.8s}
+.sd{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;border-radius:50%;background:var(--teal)}
+.nav-c{text-align:center}.nav-t{font-size:.72rem;font-weight:900;color:#1a4a45}.nav-s{font-size:.5rem;color:var(--muted);letter-spacing:.1em}
+.back-btn{display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;
+  border:1.5px solid rgba(13,148,136,.25);background:var(--teal-pale);
+  color:var(--teal);font-size:.65rem;font-weight:800;text-decoration:none;
+  transition:all .15s}
+.back-btn:hover{background:var(--teal-xlight);border-color:var(--teal)}
+.back-btn svg{width:10px;height:10px;stroke:var(--teal);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── SCREENS ── */
+.screens{flex:1;min-height:0;overflow:hidden;position:relative;z-index:2;display:flex;flex-direction:column}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex;animation:fadeIn .3s ease both}
+
+/* ── BOTTOM BAR ── */
+.sbar{flex-shrink:0;height:44px;position:relative;z-index:50;display:flex;align-items:center;justify-content:center;gap:28px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(18px);
+  border-top:1px solid rgba(13,148,136,.12);
+  box-shadow:0 -1px 8px rgba(13,148,136,.05)}
+.si{display:flex;align-items:center;gap:5px;font-size:.65rem;color:var(--muted)}
+.sv{font-weight:800;font-size:.68rem}
+
+/* ════════════════════════════════════
+   INTRO
+════════════════════════════════════ */
+.intro-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.intro-body::-webkit-scrollbar{display:none}
+.intro-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:16px 18px 14px;gap:12px}
+.cap-big{font-size:clamp(3rem,10vw,5rem);animation:seahorseBob 2.5s ease-in-out infinite;filter:drop-shadow(0 4px 12px rgba(13,148,136,.2))}
+.g-title{font-size:clamp(1.2rem,4.5vw,1.9rem);font-weight:900;line-height:1.18;
+  background:linear-gradient(135deg,var(--teal),var(--lime));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.g-sub{font-size:clamp(.76rem,2.5vw,.9rem);color:var(--muted);line-height:1.45}
+
+.story-box{width:100%;background:#fff;border:1.5px solid rgba(13,148,136,.18);
+  border-radius:16px;padding:14px 15px 12px;text-align:left;position:relative;
+  box-shadow:0 4px 20px rgba(13,148,136,.08)}
+.s-tail{position:absolute;top:-13px;left:16px;font-size:1.4rem;animation:wiggle 2.5s ease-in-out infinite}
+.s-p{font-size:clamp(.76rem,2.5vw,.88rem);line-height:1.6;color:#2d6b65}
+.s-p b{color:var(--teal)}
+.s-p .hl{background:var(--teal-xlight);border-radius:4px;padding:0 5px;color:var(--teal);font-weight:900}
+
+/* pattern preview cards */
+.pattern-preview{display:flex;gap:8px;justify-content:center;width:100%;flex-wrap:wrap}
+.pp-card{flex:1;min-width:90px;background:#fff;border:1.5px solid rgba(13,148,136,.18);
+  border-radius:14px;padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  box-shadow:0 2px 12px rgba(13,148,136,.07)}
+.pp-name{font-size:clamp(.54rem,1.8vw,.64rem);font-weight:900;color:var(--teal);letter-spacing:.04em;text-transform:uppercase}
+.pp-art{font-size:clamp(.7rem,2.3vw,.9rem);line-height:1.6;font-family:var(--mono);color:var(--lime);text-align:center;letter-spacing:1px}
+.pp-code{font-family:var(--mono);font-size:clamp(.44rem,1.4vw,.52rem);color:var(--muted);
+  background:var(--teal-pale);border:1px solid rgba(13,148,136,.12);border-radius:4px;padding:2px 6px;margin-top:2px}
+
+.play-btn{padding:14px 44px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--teal),#0f766e);
+  color:#fff;font-family:'Nunito',sans-serif;
+  font-size:clamp(.9rem,3vw,1rem);font-weight:900;cursor:pointer;
+  box-shadow:0 4px 20px rgba(13,148,136,.35);
+  animation:glowPulse 2s ease-in-out infinite;transition:transform .12s}
+.play-btn:active{transform:scale(.95)}
+
+/* ════════════════════════════════════
+   GAME GRID
+════════════════════════════════════ */
+.game-body{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-rows:40px 64px 1fr 82px 28px;
+  gap:5px;
+  padding:7px 12px 5px;
+  overflow:hidden;
+}
+
+/* HUD */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.score-pill{display:flex;align-items:center;gap:5px;
+  background:#fff;border:1.5px solid rgba(13,148,136,.2);border-radius:10px;
+  padding:3px 12px;box-shadow:0 1px 6px rgba(13,148,136,.08)}
+.sc-lbl{font-size:.48rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.sc-val{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--teal)}
+.sc-val.pop{animation:scPop .3s ease}
+.lvl-pill{font-size:.6rem;font-weight:800;color:var(--teal);
+  background:#fff;border:1.5px solid rgba(13,148,136,.2);border-radius:8px;
+  padding:3px 10px;white-space:nowrap;box-shadow:0 1px 6px rgba(13,148,136,.06)}
+.hearts{display:flex;gap:3px}
+.heart{font-size:1.1rem;transition:all .3s}
+.heart.gone{filter:grayscale(1);opacity:.22;transform:scale(.72)}
+
+/* Code block */
+.code-block{
+  background:#fff;border:1.5px solid rgba(13,148,136,.2);border-radius:14px;
+  padding:6px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px;
+  position:relative;overflow:hidden;
+  box-shadow:0 2px 10px rgba(13,148,136,.07);
+}
+.code-block::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--teal),var(--teal-light))}
+.code-block::after{content:'python';position:absolute;top:6px;right:12px;
+  font-size:.42rem;color:rgba(13,148,136,.3);letter-spacing:.1em;font-family:var(--mono)}
+.code-line-txt{font-family:var(--mono);font-size:clamp(.6rem,1.95vw,.76rem);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  border-radius:4px;padding:1px 4px;transition:background .2s;color:#2d6b65}
+.code-line-txt.active{background:var(--teal-xlight);animation:codeHighlight .5s ease}
+.ck{color:#7c3aed}.cv{color:#c2410c}.cf{color:var(--teal)}.cs{color:var(--gold)}.cc{color:var(--muted)}.cn{color:var(--lime)}
+
+/* Middle row: Canvas + Seahorse */
+.middle-row{display:flex;gap:7px;min-height:0;overflow:hidden}
+
+/* Paint canvas */
+.paint-canvas{
+  flex:1;min-width:0;
+  background:#fff;border:1.5px solid var(--card-border);border-radius:16px;
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  box-shadow:0 2px 14px rgba(13,148,136,.08);
+}
+.paint-canvas::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--teal-light),var(--teal),var(--teal-light))}
+.canvas-hdr{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:5px 12px 3px}
+.canvas-tag{font-size:clamp(.46rem,1.5vw,.54rem);font-weight:900;letter-spacing:.12em;color:var(--teal);text-transform:uppercase}
+.canvas-info{font-family:var(--mono);font-size:clamp(.5rem,1.7vw,.6rem);color:var(--lime);font-weight:700}
+.canvas-grid{
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  padding:4px 6px 8px;gap:2px;overflow:hidden;
+}
+.canvas-row{
+  display:flex;gap:2px;justify-content:center;
+  animation:rowSlide .2s ease both;
+}
+.canvas-cell{
+  display:flex;align-items:center;justify-content:center;
+  background:var(--teal-pale);border:1.5px solid rgba(13,148,136,.1);
+  border-radius:6px;transition:all .15s;flex-shrink:0;
+  font-size:clamp(.8rem,2.8vw,1.4rem);
+  width:clamp(22px,6vw,38px);height:clamp(22px,6vw,38px);
+}
+.canvas-cell.filled{
+  background:var(--teal-xlight);border-color:rgba(13,148,136,.28);
+  animation:cellPop .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+.canvas-cell.empty{opacity:.3}
+
+/* Seahorse painter */
+.seahorse-col{
+  flex-shrink:0;width:clamp(64px,18vw,92px);
+  background:#fff;border:1.5px solid var(--card-border);border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  padding:8px 5px;position:relative;overflow:hidden;
+  box-shadow:0 2px 14px rgba(13,148,136,.08);
+}
+.seahorse-col::before{content:'';position:absolute;bottom:0;left:0;right:0;height:40%;
+  background:linear-gradient(0deg,rgba(13,148,136,.06),transparent)}
+.sh-em{font-size:clamp(1.8rem,6vw,2.8rem);animation:seahorseBob 2.5s ease-in-out infinite;
+  filter:drop-shadow(0 4px 8px rgba(13,148,136,.2));position:relative;z-index:1}
+.sh-msg{font-size:clamp(.46rem,1.5vw,.56rem);font-weight:900;color:var(--teal);
+  text-align:center;line-height:1.3;position:relative;z-index:1;padding:0 2px}
+.paint-splat{position:absolute;font-size:1rem;animation:paintDrop .6s ease forwards;pointer-events:none;z-index:5}
+.row-counter{font-family:var(--mono);font-size:clamp(.52rem,1.7vw,.62rem);font-weight:700;color:var(--muted);position:relative;z-index:1}
+
+/* Pickers row */
+.pickers{display:flex;gap:6px;align-items:center;justify-content:center}
+
+.picker-group{display:flex;flex-direction:column;gap:4px;align-items:center}
+.picker-lbl{font-size:clamp(.46rem,1.5vw,.56rem);font-weight:900;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.picker-btns{display:flex;gap:4px;align-items:center}
+
+.pick-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;border-radius:10px;
+  border:1.5px solid rgba(13,148,136,.2);
+  background:#fff;
+  cursor:pointer;transition:all .16s;flex-shrink:0;
+  padding:4px 5px;min-width:clamp(36px,9vw,50px);
+  box-shadow:0 1px 5px rgba(13,148,136,.06);
+}
+.pick-btn:active{transform:scale(.88)}
+.pick-btn.active{border-color:var(--teal);background:var(--teal-xlight);
+  box-shadow:0 0 0 3px rgba(13,148,136,.15)}
+.pick-em{font-size:clamp(.8rem,2.8vw,1.2rem);line-height:1}
+.pick-name{font-size:clamp(.38rem,1.3vw,.48rem);font-weight:800;color:var(--muted);text-align:center}
+.pick-btn.active .pick-name{color:var(--teal)}
+
+/* size picker */
+.size-btn{
+  width:clamp(32px,8.5vw,44px);height:clamp(32px,8.5vw,44px);
+  border-radius:10px;border:1.5px solid rgba(13,148,136,.2);
+  background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:clamp(.8rem,2.8vw,1.1rem);font-weight:900;
+  color:var(--teal);cursor:pointer;transition:all .16s;flex-shrink:0;
+  box-shadow:0 1px 5px rgba(13,148,136,.06);
+}
+.size-btn:active{transform:scale(.88)}
+.size-btn.active{border-color:var(--teal);background:var(--teal-xlight);
+  box-shadow:0 0 0 3px rgba(13,148,136,.15);color:#0f5452}
+
+/* BIG DRAW button */
+.draw-btn{
+  padding:0 clamp(12px,3vw,20px);
+  height:clamp(48px,12vw,62px);
+  border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--teal) 0%,#0f766e 100%);
+  color:#fff;font-family:'Nunito',sans-serif;
+  font-size:clamp(.76rem,2.6vw,.9rem);font-weight:900;
+  cursor:pointer;box-shadow:0 4px 18px rgba(13,148,136,.32);
+  animation:glowPulse 1.8s ease-in-out infinite;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  flex-shrink:0;white-space:nowrap;transition:transform .1s;
+}
+.draw-btn:active{transform:scale(.9);animation:btnPop .22s ease}
+.draw-btn.drawing{background:linear-gradient(135deg,var(--lime),#065f46);animation:none}
+.draw-btn:disabled{opacity:.35;cursor:not-allowed;animation:none;box-shadow:none}
+.db-icon{font-size:clamp(1rem,3.5vw,1.4rem);line-height:1}
+.db-lbl{font-size:clamp(.5rem,1.7vw,.6rem);font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+
+/* TIP */
+.tip-row{display:flex;justify-content:center;align-items:center}
+.tip-pill{display:inline-flex;align-items:center;gap:5px;
+  background:#fff;border:1px solid rgba(13,148,136,.18);border-radius:99px;
+  padding:4px 14px;font-size:clamp(.52rem,1.8vw,.62rem);color:var(--teal);font-weight:800;
+  box-shadow:0 1px 6px rgba(13,148,136,.06)}
+
+/* ── POPUP ── */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(15,60,55,.3);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.popup{background:#fff;border:2px solid rgba(13,148,136,.22);border-radius:20px;
+  padding:22px 24px 20px;text-align:center;
+  animation:popIn .38s cubic-bezier(.34,1.56,.64,1) both;
+  max-width:300px;width:90%;
+  box-shadow:0 8px 40px rgba(13,148,136,.18)}
+.popup::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--teal),var(--teal-light));border-radius:20px 20px 0 0}
+.pop-em{font-size:3rem;display:block;margin-bottom:8px;animation:wiggle .5s ease}
+.pop-title{font-size:1.05rem;font-weight:900;color:var(--teal);margin-bottom:6px}
+.pop-title.bad{color:var(--coral)}
+.pop-body{font-size:.8rem;color:var(--muted);line-height:1.55;margin-bottom:12px}
+.pop-code{font-family:var(--mono);font-size:.66rem;color:var(--teal);
+  background:var(--teal-pale);border:1px solid rgba(13,148,136,.18);
+  border-radius:8px;padding:7px 12px;margin-bottom:12px;display:none;white-space:pre;text-align:left}
+.pop-btn{padding:10px 28px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--teal),#0f766e);color:#fff;
+  font-family:'Nunito',sans-serif;font-size:.86rem;font-weight:900;cursor:pointer;
+  box-shadow:0 4px 14px rgba(13,148,136,.28)}
+
+/* ── WIN ── */
+.win-body{flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.win-body::-webkit-scrollbar{display:none}
+.win-inner{display:flex;flex-direction:column;align-items:center;text-align:center;padding:14px 18px 12px;gap:10px}
+.win-cap{font-size:clamp(3rem,11vw,5rem);animation:seahorseBob 3s ease-in-out infinite;filter:drop-shadow(0 4px 16px rgba(13,148,136,.25))}
+.win-title{font-size:clamp(1.15rem,4.5vw,1.8rem);font-weight:900;
+  background:linear-gradient(135deg,var(--teal),var(--lime));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.win-sub{font-size:clamp(.72rem,2.5vw,.86rem);color:var(--muted);line-height:1.45}
+.stars-row{font-size:clamp(1.4rem,5.5vw,2rem);letter-spacing:.1em}
+.badge-box{display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:#fff;border:2px solid rgba(13,148,136,.2);border-radius:18px;
+  padding:14px 28px;
+  animation:popIn .5s cubic-bezier(.34,1.56,.64,1) .15s both;
+  box-shadow:0 4px 24px rgba(13,148,136,.12)}
+.badge-em{font-size:clamp(1.9rem,7vw,2.8rem);filter:drop-shadow(0 4px 8px rgba(13,148,136,.2))}
+.badge-nm{font-size:clamp(.76rem,2.7vw,.9rem);font-weight:900;color:var(--teal);letter-spacing:.05em}
+.badge-xp{font-size:clamp(.64rem,2.2vw,.76rem);color:var(--gold);font-weight:800}
+.learn-card{width:100%;background:#fff;border:1.5px solid rgba(13,148,136,.15);border-radius:14px;padding:12px 15px;text-align:left;box-shadow:0 2px 12px rgba(13,148,136,.07)}
+.lc-ttl{font-size:.52rem;letter-spacing:.16em;color:rgba(13,148,136,.5);text-transform:uppercase;margin-bottom:9px;font-weight:900}
+.ll-list{display:flex;flex-direction:column;gap:5px}
+.ll-item{display:flex;align-items:center;gap:8px;padding:7px 9px;
+  background:var(--teal-pale);border:1px solid rgba(13,148,136,.12);
+  border-radius:9px;animation:slideUp .3s ease both}
+.ll-icon{font-size:1.2rem;flex-shrink:0}
+.ll-txt{flex:1;font-size:clamp(.7rem,2.5vw,.82rem);font-weight:800;color:#1a4a45;line-height:1.3}
+.ll-code{font-family:var(--mono);font-size:clamp(.48rem,1.6vw,.56rem);color:var(--teal);
+  background:var(--teal-xlight);border-radius:4px;padding:2px 6px;white-space:nowrap}
+.win-btns{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;width:100%}
+.win-btn{padding:10px 22px;border-radius:10px;border:1.5px solid rgba(13,148,136,.22);
+  background:#fff;color:var(--teal);font-family:'Nunito',sans-serif;
+  font-size:clamp(.74rem,2.7vw,.84rem);font-weight:900;cursor:pointer;
+  box-shadow:0 1px 8px rgba(13,148,136,.08);transition:all .15s}
+.win-btn:hover{background:var(--teal-pale)}
+.win-btn.pri{background:linear-gradient(135deg,var(--teal),#0f766e);color:#fff;border:none;
+  box-shadow:0 4px 16px rgba(13,148,136,.3)}
+
+.conf-wrap{position:fixed;inset:0;z-index:300;pointer-events:none;overflow:hidden}
+.conf-p{position:absolute;top:-20px;border-radius:3px;animation:confFall linear forwards}
+.star-pop{position:absolute;font-size:1.3rem;animation:starUp .7s ease forwards;pointer-events:none;z-index:400}
+.jelly{position:fixed;right:3%;top:14%;font-size:1.8rem;opacity:.12;animation:float 4s ease-in-out infinite;z-index:1;pointer-events:none}
+
+/* part pill badge (like screenshot) */
+.part-badge{display:inline-flex;align-items:center;gap:4px;
+  background:rgba(13,148,136,.12);border-radius:99px;
+  padding:2px 10px;font-size:.5rem;font-weight:900;color:var(--teal);
+  letter-spacing:.1em;text-transform:uppercase}
+.part-badge::before{content:'•';font-size:.7rem}
+</style>
+</head>
+<body>
+<div class="sea-bg"><div class="sea-layer"></div><div class="sea-dots"></div><div class="sea-rays"></div></div>
+<div class="jelly">🪼</div>
+
+<nav>
+  <div class="logo"><div class="logo-dot"></div>CODEPLAY</div>
+  <div class="nav-c">
+    <div class="nav-t">Pearl's Pattern Painter!</div>
+    <div class="nav-s">PART 4 · LESSON 06 · GAME</div>
+  </div>
+  <a href="quest4.html" class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back</a>
+</nav>
+
+<div class="screens">
+
+<!-- ════ INTRO ════ -->
+<div class="screen on" id="s-intro">
+  <div class="intro-body"><div class="intro-inner">
+
+    <span class="cap-big">🦀</span>
+    <div class="part-badge">Part 4 of 10 · Level 04</div>
+    <div class="g-title">Pearl's Pattern Painter!</div>
+    <div class="g-sub">Use loops to draw <b>shapes and patterns</b> in the deep sea! 🌊🎨</div>
+
+    <div class="story-box">
+      <div class="s-tail">🦀</div>
+      <p class="s-p">
+        "Hi! I'm <b>Pearl the Painter Crab!</b> 🦀<br><br>
+        I use Python <b>for loops</b> to draw patterns on the ocean wall!<br><br>
+        A loop draws <span class="hl">one row at a time</span> — and by
+        choosing the <b>right pattern, symbol and size</b>,
+        you can create amazing shapes!<br><br>
+        Pick a <b>pattern</b> 🔲, choose your <b>symbol</b> 🫧,
+        set the <b>size</b> 🔢, then hit
+        <b>🖌️ Paint!</b> Watch the loop draw it row by row!"
+      </p>
+    </div>
+
+    <div class="pattern-preview">
+      <div class="pp-card">
+        <span class="pp-name">Row</span>
+        <div class="pp-art">🫧🫧🫧🫧<br>🫧🫧🫧🫧<br>🫧🫧🫧🫧</div>
+        <span class="pp-code">print(sym*n)</span>
+      </div>
+      <div class="pp-card">
+        <span class="pp-name">Triangle</span>
+        <div class="pp-art">🫧<br>🫧🫧<br>🫧🫧🫧</div>
+        <span class="pp-code">print(sym*i)</span>
+      </div>
+      <div class="pp-card">
+        <span class="pp-name">Stairs</span>
+        <div class="pp-art">🫧&nbsp;&nbsp;&nbsp;<br>&nbsp;🫧&nbsp;&nbsp;<br>&nbsp;&nbsp;🫧&nbsp;</div>
+        <span class="pp-code">print(" "*i+sym)</span>
+      </div>
+      <div class="pp-card">
+        <span class="pp-name">Diamond</span>
+        <div class="pp-art">&nbsp;🫧&nbsp;<br>🫧🫧🫧<br>&nbsp;🫧&nbsp;</div>
+        <span class="pp-code">pyramid+flip</span>
+      </div>
+    </div>
+
+    <button class="play-btn" onclick="startGame()">🎮 Start Painting!</button>
+  </div></div>
+</div>
+
+<!-- ════ GAME ════ -->
+<div class="screen" id="s-game">
+  <div class="game-body">
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="score-pill"><span class="sc-lbl">Score</span><span class="sc-val" id="scVal">0</span></div>
+      <div class="lvl-pill" id="lvlPill">Challenge 1 of 8</div>
+      <div class="hearts"><span class="heart" id="h0">❤️</span><span class="heart" id="h1">❤️</span><span class="heart" id="h2">❤️</span></div>
+    </div>
+
+    <!-- Code block -->
+    <div class="code-block" id="codeBlock">
+      <div class="code-line-txt" id="cl1"><span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn" id="cN">?</span>):</div>
+      <div class="code-line-txt" id="cl2">&nbsp;&nbsp;&nbsp;&nbsp;<span class="cf">print</span>(<span class="cs" id="cPrint">?</span>)</div>
+    </div>
+
+    <!-- Middle: canvas + seahorse -->
+    <div class="middle-row">
+      <div class="paint-canvas">
+        <div class="canvas-hdr">
+          <span class="canvas-tag">🖼️ Canvas</span>
+          <span class="canvas-info" id="canvasInfo">Select options below</span>
+        </div>
+        <div class="canvas-grid" id="canvasGrid"></div>
+      </div>
+
+      <div class="seahorse-col">
+        <span class="sh-em" id="shEm">🦀</span>
+        <div class="sh-msg" id="shMsg">Pick a pattern!</div>
+        <div class="row-counter" id="rowCtr"></div>
+      </div>
+    </div>
+
+    <!-- Pickers -->
+    <div class="pickers">
+      <div class="picker-group">
+        <div class="picker-lbl">Pattern</div>
+        <div class="picker-btns" id="patternBtns"></div>
+      </div>
+      <div class="picker-group">
+        <div class="picker-lbl">Symbol</div>
+        <div class="picker-btns" id="symbolBtns"></div>
+      </div>
+      <div class="picker-group">
+        <div class="picker-lbl">Size</div>
+        <div class="picker-btns" id="sizeBtns"></div>
+      </div>
+      <button class="draw-btn" id="drawBtn" onclick="startPainting()">
+        <span class="db-icon">🖌️</span>
+        <span class="db-lbl">Paint!</span>
+      </button>
+    </div>
+
+    <!-- Tip -->
+    <div class="tip-row"><div class="tip-pill" id="tipPill">💡 Pick pattern + symbol + size, then Paint!</div></div>
+
+  </div>
+</div>
+
+<!-- ════ WIN ════ -->
+<div class="screen" id="s-win">
+  <div class="win-body"><div class="win-inner">
+    <span class="win-cap">🦀</span>
+    <div class="win-title" id="winTitle">Pattern Master! 🌟</div>
+    <div class="win-sub" id="winSub">Pearl painted every pattern perfectly!</div>
+    <div class="stars-row" id="starsRow">⭐⭐⭐</div>
+    <div class="badge-box"><span class="badge-em">🎨</span><span class="badge-nm">Loop Artist!</span><span class="badge-xp">⚡ +90 XP Earned!</span></div>
+    <div class="learn-card">
+      <div class="lc-ttl">🌊 What You Learned About Loop Drawing!</div>
+      <div class="ll-list">
+        <div class="ll-item" style="animation-delay:.00s"><span class="ll-icon">🔄</span><div class="ll-txt">A loop draws <b>one row at a time</b> — each repeat = one row</div><span class="ll-code">for i in range(n)</span></div>
+        <div class="ll-item" style="animation-delay:.08s"><span class="ll-icon">▬</span><div class="ll-txt"><b>Row pattern:</b> print the same symbols on every row</div><span class="ll-code">sym * n</span></div>
+        <div class="ll-item" style="animation-delay:.16s"><span class="ll-icon">🔺</span><div class="ll-txt"><b>Triangle:</b> each row prints one more symbol (i+1)</div><span class="ll-code">sym * (i+1)</span></div>
+        <div class="ll-item" style="animation-delay:.24s"><span class="ll-icon">🪜</span><div class="ll-txt"><b>Stairs:</b> use spaces before the symbol to shift right</div><span class="ll-code">" "*i + sym</span></div>
+        <div class="ll-item" style="animation-delay:.32s"><span class="ll-icon">💠</span><div class="ll-txt"><b>Diamond:</b> two loops — one grows, one shrinks</div><span class="ll-code">pyramid + flip</span></div>
+      </div>
+    </div>
+    <div class="win-btns">
+      <button class="win-btn" onclick="goHome()">Home</button>
+      <button class="win-btn pri" onclick="playAgain()">🔄 Play Again!</button>
+    </div>
+  </div></div>
+</div>
+
+</div><!-- /screens -->
+
+<div class="sbar">
+  <div class="si">🎮 <span class="sv" style="color:var(--teal)">Pattern Painter</span></div>
+  <div class="si">⚡ <span class="sv" style="color:var(--gold)" id="xpDisp">0 XP</span></div>
+  <div class="si">🔥 <span class="sv" style="color:#e97316" id="strDisp">—</span></div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="popup" style="position:relative">
+    <span class="pop-em" id="popEm">🎉</span>
+    <div class="pop-title" id="popTitle">Perfect!</div>
+    <div class="pop-body" id="popBody"></div>
+    <div class="pop-code" id="popCode"></div>
+    <button class="pop-btn" id="popBtn" onclick="closePopup()">Next! 🌊</button>
+  </div>
+</div>
+<div class="conf-wrap" id="confWrap"></div>
+
+<script>
+const PATTERNS = [
+  { id:'row',   name:'Row',      em:'▬', tip:'Every row is the same! print(sym * size)' },
+  { id:'tri',   name:'Triangle', em:'🔺', tip:'Each row grows by 1! print(sym * (i+1))' },
+  { id:'stair', name:'Stairs',   em:'🪜', tip:'Each row shifts right! print(" "*i + sym)' },
+  { id:'diamond',name:'Diamond', em:'💠', tip:'Grows then shrinks! Two loops in one!' },
+];
+const SYMBOLS = [
+  { id:'bubble', em:'🫧', char:'🫧' },
+  { id:'star',   em:'⭐', char:'⭐' },
+  { id:'coral',  em:'🪸', char:'🪸' },
+  { id:'shell',  em:'🐚', char:'🐚' },
+];
+const SIZES = [3, 4, 5];
+const CHALLENGES = [
+  { pattern:'row',    size:3, sym:'🫧', msg:'A row pattern repeats the same line 3 times!',    code:'for i in range(3):\n    print("🫧" * 3)', tip:'Row: every line is the same symbol repeated!' },
+  { pattern:'tri',    size:3, sym:'⭐', msg:'A triangle grows — 1 star, then 2, then 3!',      code:'for i in range(3):\n    print("⭐" * (i+1))',  tip:'Triangle: i+1 symbols per row, grows each time!' },
+  { pattern:'stair',  size:4, sym:'🪸', msg:'Stairs shift right — each row moves one space!',   code:'for i in range(4):\n    print(" "*i + "🪸")',   tip:'Stairs: " "*i shifts the symbol right!' },
+  { pattern:'row',    size:4, sym:'🐚', msg:'A row pattern with 4 rows — all the same!',        code:'for i in range(4):\n    print("🐚" * 4)',         tip:'Bigger rows — range(4) draws 4 identical lines!' },
+  { pattern:'tri',    size:4, sym:'🫧', msg:'A taller triangle — 4 rows, growing each time!',   code:'for i in range(4):\n    print("🫧" * (i+1))',    tip:'Triangle: one more bubble each row!' },
+  { pattern:'diamond',size:3, sym:'⭐', msg:'A diamond — grows up then shrinks back down!',     code:'# Up\nfor i in range(3):\n    print("⭐"*(i+1))\n# Down\nfor i in range(2,-1,-1):\n    print("⭐"*(i+1))', tip:'Diamond needs two loops — one up, one down!' },
+  { pattern:'stair',  size:5, sym:'🫧', msg:'Tall stairs — 5 steps, each shifting right!',      code:'for i in range(5):\n    print(" "*i + "🫧")',    tip:'5-step stairs needs range(5)!' },
+  { pattern:'diamond',size:4, sym:'🪸', msg:'Big diamond — a 4-row pyramid plus its mirror!',   code:'# Up\nfor i in range(4):\n    print("🪸"*(i+1))\n# Down\nfor i in range(3,-1,-1):\n    print("🪸"*(i+1))', tip:'Bigger diamond — more rows up and down!' },
+];
+
+let lvl=0, score=0, lives=3, mistakes=0, popCb=null;
+let selPattern='row', selSym='🫧', selSize=3;
+let isPainting=false;
+let xp=parseInt(localStorage.getItem('pearl_xp')||'0');
+document.getElementById('xpDisp').textContent=xp+' XP';
+document.getElementById('strDisp').textContent=localStorage.getItem('streak')||'—';
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')}
+
+function startGame(){
+  lvl=0;score=0;lives=3;mistakes=0;
+  [0,1,2].forEach(i=>{const h=document.getElementById('h'+i);h.classList.remove('gone');h.textContent='❤️'});
+  document.getElementById('scVal').textContent='0';
+  show('s-game');buildPickers();loadChallenge(0);
+}
+
+function buildPickers(){
+  const pb=document.getElementById('patternBtns');pb.innerHTML='';
+  PATTERNS.forEach(p=>{
+    const b=document.createElement('button');b.type='button';
+    b.className='pick-btn'+(p.id===selPattern?' active':'');
+    b.innerHTML=`<span class="pick-em">${p.em}</span><span class="pick-name">${p.name}</span>`;
+    b.onclick=()=>{selPattern=p.id;document.querySelectorAll('#patternBtns .pick-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateCodePreview();document.getElementById('tipPill').textContent='💡 '+p.tip};
+    pb.appendChild(b);
+  });
+  const sb=document.getElementById('symbolBtns');sb.innerHTML='';
+  SYMBOLS.forEach(s=>{
+    const b=document.createElement('button');b.type='button';
+    b.className='pick-btn'+(s.char===selSym?' active':'');
+    b.innerHTML=`<span class="pick-em">${s.em}</span>`;
+    b.onclick=()=>{selSym=s.char;document.querySelectorAll('#symbolBtns .pick-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateCodePreview()};
+    sb.appendChild(b);
+  });
+  const szb=document.getElementById('sizeBtns');szb.innerHTML='';
+  SIZES.forEach(n=>{
+    const b=document.createElement('button');b.type='button';
+    b.className='size-btn'+(n===selSize?' active':'');
+    b.textContent=n;
+    b.onclick=()=>{selSize=n;document.querySelectorAll('#sizeBtns .size-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');updateCodePreview()};
+    szb.appendChild(b);
+  });
+}
+
+function loadChallenge(idx){
+  if(idx>=CHALLENGES.length){endGame();return;}
+  const C=CHALLENGES[idx];
+  isPainting=false;
+  document.getElementById('lvlPill').textContent='Challenge '+(idx+1)+' of '+CHALLENGES.length;
+  document.getElementById('tipPill').textContent='💡 '+C.tip;
+  document.getElementById('shMsg').textContent='Match the target!';
+  document.getElementById('rowCtr').textContent='';
+  document.getElementById('canvasInfo').textContent='';
+  document.getElementById('shEm').textContent='🦀';
+  showTargetPreview(C);
+  clearCanvas();
+  selPattern='row';selSym='🫧';selSize=3;
+  buildPickers();updateCodePreview();
+  const db=document.getElementById('drawBtn');
+  db.disabled=false;db.classList.remove('drawing');
+  db.querySelector('.db-icon').textContent='🖌️';
+  db.querySelector('.db-lbl').textContent='Paint!';
+}
+
+function showTargetPreview(C){
+  const rows=generatePattern(C.pattern,C.sym,C.size);
+  const msg=document.getElementById('shMsg');
+  msg.innerHTML='<span style="color:var(--gold);font-size:.6rem;font-weight:900">TARGET:</span><br>'+
+    rows.map(r=>`<span style="font-family:var(--mono);font-size:clamp(.5rem,1.7vw,.65rem);color:var(--teal)">${r}</span>`).join('<br>');
+}
+
+function clearCanvas(){
+  document.getElementById('canvasGrid').innerHTML='';
+  document.getElementById('canvasInfo').textContent='Pick pattern + symbol + size, then Paint!';
+}
+
+function generatePattern(patId,sym,size){
+  const rows=[];
+  if(patId==='row'){for(let i=0;i<size;i++) rows.push(sym.repeat(size));}
+  else if(patId==='tri'){for(let i=0;i<size;i++) rows.push(sym.repeat(i+1));}
+  else if(patId==='stair'){for(let i=0;i<size;i++) rows.push('\u00a0'.repeat(i)+sym);}
+  else if(patId==='diamond'){for(let i=0;i<size;i++) rows.push(sym.repeat(i+1));for(let i=size-2;i>=0;i--) rows.push(sym.repeat(i+1));}
+  return rows;
+}
+
+function updateCodePreview(){
+  let l1='',l2='';
+  if(selPattern==='row'){
+    l1=`<span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">${selSize}</span>):`;
+    l2=`&nbsp;&nbsp;&nbsp;&nbsp;<span class="cf">print</span>(<span class="cs">${selSym}</span> <span class="ck">*</span> <span class="cn">${selSize}</span>)`;
+  } else if(selPattern==='tri'){
+    l1=`<span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">${selSize}</span>):`;
+    l2=`&nbsp;&nbsp;&nbsp;&nbsp;<span class="cf">print</span>(<span class="cs">${selSym}</span> <span class="ck">*</span> (<span class="cv">i</span><span class="ck">+</span><span class="cn">1</span>))`;
+  } else if(selPattern==='stair'){
+    l1=`<span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">${selSize}</span>):`;
+    l2=`&nbsp;&nbsp;&nbsp;&nbsp;<span class="cf">print</span>(<span class="cs">" "</span><span class="ck">*</span><span class="cv">i</span> <span class="ck">+</span> <span class="cs">${selSym}</span>)`;
+  } else if(selPattern==='diamond'){
+    l1=`<span class="ck">for</span> <span class="cv">i</span> <span class="ck">in</span> <span class="cf">range</span>(<span class="cn">${selSize}</span>): <span class="cc"># up</span>`;
+    l2=`&nbsp;&nbsp;&nbsp;&nbsp;<span class="cc">+ for i in range(size-2,-1,-1): <span style="color:#7c3aed"># down</span></span>`;
+  }
+  document.getElementById('cl1').innerHTML=l1;
+  document.getElementById('cl2').innerHTML=l2;
+}
+
+function startPainting(){
+  if(isPainting) return;
+  isPainting=true;
+  const db=document.getElementById('drawBtn');
+  db.disabled=true;db.classList.add('drawing');
+  db.querySelector('.db-icon').textContent='⏳';
+  db.querySelector('.db-lbl').textContent='Painting…';
+  const rows=generatePattern(selPattern,selSym,selSize);
+  const grid=document.getElementById('canvasGrid');
+  grid.innerHTML='';
+  document.getElementById('canvasInfo').textContent='';
+
+  function paintRow(rowIdx){
+    if(rowIdx>=rows.length){finishPainting(rows);return;}
+    const cl1=document.getElementById('cl1');const cl2=document.getElementById('cl2');
+    cl1.classList.add('active');cl2.classList.add('active');
+    setTimeout(()=>{cl1.classList.remove('active');cl2.classList.remove('active')},400);
+    document.getElementById('rowCtr').textContent='row '+(rowIdx+1)+'/'+rows.length;
+    document.getElementById('shEm').textContent='🦀';
+    const rowEl=document.createElement('div');rowEl.className='canvas-row';
+    rowEl.style.animationDelay=(rowIdx*0.02)+'s';
+    const rawRow=rows[rowIdx];
+    let spaces=0;let txt=rawRow;
+    while(txt.startsWith('\u00a0')){spaces++;txt=txt.slice(1);}
+    const syms=txt.length>0?Math.round(txt.length/selSym.length):0;
+    for(let c=0;c<spaces;c++){const cell=document.createElement('div');cell.className='canvas-cell empty';cell.textContent='·';rowEl.appendChild(cell);}
+    for(let c=0;c<syms;c++){const cell=document.createElement('div');cell.className='canvas-cell filled';cell.style.animationDelay=(c*0.06)+'s';cell.textContent=selSym;rowEl.appendChild(cell);}
+    grid.appendChild(rowEl);
+    spawnPaintSplat();
+    setTimeout(()=>paintRow(rowIdx+1),320);
+  }
+  paintRow(0);
+}
+
+function finishPainting(drawnRows){
+  isPainting=false;
+  const C=CHALLENGES[lvl];
+  const correct=selPattern===C.pattern&&selSize===C.size&&selSym===C.sym;
+  const db=document.getElementById('drawBtn');
+  db.disabled=false;db.classList.remove('drawing');
+  db.querySelector('.db-icon').textContent='🖌️';
+  db.querySelector('.db-lbl').textContent='Paint!';
+  if(correct){
+    const pts=lives===3?150:lives===2?100:60;
+    score+=pts;
+    const sv=document.getElementById('scVal');sv.textContent=score;sv.classList.remove('pop');void sv.offsetWidth;sv.classList.add('pop');
+    document.getElementById('shMsg').textContent='🎉 Perfect!';document.getElementById('shEm').textContent='🎉';
+    confetti();popCb=()=>{lvl++;loadChallenge(lvl)};
+    showPopup(true,'🎨','Perfect Pattern! 🎉',C.msg+'\n\n+'+pts+' points! 🌟',C.code);
+  } else {
+    lives=Math.max(0,lives-1);mistakes++;
+    [0,1,2].forEach(i=>document.getElementById('h'+i).classList.toggle('gone',i>=lives));
+    document.getElementById('shEm').textContent='💪';
+    let hint='';
+    if(selPattern!==C.pattern) hint='Wrong pattern! Try "'+PATTERNS.find(p=>p.id===C.pattern)?.name+'"';
+    else if(selSym!==C.sym) hint='Wrong symbol! Try "'+C.sym+'"';
+    else if(selSize!==C.size) hint='Wrong size! Try size '+C.size;
+    popCb=null;
+    showPopup(false,'🌊','Not quite! Try again! 💪',hint+'\n\nLook at the target in the corner and match the pattern, symbol and size!',null);
+  }
+}
+
+function spawnPaintSplat(){
+  const col=document.querySelector('.seahorse-col');
+  const p=document.createElement('div');p.className='paint-splat';
+  p.textContent=selSym;p.style.left=(Math.random()*60+10)+'%';p.style.top=(Math.random()*60+10)+'%';
+  col.appendChild(p);setTimeout(()=>p.remove(),700);
+}
+
+function showPopup(good,emoji,title,body,code){
+  document.getElementById('popEm').textContent=emoji;
+  document.getElementById('popTitle').textContent=title;
+  document.getElementById('popTitle').className='pop-title'+(good?'':' bad');
+  document.getElementById('popBody').textContent=body;
+  const c=document.getElementById('popCode');
+  if(code){c.style.display='block';c.textContent=code}else c.style.display='none';
+  document.getElementById('popBtn').textContent=good?'Next! 🌊':'Try Again! 💪';
+  document.getElementById('overlay').classList.add('on');
+}
+function closePopup(){
+  document.getElementById('overlay').classList.remove('on');
+  if(popCb){const cb=popCb;popCb=null;cb();}
+}
+
+function endGame(){
+  xp+=90;localStorage.setItem('pearl_xp',xp);document.getElementById('xpDisp').textContent=xp+' XP';
+  const stars=mistakes===0?'⭐⭐⭐':mistakes<=4?'⭐⭐':'⭐';
+  document.getElementById('starsRow').textContent=stars;
+  const[t,s]=mistakes===0?['Pattern Master! 🌟','Perfect! Pearl painted every pattern! 🦀']:
+               mistakes<=4?['Great Painter! 🎉','All 8 patterns painted! Brilliant!']:
+                            ['Good Try! 🌊','All challenges done! Keep practising!'];
+  document.getElementById('winTitle').textContent=t;document.getElementById('winSub').textContent=s;
+  show('s-win');if(mistakes===0)confetti();
+}
+function playAgain(){startGame();}
+function goHome(){show('s-intro');}
+
+function confetti(){
+  const w=document.getElementById('confWrap');
+  const c=['#0d9488','#5eead4','#d97706','#a78bfa','#f43f5e','#34d399'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');p.className='conf-p';const s=Math.random()*7+4;
+    p.style.cssText='left:'+Math.random()*100+'%;width:'+s+'px;height:'+s*1.4+'px;background:'+c[~~(Math.random()*c.length)]+';border-radius:'+(Math.random()>.5?'50%':'3px')+';animation-duration:'+(Math.random()*2+1.5)+'s;animation-delay:'+(Math.random()*.8)+'s';
+    w.appendChild(p);}
+  setTimeout(()=>w.innerHTML='',4000);
+}
+
+(function(){
+  const bg=document.querySelector('.sea-bg');
+  for(let i=0;i<20;i++){const b=document.createElement('div');b.className='bbg';const s=Math.random()*8+3;b.style.cssText='width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;bottom:'+Math.random()*18+'%;animation-duration:'+(Math.random()*10+9)+'s;animation-delay:'+(Math.random()*12)+'s;opacity:'+(Math.random()*.3+.06);bg.appendChild(b);}
+  const fc=document.createElement('div');fc.style.cssText='position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden';
+  fc.innerHTML='<div style="position:absolute;font-size:1.1rem;top:64%;animation:fishSwim 26s linear infinite;opacity:.15">🐟</div><div style="position:absolute;font-size:.75rem;top:38%;animation:fishSwim 34s linear infinite 11s;opacity:.1">🦈</div>';
+  document.body.appendChild(fc);
+})();
+</script>
+</body>
+</html>
+
+
+

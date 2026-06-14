@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY — Name That Box! Variable Naming Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Nunito:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --blue:#4a9fd4;--blue-dk:#2a6fa8;--blue-lt:#7bbce8;
+  --purple:#a070d8;--purple-lt:#c8a0f0;
+  --gold:#f0b830;--amber:#d4930a;
+  --green:#48c898;--green-lt:#80ddb8;
+  --red:#e05060;
+  --coral:#f07850;
+  --pink:#f080b0;--teal:#38b8b0;
+
+  --text-dark:#1a2840;--text-mid:#3a4860;
+  --text-soft:rgba(26,40,64,.52);
+  --card-bg:rgba(224,247,250,.88);--card-border:rgba(255,255,255,.94);
+
+  --head:'Baloo 2',cursive;--body:'Nunito',sans-serif;--mono:'Share Tech Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);color:var(--text-dark);
+  min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;
+  background:
+    radial-gradient(ellipse 90% 55% at 20% 10%,rgba(200,230,252,.92),transparent 60%),
+    radial-gradient(ellipse 70% 60% at 80% 0%, rgba(220,200,252,.72),transparent 56%),
+    radial-gradient(ellipse 60% 50% at 50% 80%,rgba(245,220,200,.62),transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 90%,rgba(200,240,220,.52),transparent 55%),
+    linear-gradient(160deg,#c4e4f8 0%,#d0d8f0 30%,#e0ccf0 55%,#f0dcc8 80%,#f8e8d0 100%);
+}
+
+/* ── DECO ── */
+.deco-layer{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.deco-star{position:absolute;animation:starFloat linear infinite;opacity:0}
+.deco-orb{position:absolute;border-radius:50%;filter:blur(58px);opacity:.3;animation:orbDrift ease-in-out infinite alternate}
+canvas{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+@keyframes starFloat{0%{transform:translateY(0) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:.65}100%{transform:translateY(-120px) rotate(360deg);opacity:0}}
+@keyframes orbDrift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(26px,18px) scale(1.1)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.18}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shine{to{left:160%}}
+@keyframes spinR{to{transform:rotate(360deg)}}
+@keyframes pop{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes correctPop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes confettiFall{to{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes scorePop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:200;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(255,255,255,.78);backdrop-filter:blur(22px);border-bottom:1.5px solid rgba(255,255,255,.9);box-shadow:0 2px 20px rgba(100,140,200,.1)}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--head);font-weight:900;font-size:1.2rem;color:#ff8c00;text-shadow:0 2px 8px rgba(255,140,0,.25)}
+.nav-info{font-size:.8rem;color:var(--text-soft);font-weight:600}
+.nav-info b{color:var(--text-dark)}
+.btn-back{display:flex;align-items:center;gap:7px;padding:8px 18px;border-radius:99px;border:1.5px solid rgba(74,159,212,.28);background:rgba(74,159,212,.09);color:var(--blue);font-family:var(--body);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-back:hover{background:rgba(74,159,212,.18);border-color:rgba(74,159,212,.5)}
+.btn-back svg{width:13px;height:13px;stroke:var(--blue);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── GAME SHELL ── */
+.game-shell{position:relative;z-index:2;max-width:600px;width:100%;margin:0 auto;padding:18px 16px 70px;display:flex;flex-direction:column;gap:0}
+
+/* ── HEADER ── */
+.game-header{text-align:center;margin-bottom:16px;animation:fadeUp .6s ease both}
+.game-eyebrow{display:inline-flex;align-items:center;gap:7px;border:1.5px solid rgba(74,159,212,.35);background:rgba(74,159,212,.09);padding:3px 14px;border-radius:99px;font-size:.65rem;letter-spacing:.2em;color:var(--blue);text-transform:uppercase;margin-bottom:12px;font-family:var(--head);font-weight:800}
+.game-eyebrow::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--blue);box-shadow:0 0 6px var(--blue);animation:blink 1.4s infinite}
+.game-title{font-family:var(--head);font-size:clamp(1.2rem,3vw,1.7rem);font-weight:900;color:var(--text-dark);line-height:1.1;margin-bottom:6px}
+.game-title span{color:var(--blue)}
+.game-subtitle{font-size:.95rem;color:var(--text-soft);max-width:520px;margin:0 auto;font-weight:600}
+
+/* ── SCOREBOARD ── */
+.scoreboard{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;animation:fadeUp .5s .1s ease both;flex-wrap:wrap}
+.score-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.75);border:1.5px solid rgba(74,159,212,.18);border-radius:99px;padding:6px 14px;font-size:.75rem;font-weight:700;backdrop-filter:blur(10px);color:var(--text-mid)}
+.score-pill .icon{font-size:1rem}
+.score-pill .val{font-family:var(--mono);font-size:.9rem}
+.score-pill.xp .val{color:var(--amber)}
+.score-pill.lives .val{color:var(--red)}
+.score-pill.stage .val{color:var(--blue)}
+.score-pill.streak .val{color:var(--coral)}
+
+/* ── RULES CARD ── */
+.rules-card{border-radius:16px;border:1.5px solid var(--card-border);background:var(--card-bg);backdrop-filter:blur(18px);padding:12px 16px;margin-bottom:14px;animation:fadeUp .5s .15s ease both;box-shadow:0 4px 20px rgba(100,140,200,.08)}
+.rules-title{font-family:var(--head);font-size:.58rem;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--text-soft);margin-bottom:12px}
+.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rule{display:flex;align-items:center;gap:9px;font-size:.84rem;color:var(--text-mid);font-weight:600}
+.rule-icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:.9rem;flex-shrink:0}
+.rule-icon.ok{background:rgba(72,200,152,.12);border:1.5px solid rgba(72,200,152,.3)}
+.rule-icon.no{background:rgba(224,80,96,.1);border:1.5px solid rgba(224,80,96,.28)}
+.rule b{color:var(--text-dark)}
+
+/* ── STAGE PANEL ── */
+.stage-panel{animation:pop .4s ease both}
+.stage-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.stage-name{font-family:var(--head);font-size:.68rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--blue)}
+.stage-dots{display:flex;gap:6px}
+.sdot{width:28px;height:6px;border-radius:99px;background:rgba(74,159,212,.12);transition:background .4s}
+.sdot.done{background:var(--green)}
+.sdot.active{background:var(--blue)}
+
+/* ── STAGE 1: SORT ── */
+.sort-arena{border-radius:16px;border:1.5px solid var(--card-border);background:var(--card-bg);backdrop-filter:blur(18px);padding:16px 18px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(100,140,200,.09)}
+.sort-arena::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--purple),var(--pink));border-radius:16px 16px 0 0}
+.sort-q{font-size:.9rem;font-weight:800;color:var(--text-dark);text-align:center;margin-bottom:14px;line-height:1.4}
+.sort-q span{color:var(--blue)}
+.name-chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-bottom:16px;min-height:44px}
+.name-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:9px;background:rgba(160,112,216,.1);border:1.5px solid rgba(160,112,216,.3);font-family:var(--mono);font-size:.78rem;color:var(--purple);cursor:pointer;transition:all .2s;user-select:none;font-weight:700;animation:pop .35s ease both}
+.name-chip:hover{background:rgba(160,112,216,.2);border-color:rgba(160,112,216,.6);transform:translateY(-3px);box-shadow:0 6px 16px rgba(160,112,216,.2)}
+.name-chip.correct{background:rgba(72,200,152,.12);border-color:rgba(72,200,152,.45);color:var(--green);animation:correctPop .3s ease}
+.name-chip.wrong{background:rgba(224,80,96,.08);border-color:rgba(224,80,96,.4);color:var(--red);animation:shake .4s ease}
+.drop-zones{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.drop-zone{border-radius:12px;border:2px dashed;padding:14px 12px;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .25s;cursor:pointer}
+.drop-zone.good{border-color:rgba(72,200,152,.35);background:rgba(72,200,152,.04)}
+.drop-zone.bad{border-color:rgba(224,80,96,.3);background:rgba(224,80,96,.04)}
+.drop-zone.good:hover,.drop-zone.good.highlight{border-style:solid;border-color:var(--green);background:rgba(72,200,152,.1)}
+.drop-zone.bad:hover,.drop-zone.bad.highlight{border-style:solid;border-color:var(--red);background:rgba(224,80,96,.08)}
+.dz-icon{font-size:1.2rem}
+.dz-label{font-family:var(--head);font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.drop-zone.good .dz-label{color:var(--green)}
+.drop-zone.bad .dz-label{color:var(--red)}
+.dz-rule{font-size:.68rem;color:var(--text-soft);text-align:center;line-height:1.4}
+.dz-collected{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:8px}
+.collected-tag{font-family:var(--mono);font-size:.72rem;padding:3px 8px;border-radius:6px;font-weight:700}
+.good .collected-tag{background:rgba(72,200,152,.15);color:var(--green)}
+.bad .collected-tag{background:rgba(224,80,96,.1);color:var(--red)}
+
+/* ── STAGE 2: FIX ── */
+.fix-arena{border-radius:16px;border:1.5px solid rgba(240,184,48,.25);background:rgba(255,252,240,.82);backdrop-filter:blur(18px);padding:16px 18px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(240,184,48,.1)}
+.fix-arena::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--amber),var(--coral));border-radius:16px 16px 0 0}
+.fix-q{font-size:1rem;font-weight:800;color:var(--text-dark);text-align:center;margin-bottom:6px}
+.fix-hint{font-size:.82rem;color:var(--text-soft);text-align:center;margin-bottom:22px;font-weight:600}
+.fix-broken{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.broken-label{font-family:var(--head);font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.broken-name{font-family:var(--mono);font-size:.95rem;font-weight:700;color:var(--red);background:rgba(224,80,96,.08);border:1.5px solid rgba(224,80,96,.3);padding:7px 16px;border-radius:8px;display:flex;align-items:center;gap:6px}
+.fix-options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.fix-opt{padding:10px 12px;border-radius:10px;border:1.5px solid rgba(74,159,212,.18);background:rgba(255,255,255,.65);font-family:var(--mono);font-size:.82rem;color:var(--text-dark);cursor:pointer;transition:all .22s;font-weight:700;text-align:center;backdrop-filter:blur(6px)}
+.fix-opt:hover{background:rgba(74,159,212,.1);border-color:rgba(74,159,212,.45);color:var(--blue);transform:translateY(-2px)}
+.fix-opt.selected-correct{background:rgba(72,200,152,.12);border-color:var(--green);color:var(--green);animation:correctPop .3s ease}
+.fix-opt.selected-wrong{background:rgba(224,80,96,.08);border-color:var(--red);color:var(--red);animation:shake .4s ease}
+.fix-opt.reveal-correct{background:rgba(72,200,152,.08);border-color:rgba(72,200,152,.38);color:var(--green)}
+
+/* ── STAGE 3: TYPE ── */
+.type-arena{border-radius:16px;border:1.5px solid rgba(160,112,216,.25);background:rgba(248,244,255,.82);backdrop-filter:blur(18px);padding:16px 18px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(160,112,216,.1)}
+.type-arena::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--purple),var(--blue),var(--teal));border-radius:16px 16px 0 0}
+.type-box-visual{display:flex;justify-content:center;margin-bottom:14px}
+.mystery-box{width:64px;height:64px;border-radius:12px;border:2px solid var(--purple);background:linear-gradient(135deg,rgba(160,112,216,.12),rgba(74,159,212,.07));display:grid;place-items:center;font-size:1.7rem;position:relative;animation:float 3s ease-in-out infinite;box-shadow:0 4px 20px rgba(160,112,216,.2)}
+.mystery-box .box-spin{position:absolute;inset:-6px;border-radius:20px;border:2px solid transparent;border-top-color:var(--purple);border-right-color:var(--blue);animation:spinR 3s linear infinite}
+.type-q{font-size:.9rem;font-weight:800;color:var(--text-dark);text-align:center;margin-bottom:4px}
+.type-hint{font-size:.78rem;color:var(--text-soft);text-align:center;margin-bottom:12px;line-height:1.5;font-weight:600}
+.type-hint b{color:var(--amber)}
+.type-input-row{display:flex;gap:8px;align-items:stretch;margin-bottom:10px}
+.var-input{flex:1;padding:10px 14px;border-radius:10px;border:1.5px solid rgba(160,112,216,.3);background:rgba(255,255,255,.7);color:var(--text-dark);font-family:var(--mono);font-size:.9rem;font-weight:700;outline:none;transition:all .22s}
+.var-input:focus{border-color:var(--purple);background:rgba(160,112,216,.08);box-shadow:0 0 12px rgba(160,112,216,.18)}
+.var-input.valid{border-color:var(--green);background:rgba(72,200,152,.08)}
+.var-input.invalid{border-color:var(--red);background:rgba(224,80,96,.06);animation:shake .3s ease}
+.btn-check{padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--purple),#6a3cb0);color:#fff;font-family:var(--body);font-size:.82rem;font-weight:800;cursor:pointer;transition:all .22s;white-space:nowrap}
+.btn-check:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(160,112,216,.35)}
+.validation-hints{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.v-hint{display:flex;align-items:center;gap:5px;font-size:.72rem;padding:3px 10px;border-radius:99px;border:1px solid;transition:all .3s;font-weight:700}
+.v-hint.pass{border-color:rgba(72,200,152,.4);background:rgba(72,200,152,.08);color:var(--green)}
+.v-hint.fail{border-color:rgba(224,80,96,.35);background:rgba(224,80,96,.06);color:var(--red)}
+.v-hint.neutral{border-color:rgba(74,159,212,.18);background:rgba(74,159,212,.05);color:var(--text-soft)}
+.type-examples{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:6px}
+.eg-tag{font-family:var(--mono);font-size:.72rem;padding:3px 10px;border-radius:6px;background:rgba(160,112,216,.1);border:1.5px solid rgba(160,112,216,.22);color:var(--purple)}
+
+/* ── STAGE 4: LABEL ── */
+.label-arena{border-radius:16px;border:1.5px solid rgba(74,159,212,.22);background:var(--card-bg);backdrop-filter:blur(18px);padding:16px 18px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(100,140,200,.09)}
+.label-arena::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--teal),var(--green));border-radius:16px 16px 0 0}
+.label-q{font-size:.9rem;font-weight:800;color:var(--text-dark);text-align:center;margin-bottom:14px}
+.boxes-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.box-item{display:flex;flex-direction:column;align-items:center;gap:7px}
+.box-3d{width:56px;height:56px;border-radius:10px;border:2px solid rgba(74,159,212,.35);background:linear-gradient(135deg,rgba(74,159,212,.1),rgba(160,112,216,.06));display:grid;place-items:center;font-size:1.5rem;box-shadow:0 4px 14px rgba(74,159,212,.1);transition:all .3s;flex-shrink:0}
+.box-3d.matched{border-color:var(--green);box-shadow:0 4px 20px rgba(72,200,152,.25);animation:correctPop .3s ease}
+.box-content{font-size:.78rem;color:var(--text-soft);font-family:var(--mono);background:rgba(255,255,255,.6);padding:4px 10px;border-radius:6px;border:1px solid rgba(74,159,212,.15)}
+.box-slot{width:100%;padding:8px 10px;border-radius:8px;border:1.5px dashed rgba(74,159,212,.28);background:rgba(74,159,212,.04);font-family:var(--mono);font-size:.82rem;text-align:center;color:var(--text-soft);min-height:36px;display:flex;align-items:center;justify-content:center;transition:all .3s;cursor:pointer}
+.box-slot.filled{border-style:solid;border-color:var(--blue);background:rgba(74,159,212,.1);color:var(--blue);font-weight:700}
+.box-slot.correct{border-color:var(--green);background:rgba(72,200,152,.1);color:var(--green)}
+.box-slot.wrong{border-color:var(--red);background:rgba(224,80,96,.06);color:var(--red);animation:shake .35s ease}
+.label-pool{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.label-chip{padding:6px 12px;border-radius:8px;border:1.5px solid rgba(74,159,212,.25);background:rgba(74,159,212,.08);font-family:var(--mono);font-size:.75rem;color:var(--blue);cursor:pointer;transition:all .22s;font-weight:700}
+.label-chip:hover{background:rgba(74,159,212,.18);border-color:var(--blue);transform:translateY(-2px)}
+.label-chip.used{opacity:.28;pointer-events:none;text-decoration:line-through}
+.label-chip.selected{background:rgba(74,159,212,.22);border-color:var(--blue);box-shadow:0 2px 12px rgba(74,159,212,.25);transform:scale(1.05)}
+
+/* ── FEEDBACK TOAST ── */
+.feedback-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(30px);z-index:200;display:flex;align-items:center;gap:10px;padding:14px 24px;border-radius:14px;font-weight:800;font-size:.9rem;opacity:0;transition:all .35s;pointer-events:none;white-space:nowrap;backdrop-filter:blur(16px)}
+.feedback-toast.correct{background:rgba(240,254,248,.95);border:2px solid rgba(72,200,152,.4);color:var(--green)}
+.feedback-toast.wrong{background:rgba(255,244,246,.95);border:2px solid rgba(224,80,96,.35);color:var(--red)}
+.feedback-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── NEXT BUTTON ── */
+.stage-actions{display:flex;justify-content:center;gap:12px}
+.btn-stage-next{padding:13px 36px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--blue),var(--blue-dk));color:#fff;font-family:var(--head);font-size:.9rem;font-weight:900;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;display:none}
+.btn-stage-next::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);animation:shine 2s linear infinite}
+.btn-stage-next:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(74,159,212,.4)}
+.btn-stage-next.visible{display:flex;align-items:center;gap:8px;animation:pop .3s ease}
+
+/* ── RESULT SCREEN ── */
+.result-screen{display:none;text-align:center;padding:40px 20px;animation:fadeUp .5s ease both}
+.result-screen.show{display:block}
+.result-trophy{font-size:5rem;margin-bottom:16px;animation:float 3s ease-in-out infinite}
+.result-title{font-family:var(--head);font-size:2rem;font-weight:900;color:var(--text-dark);margin-bottom:8px}
+.result-sub{font-size:1rem;color:var(--text-soft);margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto;font-weight:600}
+.result-stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}
+.rs-pill{display:flex;flex-direction:column;align-items:center;gap:4px;background:rgba(255,255,255,.78);border:1.5px solid rgba(74,159,212,.18);border-radius:14px;padding:16px 24px;min-width:100px;backdrop-filter:blur(12px)}
+.rs-val{font-size:1.6rem;font-weight:900;font-family:var(--mono)}
+.rs-label{font-family:var(--head);font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--text-soft)}
+.result-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-play-again{padding:14px 32px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--purple),#6a3cb0);color:#fff;font-family:var(--head);font-size:.9rem;font-weight:800;cursor:pointer;transition:all .25s}
+.btn-play-again:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(160,112,216,.4)}
+.btn-next-lesson{padding:14px 32px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--blue),var(--blue-dk));color:#fff;font-family:var(--head);font-size:.9rem;font-weight:900;cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.btn-next-lesson::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);animation:shine 2s linear infinite}
+.btn-next-lesson:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(74,159,212,.4)}
+
+/* ── CONFETTI ── */
+.confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;pointer-events:none;z-index:300;animation:confettiFall 2.5s ease-in forwards}
+
+/* ── STATS BAR ── */
+.stats-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;height:50px;background:rgba(255,255,255,.84);backdrop-filter:blur(22px);border-top:1.5px solid rgba(255,255,255,.92);box-shadow:0 -2px 16px rgba(100,140,200,.1);display:flex;align-items:center;justify-content:center;gap:40px}
+.sitem{display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--text-soft);font-weight:700}
+.sval{font-family:var(--head);font-weight:900;font-size:.8rem}
+
+@media(max-width:560px){.drop-zones{grid-template-columns:1fr}.fix-options{grid-template-columns:1fr}.boxes-row{grid-template-columns:repeat(2,1fr)}.rules-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="deco-layer" id="decoLayer"></div>
+<canvas id="cvs"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">&#128640; CODEPLAY</div>
+  <div class="nav-info">Part 2 · Lesson 02 — <b>Naming Boxes</b></div>
+  <button class="btn-back" onclick="location.href='2_2lesson.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back
+  </button>
+</nav>
+
+<!-- GAME SHELL -->
+<div class="game-shell">
+
+  <!-- Header -->
+  <div class="game-header">
+    <div class="game-eyebrow">&#127991;&#65039; Variable Naming Game</div>
+    <div class="game-title">Name That <span>Box!</span></div>
+    <div class="game-subtitle">Master Python's variable naming rules across 4 fun challenges. Earn stars, collect XP, and become a Naming Pro!</div>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="scoreboard">
+    <div class="score-pill xp"><span class="icon">&#9889;</span><span id="xpScore" class="val">0</span><span style="color:var(--text-soft);font-size:.72rem">XP</span></div>
+    <div class="score-pill lives"><span class="icon">&#10084;&#65039;</span><span id="livesLeft" class="val">3</span></div>
+    <div class="score-pill stage"><span class="icon">&#127919;</span><span id="stageLabel" class="val">Stage 1/4</span></div>
+    <div class="score-pill streak"><span class="icon">&#128293;</span><span id="streakCount" class="val">0</span></div>
+  </div>
+
+  <!-- Rules Quick Ref -->
+  <div class="rules-card">
+    <div class="rules-title">&#9889; Python Naming Rules — Quick Reference</div>
+    <div class="rules-grid">
+      <div class="rule"><div class="rule-icon ok">&#10003;</div><span>Start with a <b>letter</b> or underscore</span></div>
+      <div class="rule"><div class="rule-icon ok">&#10003;</div><span>Use <b>underscores</b> instead of spaces</span></div>
+      <div class="rule"><div class="rule-icon ok">&#10003;</div><span>Keep it <b>short &amp; descriptive</b></span></div>
+      <div class="rule"><div class="rule-icon no">&#10007;</div><span><b>No spaces</b> — ever!</span></div>
+      <div class="rule"><div class="rule-icon no">&#10007;</div><span><b>No starting</b> with a number</span></div>
+      <div class="rule"><div class="rule-icon no">&#10007;</div><span><b>No hyphens</b> or special characters</span></div>
+    </div>
+  </div>
+
+  <!-- Stage Panel -->
+  <div id="stagePanel" class="stage-panel"></div>
+
+  <!-- Stage Actions -->
+  <div class="stage-actions">
+    <button class="btn-stage-next" id="btnNext" onclick="nextStage()">Next Stage &#10132;</button>
+  </div>
+
+  <!-- Result Screen -->
+  <div class="result-screen" id="resultScreen">
+    <div class="result-trophy" id="resultTrophy">&#127942;</div>
+    <div class="result-title" id="resultTitle">Amazing!</div>
+    <div class="result-sub" id="resultSub">You've mastered variable naming!</div>
+    <div class="result-stats">
+      <div class="rs-pill"><span class="rs-val" id="rsXP" style="color:var(--amber)">0</span><span class="rs-label">XP Earned</span></div>
+      <div class="rs-pill"><span class="rs-val" id="rsCorrect" style="color:var(--green)">0</span><span class="rs-label">Correct</span></div>
+      <div class="rs-pill"><span class="rs-val" id="rsStars" style="color:var(--amber)">&#11088;&#11088;&#11088;</span><span class="rs-label">Stars</span></div>
+    </div>
+    <div class="result-btns">
+      <button class="btn-play-again" onclick="restartGame()">&#128260; Play Again</button>
+      <button class="btn-next-lesson" onclick="goNextLesson()">Next Lesson &#128640;</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Feedback Toast -->
+<div class="feedback-toast" id="toast"></div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+  <div class="sitem"><span class="sval" style="color:var(--blue)">Part 2</span></div>
+  <div class="sitem"><span class="sval" style="color:var(--text-dark)">Lesson 02</span></div>
+  <div class="sitem"><span class="sval" style="color:var(--amber)" id="xpBar">0 XP</span></div>
+  <div class="sitem"><span class="sval" style="color:var(--purple)">Naming Boxes</span></div>
+</div>
+
+<script>
+/* ── Deco layer ── */
+(function(){
+  const layer=document.getElementById('decoLayer');
+  [{w:500,h:500,top:'-100px',left:'-80px',c:'rgba(200,224,248,.48)'},{w:400,h:400,top:'18%',right:'-55px',c:'rgba(210,188,250,.42)'},{w:340,h:340,bottom:'8%',left:'25%',c:'rgba(248,210,188,.38)'},{w:300,h:300,bottom:'-50px',right:'18%',c:'rgba(188,240,215,.32)'}].forEach((o,i)=>{
+    const d=document.createElement('div');d.className='deco-orb';
+    d.style.cssText=`width:${o.w}px;height:${o.h}px;background:radial-gradient(circle,${o.c},transparent 68%);${o.top?'top:'+o.top+';':''}${o.bottom?'bottom:'+o.bottom+';':''}${o.left?'left:'+o.left+';':''}${o.right?'right:'+o.right+';':''}animation-duration:${14+i*5}s;animation-delay:${i*2.2}s;`;
+    layer.appendChild(d);
+  });
+  const glyphs=['✦','✧','⋆','·','✶','✸'];
+  const cols=['rgba(74,159,212,.6)','rgba(160,112,216,.55)','rgba(240,184,48,.6)','rgba(240,120,80,.5)','rgba(72,200,152,.55)','rgba(240,128,176,.45)'];
+  for(let i=0;i<24;i++){
+    const s=document.createElement('div');s.className='deco-star';
+    const sz=Math.random()*13+7;
+    s.style.cssText=`left:${Math.random()*100}%;top:${50+Math.random()*50}%;font-size:${sz}px;line-height:1;color:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${11+Math.random()*13}s;animation-delay:${Math.random()*11}s;background:none;border-radius:0;`;
+    s.textContent=glyphs[Math.floor(Math.random()*glyphs.length)];
+    layer.appendChild(s);
+  }
+})();
+
+/* ── Light starfield ── */
+const cvs=document.getElementById('cvs'),ctx=cvs.getContext('2d');
+let stars=[];
+function resize(){cvs.width=innerWidth;cvs.height=innerHeight;stars=Array.from({length:100},()=>({x:Math.random()*cvs.width,y:Math.random()*cvs.height,r:Math.random()*1.3+.2,a:Math.random()*.35,da:(Math.random()-.5)*.004,spd:Math.random()*.06+.02,t:Math.floor(Math.random()*2)}))}
+window.addEventListener('resize',resize);resize();
+function draw(){ctx.clearRect(0,0,cvs.width,cvs.height);stars.forEach(s=>{s.a=Math.max(.02,Math.min(.45,s.a+s.da));if(s.a<=.02||s.a>=.45)s.da*=-1;s.y-=s.spd;if(s.y<0){s.y=cvs.height;s.x=Math.random()*cvs.width}ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=s.t===1?`rgba(160,112,216,${s.a})`:`rgba(74,159,212,${s.a})`;ctx.fill()});requestAnimationFrame(draw)}
+draw();
+
+/* ═══════ GAME STATE ═══════ */
+let xp=0,lives=3,streak=0,correct=0,currentStage=0;
+const totalStages=4;
+
+const sortRounds=[
+  {chips:[{name:'player_name',good:true},{name:'my score',good:false},{name:'age',good:true},{name:'1level',good:false},{name:'high_score',good:true},{name:'my-pet',good:false}]},
+  {chips:[{name:'color',good:true},{name:'pet name',good:false},{name:'_speed',good:true},{name:'2fast',good:false},{name:'lives_left',good:true},{name:'hi!score',good:false}]}
+];
+const fixRounds=[
+  {broken:'my score',options:['my_score','myscore!','my score','_my score'],correct:'my_score',hint:'Spaces must become underscores!'},
+  {broken:'1player',options:['_player','player1','1_player','Player1'],correct:'player1',hint:'Names cannot start with a number!'},
+  {broken:'hi-score',options:['hi_score','hi score','hiScore!','hi+score'],correct:'hi_score',hint:'Hyphens (-) are not allowed — use underscore!'},
+  {broken:'my pet!',options:['my_pet','mypet!','my-pet','My Pet'],correct:'my_pet',hint:'Remove spaces and special characters!'},
+];
+const typeRounds=[
+  {emoji:'🎂',content:'"10"',prompt:'This box stores someone\'s age as a number',examples:['age','my_age','player_age']},
+  {emoji:'🏆',content:'"200"',prompt:'This box stores the player\'s highest score',examples:['high_score','best_score','top_score']},
+  {emoji:'🌈',content:'"red"',prompt:'This box stores a favourite colour',examples:['color','fav_color','my_color']},
+  {emoji:'🐾',content:'"dog"',prompt:'This box stores the name of someone\'s pet',examples:['pet_name','my_pet','pet']},
+];
+const labelRounds=[
+  {boxes:[{emoji:'👤',content:'"Alex"',correct:'name'},{emoji:'🎂',content:'10',correct:'age'},{emoji:'⭐',content:'95',correct:'score'}],pool:['name','my score','age','1score','score','pet-name']},
+  {boxes:[{emoji:'🌈',content:'"blue"',correct:'color'},{emoji:'❤️',content:'3',correct:'lives'},{emoji:'🚀',content:'"fast"',correct:'speed'}],pool:['color','my color','lives','2lives','speed','hi-speed']}
+];
+
+function renderScoreboard(){
+  document.getElementById('xpScore').textContent=xp;
+  document.getElementById('livesLeft').textContent='❤️'.repeat(Math.max(lives,0));
+  document.getElementById('stageLabel').textContent=`Stage ${currentStage+1}/${totalStages}`;
+  document.getElementById('streakCount').textContent=streak;
+  document.getElementById('xpBar').textContent=xp+' XP';
+  document.getElementById('xpScore').style.animation='scorePop .35s ease';
+  setTimeout(()=>document.getElementById('xpScore').style.animation='',400);
+}
+
+const stageNames=['🔀 Sort the Names','🔧 Fix the Name','⌨️ Type a Name','🏷️ Label the Boxes'];
+function stageHeader(){
+  return `<div class="stage-label">
+    <span class="stage-name">${stageNames[currentStage]}</span>
+    <div class="stage-dots">
+      ${Array.from({length:totalStages},(_,i)=>`<div class="sdot${i<currentStage?' done':i===currentStage?' active':''}"></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ── Stage 1 ── */
+let sortRound=0,sortAnswered=0;
+let selectedChipIdx=null;
+
+function renderStage1(){
+  const round=sortRounds[sortRound%sortRounds.length];
+  sortAnswered=0;
+  document.getElementById('btnNext').classList.remove('visible');
+  document.getElementById('stagePanel').innerHTML=`
+    ${stageHeader()}
+    <div class="sort-arena">
+      <div class="sort-q">Tap each name and drop it into the <span>correct bin</span> 📦</div>
+      <div class="name-chips" id="chipArea">
+        ${round.chips.map((c,i)=>`<div class="name-chip" id="chip_${i}" style="animation-delay:${i*.06}s" onclick="sortChip(${i},this)">${c.name}</div>`).join('')}
+      </div>
+      <div class="drop-zones">
+        <div class="drop-zone good" id="dz_good" onclick="dropToZone('good')">
+          <div class="dz-icon">✅</div><div class="dz-label">Valid Name</div>
+          <div class="dz-rule">Starts with letter, no spaces, underscores OK</div>
+          <div class="dz-collected" id="col_good"></div>
+        </div>
+        <div class="drop-zone bad" id="dz_bad" onclick="dropToZone('bad')">
+          <div class="dz-icon">❌</div><div class="dz-label">Invalid Name</div>
+          <div class="dz-rule">Has spaces, starts with number, or has symbols</div>
+          <div class="dz-collected" id="col_bad"></div>
+        </div>
+      </div>
+    </div>`;
+  renderScoreboard();
+}
+
+function sortChip(idx,el){
+  document.querySelectorAll('.name-chip').forEach(c=>{c.style.outline='none';c.style.outlineOffset=''});
+  selectedChipIdx=idx;el.style.outline='2px solid var(--blue)';el.style.outlineOffset='2px';
+  document.getElementById('dz_good').classList.add('highlight');
+  document.getElementById('dz_bad').classList.add('highlight');
+}
+
+function dropToZone(zone){
+  if(selectedChipIdx===null)return;
+  const round=sortRounds[sortRound%sortRounds.length];
+  const chip=round.chips[selectedChipIdx];
+  const el=document.getElementById(`chip_${selectedChipIdx}`);
+  const isCorrect=(zone==='good')===chip.good;
+  document.getElementById('dz_good').classList.remove('highlight');
+  document.getElementById('dz_bad').classList.remove('highlight');
+  if(isCorrect){
+    el.classList.add('correct');el.style.outline='none';
+    setTimeout(()=>{el.style.display='none';const tag=document.createElement('span');tag.className='collected-tag';tag.textContent=chip.name;document.getElementById(`col_${zone}`).appendChild(tag)},350);
+    addXP(15);streak++;correct++;showToast('correct','✅ Correct! +15 XP');
+  } else {
+    el.classList.add('wrong');el.style.outline='none';setTimeout(()=>el.classList.remove('wrong'),500);
+    loseLife();showToast('wrong','❌ Not quite! '+(chip.good?'That\'s a valid name!':'That name breaks the rules!'));
+  }
+  selectedChipIdx=null;sortAnswered++;
+  if(sortAnswered>=round.chips.length)setTimeout(()=>document.getElementById('btnNext').classList.add('visible'),500);
+}
+
+/* ── Stage 2 ── */
+let fixIdx=0;
+function renderStage2(){
+  if(fixIdx>=fixRounds.length){stageComplete();return}
+  const f=fixRounds[fixIdx];
+  document.getElementById('btnNext').classList.remove('visible');
+  document.getElementById('stagePanel').innerHTML=`
+    ${stageHeader()}
+    <div class="fix-arena">
+      <div class="fix-q">🔧 Fix the broken variable name!</div>
+      <div class="fix-hint">${f.hint}</div>
+      <div class="fix-broken"><span class="broken-label">Broken:</span><span class="broken-name">⚠️ ${f.broken}</span></div>
+      <div class="fix-options">${f.options.map((o,i)=>`<button class="fix-opt" id="fopt_${i}" onclick="checkFix('${o}',${i})">${o}</button>`).join('')}</div>
+    </div>`;
+  renderScoreboard();
+}
+
+function checkFix(val,idx){
+  const f=fixRounds[fixIdx];
+  const btns=document.querySelectorAll('.fix-opt');
+  btns.forEach(b=>b.onclick=null);
+  const el=document.getElementById(`fopt_${idx}`);
+  if(val===f.correct){el.classList.add('selected-correct');addXP(20);streak++;correct++;showToast('correct','🔧 Fixed! +20 XP');fixIdx++;setTimeout(()=>document.getElementById('btnNext').classList.add('visible'),600);}
+  else{el.classList.add('selected-wrong');btns.forEach(b=>{if(b.textContent===f.correct)b.classList.add('reveal-correct')});loseLife();streak=0;showToast('wrong',`❌ Not quite! The answer is: ${f.correct}`);fixIdx++;setTimeout(()=>document.getElementById('btnNext').classList.add('visible'),1000);}
+  renderScoreboard();
+}
+
+/* ── Stage 3 ── */
+let typeIdx=0;
+function renderStage3(){
+  if(typeIdx>=typeRounds.length){stageComplete();return}
+  const t=typeRounds[typeIdx];
+  document.getElementById('btnNext').classList.remove('visible');
+  document.getElementById('stagePanel').innerHTML=`
+    ${stageHeader()}
+    <div class="type-arena">
+      <div class="type-box-visual"><div class="mystery-box">${t.emoji}<div class="box-spin"></div></div></div>
+      <div class="type-q">Give this box a good variable name!</div>
+      <div class="type-hint">${t.prompt} — value: <b style="color:var(--amber);font-family:var(--mono)">${t.content}</b></div>
+      <div class="validation-hints" id="vHints">
+        <span class="v-hint neutral" id="vh1">• Starts with letter/underscore</span>
+        <span class="v-hint neutral" id="vh2">• No spaces</span>
+        <span class="v-hint neutral" id="vh3">• No hyphens or symbols</span>
+        <span class="v-hint neutral" id="vh4">• Not starting with a number</span>
+      </div>
+      <div class="type-input-row">
+        <input class="var-input" id="typeInput" type="text" placeholder="type your name here..." maxlength="30" oninput="liveValidate()" onkeydown="if(event.key==='Enter')submitType()"/>
+        <button class="btn-check" onclick="submitType()">Check ✓</button>
+      </div>
+      <div style="text-align:center;font-size:.75rem;color:var(--text-soft);margin-bottom:8px">💡 Examples of good names:</div>
+      <div class="type-examples">${t.examples.map(e=>`<span class="eg-tag">${e}</span>`).join('')}</div>
+    </div>`;
+  document.getElementById('typeInput').focus();
+  renderScoreboard();
+}
+
+function liveValidate(){
+  const val=document.getElementById('typeInput').value.trim();
+  const v1=/^[a-zA-Z_]/.test(val)||val==='';
+  const v2=!/\s/.test(val);const v3=!/[^a-zA-Z0-9_]/.test(val)||val==='';const v4=!/^[0-9]/.test(val)||val==='';
+  ['vh1','vh2','vh3','vh4'].forEach((id,i)=>{const el=document.getElementById(id);if(!val){el.className='v-hint neutral';return}el.className='v-hint '+([v1,v2,v3,v4][i]?'pass':'fail')});
+  const inp=document.getElementById('typeInput');
+  if(val&&v1&&v2&&v3&&v4)inp.className='var-input valid';else if(val)inp.className='var-input invalid';else inp.className='var-input';
+}
+
+function isValidVarName(v){return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(v)&&v.length>0}
+
+function submitType(){
+  const val=document.getElementById('typeInput').value.trim();if(!val)return;
+  if(isValidVarName(val)){document.getElementById('typeInput').className='var-input valid';addXP(25);streak++;correct++;showToast('correct',`🎉 "${val}" is a great name! +25 XP`);typeIdx++;setTimeout(()=>document.getElementById('btnNext').classList.add('visible'),600);}
+  else{document.getElementById('typeInput').className='var-input invalid';loseLife();streak=0;showToast('wrong','❌ That name breaks Python rules! Check the hints above.');setTimeout(()=>{document.getElementById('typeInput').value='';document.getElementById('typeInput').className='var-input';document.querySelectorAll('.v-hint').forEach(el=>el.className='v-hint neutral')},700);}
+  renderScoreboard();
+}
+
+/* ── Stage 4 ── */
+let labelRound=0,selectedLabel=null,labelAnswers={};
+function renderStage4(){
+  if(labelRound>=labelRounds.length){stageComplete();return}
+  const r=labelRounds[labelRound];labelAnswers={};selectedLabel=null;
+  document.getElementById('btnNext').classList.remove('visible');
+  document.getElementById('stagePanel').innerHTML=`
+    ${stageHeader()}
+    <div class="label-arena">
+      <div class="label-q">🏷️ Drag a label to its matching box!</div>
+      <div class="boxes-row" id="boxesRow">
+        ${r.boxes.map((b,i)=>`<div class="box-item"><div class="box-3d" id="box3d_${i}">${b.emoji}</div><div class="box-content">${b.content}</div><div class="box-slot" id="slot_${i}" onclick="dropLabel(${i})">drop label here</div></div>`).join('')}
+      </div>
+      <div class="label-pool" id="labelPool">
+        ${r.pool.map((lbl,i)=>`<div class="label-chip" id="lchip_${i}" onclick="selectLabel('${lbl}',${i})">${lbl}</div>`).join('')}
+      </div>
+    </div>`;
+  renderScoreboard();
+}
+
+function selectLabel(val,idx){
+  document.querySelectorAll('.label-chip').forEach(c=>c.classList.remove('selected'));
+  selectedLabel={val,idx};document.getElementById(`lchip_${idx}`).classList.add('selected');
+}
+
+function dropLabel(slotIdx){
+  if(!selectedLabel)return;
+  const r=labelRounds[labelRound];const box=r.boxes[slotIdx];
+  const slot=document.getElementById(`slot_${slotIdx}`);const box3d=document.getElementById(`box3d_${slotIdx}`);
+  const isCorrect=selectedLabel.val===box.correct;
+  const chip=document.getElementById(`lchip_${selectedLabel.idx}`);
+  slot.textContent=selectedLabel.val;slot.classList.add('filled');
+  if(isCorrect){slot.classList.add('correct');box3d.classList.add('matched');chip.classList.add('used');addXP(20);streak++;correct++;labelAnswers[slotIdx]=true;showToast('correct',`✅ "${selectedLabel.val}" fits perfectly! +20 XP`);}
+  else{slot.classList.add('wrong');chip.classList.remove('selected');loseLife();streak=0;showToast('wrong',`❌ Not right! "${selectedLabel.val}" doesn't describe that box.`);setTimeout(()=>{slot.className='box-slot';slot.textContent='drop label here'},800);}
+  selectedLabel=null;document.querySelectorAll('.label-chip').forEach(c=>c.classList.remove('selected'));
+  if(Object.keys(labelAnswers).length>=r.boxes.length){labelRound++;setTimeout(()=>document.getElementById('btnNext').classList.add('visible'),500);}
+  renderScoreboard();
+}
+
+/* ── Flow ── */
+function nextStage(){document.getElementById('btnNext').classList.remove('visible');currentStage++;if(currentStage>=totalStages){showResult();return}renderCurrentStage()}
+function stageComplete(){document.getElementById('btnNext').classList.add('visible')}
+function renderCurrentStage(){
+  document.getElementById('stagePanel').style.animation='none';void document.getElementById('stagePanel').offsetWidth;document.getElementById('stagePanel').style.animation='pop .4s ease both';
+  if(currentStage===0)renderStage1();else if(currentStage===1)renderStage2();else if(currentStage===2)renderStage3();else if(currentStage===3)renderStage4();
+  renderScoreboard();
+}
+
+/* ── Helpers ── */
+let toastTimer=null;
+function showToast(type,msg){const t=document.getElementById('toast');t.textContent=msg;t.className=`feedback-toast ${type} show`;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className=`feedback-toast ${type}`,2200)}
+function addXP(a){xp+=a;document.getElementById('xpBar').textContent=xp+' XP';renderScoreboard()}
+function loseLife(){lives=Math.max(0,lives-1);renderScoreboard()}
+function launchConfetti(){const colors=['#4a9fd4','#a070d8','#f0b830','#48c898','#f07850','#f080b0'];for(let i=0;i<60;i++){const el=document.createElement('div');el.className='confetti-piece';el.style.cssText=`left:${Math.random()*100}vw;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-delay:${Math.random()*1}s;animation-duration:${2+Math.random()*1.5}s`;document.body.appendChild(el);setTimeout(()=>el.remove(),3500)}}
+
+function showResult(){
+  document.getElementById('stagePanel').style.display='none';document.querySelector('.stage-actions').style.display='none';document.getElementById('resultScreen').classList.add('show');
+  const stars=xp>=300?'⭐⭐⭐':xp>=180?'⭐⭐':'⭐';const trophy=xp>=300?'🏆':xp>=180?'🥈':'🥉';
+  const title=xp>=300?'Naming Master!':xp>=180?'Great Work!':'Good Effort!';
+  const sub=xp>=300?'You nailed every rule — Python variables love you!':xp>=180?'Solid naming skills! Keep practising!':'Review the rules and try again to beat your score!';
+  document.getElementById('resultTrophy').textContent=trophy;document.getElementById('resultTitle').textContent=title;document.getElementById('resultSub').textContent=sub;
+  document.getElementById('rsXP').textContent=xp;document.getElementById('rsCorrect').textContent=correct;document.getElementById('rsStars').textContent=stars;
+  if(xp>=180)launchConfetti();
+  localStorage.setItem('p2_lesson02GameScore',xp);const prev=parseInt(localStorage.getItem('part2_progress'))||1;if(prev<3)localStorage.setItem('part2_progress','3');
+}
+
+function restartGame(){xp=0;lives=3;streak=0;correct=0;currentStage=0;fixIdx=0;typeIdx=0;sortRound=0;labelRound=0;document.getElementById('stagePanel').style.display='';document.querySelector('.stage-actions').style.display='';document.getElementById('resultScreen').classList.remove('show');renderCurrentStage()}
+function goNextLesson(){window.location.href='quest2.html'}
+
+renderCurrentStage();
+</script>
+</body>
+</html>
+
+
+

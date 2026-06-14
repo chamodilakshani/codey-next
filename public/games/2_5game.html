@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CODEPLAY — Box Blaster! 💥</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Share+Tech+Mono&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#e8f6f5;
+  --surface:rgba(255,255,255,0.75);
+  --surface2:rgba(255,255,255,0.92);
+  --border:rgba(255,255,255,0.85);
+  --border2:rgba(12,191,181,0.25);
+
+  --cyan:#0cbfb5;
+  --cyan2:#00a3b4;
+  --cyan-soft:#c5f0ec;
+  --teal:#00b8aa;
+  --purple:#7c5cbf;
+  --purple-soft:#e9e2f8;
+  --pink:#d4567a;
+  --pink-soft:#fce4ec;
+  --gold:#c8960a;
+  --gold-soft:#fff3cc;
+  --green:#1a9e6a;
+  --green-soft:#d1f5e8;
+  --red:#d0394f;
+  --red-soft:#fde8ec;
+  --orange:#d4620a;
+  --orange-soft:#fdecd6;
+  --blue:#2563a8;
+
+  --text:#1a2e35;
+  --text2:#2d4a54;
+  --muted:#6b8e96;
+  --muted2:rgba(107,142,150,0.5);
+  --white:#1a2e35;
+
+  --mono:'Share Tech Mono',monospace;
+  --body:'Plus Jakarta Sans','Nunito',sans-serif;
+
+  --shadow-sm:0 1px 4px rgba(0,100,120,0.08),0 1px 2px rgba(0,100,120,0.05);
+  --shadow-md:0 4px 18px rgba(0,100,120,0.1),0 2px 6px rgba(0,100,120,0.07);
+  --shadow-lg:0 10px 36px rgba(0,100,120,0.13),0 4px 12px rgba(0,100,120,0.08);
+  --glow-teal:0 0 18px rgba(12,191,181,0.28);
+  --glow-purple:0 0 16px rgba(124,92,191,0.22);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;overflow-x:hidden;display:flex;flex-direction:column;
+}
+
+/* ── BACKGROUND ── */
+.bg-mesh{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 8% 0%,rgba(100,225,230,0.3),transparent 58%),
+    radial-gradient(ellipse 60% 70% at 92% 8%,rgba(150,195,245,0.22),transparent 55%),
+    radial-gradient(ellipse 70% 50% at 50% 100%,rgba(180,155,240,0.18),transparent 58%),
+    radial-gradient(ellipse 50% 60% at 82% 68%,rgba(90,230,210,0.15),transparent 55%),
+    linear-gradient(155deg,#dff7f5 0%,#e8f0fb 38%,#f0e8f8 68%,#e0f5f2 100%);
+  animation:meshShift 22s ease-in-out infinite alternate;
+}
+@keyframes meshShift{
+  0%{filter:hue-rotate(0deg) brightness(1)}
+  50%{filter:hue-rotate(7deg) brightness(1.02)}
+  100%{filter:hue-rotate(-4deg) brightness(0.99)}
+}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(65px)}
+.ob1{width:520px;height:520px;top:-160px;left:-110px;background:radial-gradient(circle,rgba(12,191,181,0.2),transparent 65%);animation:ob1 28s ease-in-out infinite alternate}
+.ob2{width:420px;height:420px;bottom:-110px;right:-90px;background:radial-gradient(circle,rgba(124,92,191,0.16),transparent 65%);animation:ob2 23s ease-in-out infinite alternate-reverse}
+.ob3{width:320px;height:320px;top:42%;left:58%;background:radial-gradient(circle,rgba(212,86,122,0.1),transparent 65%);animation:ob3 19s ease-in-out infinite alternate}
+@keyframes ob1{to{transform:translate(28px,18px)scale(1.08)}}
+@keyframes ob2{to{transform:translate(-22px,16px)scale(1.06)}}
+@keyframes ob3{to{transform:translate(-18px,-12px)scale(1.1)}}
+
+/* sparkles */
+.sparkle-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sp{position:absolute;border-radius:50%;animation:spFloat var(--dur,8s) ease-in-out infinite var(--delay,0s)}
+@keyframes spFloat{
+  0%,100%{transform:translateY(0) scale(1);opacity:var(--op,0.35)}
+  50%{transform:translateY(-13px) scale(1.2);opacity:calc(var(--op,0.35)*1.7)}
+}
+
+/* keyframes */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{opacity:0;transform:scale(.8)}65%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}50%{transform:translateX(10px)}75%{transform:translateX(-6px)}}
+@keyframes bigBounce{0%,100%{transform:scale(1)}40%{transform:scale(1.18)}70%{transform:scale(.97)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+@keyframes spinR{to{transform:rotate(360deg)}}
+@keyframes confettiFall{to{transform:translateY(110vh)rotate(720deg);opacity:0}}
+@keyframes writeIn{from{opacity:0;transform:scale(.6) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes pulseTeal{0%,100%{box-shadow:0 0 0 0 rgba(12,191,181,0.5)}70%{box-shadow:0 0 0 10px rgba(12,191,181,0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+@keyframes shine{to{left:160%}}
+@keyframes starPop{0%{transform:scale(0)rotate(-30deg);opacity:1}100%{transform:scale(2.4)rotate(15deg);opacity:0}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg)}75%{transform:rotate(7deg)}}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;height:58px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 22px;
+  background:rgba(255,255,255,0.84);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(12,191,181,0.18);
+  box-shadow:0 1px 14px rgba(0,100,120,0.07);
+}
+.logo{
+  font-weight:900;font-size:1.15rem;
+  color:#ff8c00;
+  letter-spacing:-.01em;
+}
+.nav-mid{font-size:.78rem;color:var(--muted);font-weight:700}
+@media(max-width:480px){.nav-mid{display:none}}
+.btn-back{
+  display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:99px;
+  border:1.5px solid rgba(12,191,181,0.3);background:rgba(12,191,181,0.07);
+  color:var(--cyan);font-size:.82rem;font-weight:800;cursor:pointer;transition:all .2s;font-family:var(--body);
+}
+.btn-back:hover{background:rgba(12,191,181,0.16);box-shadow:var(--glow-teal)}
+.btn-back svg{width:13px;height:13px;stroke:var(--cyan);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── SHELL ── */
+.shell{position:relative;z-index:2;max-width:600px;width:100%;margin:0 auto;padding:20px 16px 82px}
+
+/* ── HEADER ── */
+.game-header{text-align:center;margin-bottom:20px;animation:fadeUp .5s ease both}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1.5px solid rgba(12,191,181,0.35);background:rgba(12,191,181,0.08);
+  padding:4px 16px;border-radius:99px;font-size:.7rem;letter-spacing:.18em;
+  color:var(--cyan);text-transform:uppercase;margin-bottom:11px;font-weight:800;
+}
+.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:blink 1.2s infinite}
+.game-title{font-size:clamp(1.3rem,4vw,2rem);font-weight:900;color:var(--text);margin-bottom:7px;line-height:1.1;letter-spacing:-.02em}
+.hl{
+  background:linear-gradient(135deg,var(--cyan) 0%,var(--purple) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.game-sub{font-size:.88rem;color:var(--muted);line-height:1.6;font-weight:600;max-width:440px;margin:0 auto}
+
+/* ── SCOREBOARD ── */
+.scoreboard{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+.spill{
+  display:flex;align-items:center;gap:7px;
+  background:var(--surface2);border:1.5px solid var(--border2);
+  border-radius:99px;padding:8px 18px;font-size:.9rem;font-weight:800;
+  color:var(--text2);box-shadow:var(--shadow-sm);
+}
+.spill .v{font-family:var(--mono);font-size:.9rem}
+
+/* ── STAGE DOTS ── */
+.stg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.stg-lbl{font-size:.72rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.dots{display:flex;gap:7px}
+.dot{width:30px;height:7px;border-radius:99px;background:rgba(12,191,181,0.14);transition:all .4s}
+.dot.done{background:var(--green);box-shadow:0 0 8px rgba(26,158,106,0.5)}
+.dot.active{background:var(--cyan);box-shadow:0 0 10px rgba(12,191,181,0.6);animation:pulseTeal 1.5s infinite}
+
+/* ── ARENA ── */
+.arena{
+  border-radius:18px;border:1.5px solid var(--border);
+  background:var(--surface);backdrop-filter:blur(18px);
+  padding:18px;margin-bottom:13px;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-md);animation:pop .42s ease both;
+}
+.arena::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:99px 99px 0 0;background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent)}
+
+/* QUESTION */
+.qbox{
+  font-size:.93rem;font-weight:800;color:var(--text);text-align:center;line-height:1.45;
+  background:rgba(12,191,181,0.07);border:1.5px solid rgba(12,191,181,0.22);
+  border-radius:12px;padding:12px 14px;margin-bottom:12px;
+}
+.sub-tip{font-size:.9rem;font-weight:600;color:var(--muted);text-align:center;margin-bottom:18px;line-height:1.6}
+.sub-tip b{color:var(--text2);font-weight:800}
+.story-card{
+  background:rgba(124,92,191,0.07);border:1.5px solid rgba(124,92,191,0.2);
+  border-radius:12px;padding:12px 14px;margin-bottom:12px;
+  font-size:.88rem;font-weight:700;text-align:center;line-height:1.55;color:var(--text2);
+}
+.big-emoji{font-size:2.4rem;display:block;margin-bottom:7px;animation:wiggle 3s ease-in-out infinite}
+.fun-lbl{font-size:.88rem;color:var(--muted);text-align:center;margin-bottom:14px;font-weight:700}
+
+/* CODE BLOCK */
+.code-block{
+  background:rgba(240,248,255,0.8);border:1.5px solid rgba(12,191,181,0.2);
+  border-radius:12px;padding:14px 16px;margin-bottom:14px;
+  font-family:var(--mono);font-size:.88rem;line-height:2;
+  position:relative;overflow:hidden;box-shadow:var(--shadow-sm);
+}
+.code-block::after{content:'🐍 python';position:absolute;top:9px;right:13px;font-size:.55rem;color:rgba(12,191,181,0.45);letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.code-line{display:flex;align-items:center;gap:10px;animation:slideIn .35s ease both}
+.code-line:nth-child(2){animation-delay:.08s}
+.code-line:nth-child(3){animation-delay:.16s}
+.code-line:nth-child(4){animation-delay:.24s}
+.ln{font-size:.65rem;color:rgba(12,191,181,0.4);width:16px;text-align:right;flex-shrink:0;user-select:none}
+.cl-var{color:var(--orange);font-weight:700}
+.cl-eq{color:var(--muted2);margin:0 4px}
+.cl-num{color:var(--green);font-weight:800}
+.cl-str{color:var(--gold);font-weight:800}
+
+/* 3D BOX */
+.box-wrap{display:flex;justify-content:center;margin-bottom:20px}
+.box3d{
+  width:115px;height:115px;border-radius:22px;
+  border:2px solid rgba(12,191,181,0.4);
+  background:linear-gradient(135deg,rgba(12,191,181,0.1),rgba(124,92,191,0.08));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  animation:float 3s ease-in-out infinite;
+  box-shadow:var(--shadow-lg),0 0 30px rgba(12,191,181,0.15);
+  position:relative;
+}
+.bspin{position:absolute;inset:-8px;border-radius:28px;border:2px solid transparent;border-top-color:rgba(12,191,181,0.5);border-right-color:rgba(124,92,191,0.4);animation:spinR 2.6s linear infinite}
+.bemoji{font-size:2.8rem;line-height:1}
+.bval{
+  font-family:var(--mono);font-size:.9rem;color:var(--teal);font-weight:900;
+  background:rgba(12,191,181,0.1);padding:4px 12px;border-radius:8px;
+  border:1px solid rgba(12,191,181,0.28);min-width:56px;text-align:center;
+}
+.bval.updating{animation:writeIn .45s ease both;color:var(--gold);border-color:var(--gold);background:var(--gold-soft)}
+
+/* CHOICE BUTTONS */
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{
+  padding:14px 10px;border-radius:14px;
+  border:1.5px solid rgba(12,191,181,0.22);
+  background:rgba(255,255,255,0.65);
+  font-family:var(--mono);font-size:1rem;color:var(--teal);font-weight:900;text-align:center;
+  cursor:pointer;transition:all .22s;user-select:none;position:relative;overflow:hidden;
+  min-height:54px;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);
+}
+.choice:hover,.choice:active{border-color:var(--cyan);background:rgba(12,191,181,0.1);transform:translateY(-4px) scale(1.03);box-shadow:var(--shadow-md)}
+.choice.ok{border-color:var(--green)!important;background:var(--green-soft)!important;color:var(--green)!important;box-shadow:0 0 22px rgba(26,158,106,0.3)!important;animation:bigBounce .45s ease;pointer-events:none}
+.choice.bad{border-color:var(--red)!important;background:var(--red-soft)!important;color:var(--red)!important;animation:shake .45s ease;pointer-events:none}
+.choice.reveal{border-color:rgba(26,158,106,0.55)!important;background:rgba(26,158,106,0.08)!important;color:var(--green)!important}
+.choice.off{pointer-events:none;opacity:.42}
+
+/* FIX BUG */
+.bug-label{font-size:.75rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--red);text-align:center;margin-bottom:8px}
+.bug-code{
+  display:block;font-family:var(--mono);font-size:.93rem;font-weight:800;
+  color:var(--red);background:var(--red-soft);
+  border:1.5px solid rgba(208,57,79,0.28);
+  padding:10px 16px;border-radius:11px;text-align:center;margin-bottom:14px;
+}
+.fix-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fopt{
+  padding:12px 10px;border-radius:12px;
+  border:1.5px solid rgba(12,191,181,0.2);
+  background:rgba(255,255,255,0.65);
+  font-family:var(--mono);font-size:.86rem;color:var(--text2);
+  cursor:pointer;transition:all .22s;font-weight:800;text-align:center;user-select:none;
+  min-height:50px;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-sm);
+}
+.fopt:hover,.fopt:active{border-color:var(--cyan);background:rgba(12,191,181,0.09);color:var(--cyan);transform:translateY(-3px) scale(1.02);box-shadow:var(--shadow-md)}
+.fopt.ok{border-color:var(--green)!important;background:var(--green-soft)!important;color:var(--green)!important;box-shadow:0 0 18px rgba(26,158,106,0.28)!important;animation:bigBounce .4s ease;pointer-events:none}
+.fopt.bad{border-color:var(--red)!important;background:var(--red-soft)!important;color:var(--red)!important;animation:shake .45s ease;pointer-events:none}
+.fopt.reveal{border-color:rgba(26,158,106,0.5)!important;background:rgba(26,158,106,0.07)!important;color:var(--green)!important}
+.fopt.off{pointer-events:none;opacity:.42}
+
+/* ORDER STAGE */
+.sort-list{display:flex;flex-direction:column;gap:11px;margin-bottom:14px}
+.sort-item{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;
+  border:1.5px solid rgba(12,191,181,0.22);background:rgba(255,255,255,0.65);
+  cursor:pointer;transition:all .22s;user-select:none;box-shadow:var(--shadow-sm);
+}
+.sort-item:hover,.sort-item:active{border-color:var(--cyan);background:rgba(12,191,181,0.08);transform:translateX(5px)}
+.sort-item.ok-order{border-color:var(--green);background:var(--green-soft);box-shadow:0 0 14px rgba(26,158,106,0.2);cursor:default;pointer-events:none}
+.sort-item.bad-order{border-color:var(--red);background:var(--red-soft);animation:shake .38s ease}
+.step-num{
+  width:34px;height:34px;border-radius:50%;
+  border:1.5px solid rgba(12,191,181,0.3);background:rgba(12,191,181,0.08);
+  display:grid;place-items:center;font-size:.78rem;font-weight:900;color:var(--teal);
+  flex-shrink:0;transition:all .3s;
+}
+.step-num.tapped{background:var(--cyan);color:#fff;border-color:var(--cyan);font-size:.95rem;box-shadow:var(--glow-teal)}
+.si-code{font-family:var(--mono);font-size:.95rem;color:var(--text);font-weight:800;flex:1}
+.si-note{font-size:.72rem;color:var(--muted2);font-style:italic}
+.order-feedback{text-align:center;font-size:.95rem;font-weight:800;color:var(--green);min-height:30px;margin-bottom:6px}
+
+/* FILL BLANK */
+.fill-code{
+  background:rgba(240,248,255,0.8);border:1.5px solid rgba(12,191,181,0.2);
+  border-radius:12px;padding:14px 16px;margin-bottom:12px;
+  font-family:var(--mono);font-size:.88rem;line-height:2;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-sm);
+}
+.fill-code::after{content:'🐍 python';position:absolute;top:9px;right:13px;font-size:.55rem;color:rgba(12,191,181,0.4);letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.blank{
+  display:inline-block;min-width:80px;height:34px;border-radius:10px;
+  border:2px dashed rgba(12,191,181,0.5);background:rgba(12,191,181,0.06);
+  text-align:center;vertical-align:middle;line-height:30px;
+  color:var(--teal);font-weight:900;font-size:.93rem;font-family:var(--mono);
+  transition:all .25s;margin:0 6px;
+}
+.blank.filled{border-style:solid;border-color:var(--gold);background:var(--gold-soft);color:var(--gold)}
+.blank.ok{border-color:var(--green);background:var(--green-soft);color:var(--green);box-shadow:0 0 14px rgba(26,158,106,0.3)}
+.blank.bad{border-color:var(--red);background:var(--red-soft);color:var(--red);animation:shake .4s ease}
+.result-row{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:13px;
+  background:rgba(12,191,181,0.06);border:1.5px solid rgba(12,191,181,0.18);
+  margin-bottom:18px;box-shadow:var(--shadow-sm);
+}
+.res-lbl{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2)}
+.res-val{font-family:var(--mono);font-size:.98rem;color:var(--teal);font-weight:900}
+.tokens{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.token{
+  padding:10px 16px;border-radius:11px;
+  border:1.5px solid rgba(124,92,191,0.25);background:rgba(255,255,255,0.7);
+  font-family:var(--mono);font-size:.86rem;color:var(--gold);font-weight:900;
+  cursor:pointer;transition:all .22s;user-select:none;min-width:60px;text-align:center;
+  box-shadow:var(--shadow-sm);
+}
+.token:hover,.token:active{background:var(--purple-soft);border-color:var(--purple);transform:translateY(-4px) scale(1.04);box-shadow:var(--shadow-md)}
+.token.used{opacity:.18;pointer-events:none;text-decoration:line-through}
+.token.ok{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(22px);
+  z-index:999;padding:13px 26px;border-radius:16px;font-weight:800;font-size:.95rem;
+  opacity:0;transition:all .3s;pointer-events:none;backdrop-filter:blur(18px);
+  white-space:nowrap;max-width:92vw;text-align:center;font-family:var(--body);
+}
+.toast.ok{background:rgba(242,255,250,0.97);border:1.5px solid rgba(26,158,106,0.35);color:var(--green);box-shadow:var(--shadow-md)}
+.toast.bad{background:rgba(255,242,244,0.97);border:1.5px solid rgba(208,57,79,0.3);color:var(--red);box-shadow:var(--shadow-md)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* NEXT BUTTON */
+.nextwrap{display:flex;justify-content:center;margin-top:8px;min-height:58px}
+.bnext{
+  padding:13px 36px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  color:#fff;font-size:.92rem;font-weight:900;cursor:pointer;transition:all .25s;
+  position:relative;overflow:hidden;display:none;align-items:center;gap:8px;
+  letter-spacing:.03em;font-family:var(--body);
+  box-shadow:0 5px 20px rgba(12,191,181,0.3);
+}
+.bnext::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shine 2s linear infinite}
+.bnext:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(12,191,181,0.42)}
+.bnext.show{display:flex;animation:pop .4s ease}
+
+/* RESULT */
+.result{display:none;text-align:center;padding:36px 16px;animation:fadeUp .55s ease both}
+.result.show{display:block}
+.r-trophy{font-size:5.5rem;margin-bottom:12px;display:block;animation:float 3s ease-in-out infinite}
+.r-title{
+  font-size:2.1rem;font-weight:900;letter-spacing:-.02em;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:8px;
+}
+.r-sub{font-size:1rem;color:var(--muted);max-width:360px;margin:0 auto 26px;line-height:1.65;font-weight:600}
+.r-stats{display:flex;gap:13px;justify-content:center;flex-wrap:wrap;margin-bottom:28px}
+.rpill{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:var(--surface2);border:1.5px solid var(--border2);
+  border-radius:16px;padding:16px 22px;min-width:90px;box-shadow:var(--shadow-sm);
+}
+.rpval{font-size:1.8rem;font-weight:900;font-family:var(--mono)}
+.rplbl{font-size:.68rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.r-btns{display:flex;gap:13px;justify-content:center;flex-wrap:wrap}
+.btn-replay{
+  padding:13px 28px;border-radius:14px;
+  border:1.5px solid rgba(124,92,191,0.3);background:rgba(124,92,191,0.08);
+  color:var(--purple);font-size:.95rem;font-weight:800;cursor:pointer;transition:all .25s;font-family:var(--body);
+}
+.btn-replay:hover{background:var(--purple-soft);transform:translateY(-2px);box-shadow:var(--glow-purple)}
+.btn-next-lesson{
+  padding:13px 28px;border-radius:14px;border:none;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  color:#fff;font-size:.95rem;font-weight:900;cursor:pointer;transition:all .25s;font-family:var(--body);
+  position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(12,191,181,0.3);
+}
+.btn-next-lesson::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:shine 2s linear infinite}
+.btn-next-lesson:hover{transform:translateY(-2px);box-shadow:0 7px 24px rgba(12,191,181,0.44)}
+
+/* STAR POP */
+.star-pop{position:fixed;font-size:2rem;pointer-events:none;z-index:500;animation:starPop .55s ease forwards}
+
+/* CONFETTI */
+.cp{position:fixed;pointer-events:none;z-index:400;border-radius:3px;animation:confettiFall 2.8s ease-in forwards}
+
+/* STATS BAR */
+.stats-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;height:50px;
+  background:rgba(255,255,255,0.9);backdrop-filter:blur(18px);
+  border-top:1px solid rgba(12,191,181,0.16);
+  box-shadow:0 -1px 16px rgba(0,100,120,0.07);
+  display:flex;align-items:center;justify-content:center;gap:36px;
+}
+.sb-item{display:flex;align-items:center;gap:6px;font-size:.76rem;color:var(--muted);font-weight:700}
+.sb-val{font-family:var(--mono);font-weight:900;font-size:.8rem}
+
+@media(max-width:480px){
+  .choice-grid,.fix-grid{grid-template-columns:1fr}
+  .stats-bar{gap:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="orb ob1"></div>
+<div class="orb ob2"></div>
+<div class="orb ob3"></div>
+<div class="sparkle-field" id="sparkles"></div>
+
+<nav>
+  <div class="logo">🚀 CODEPLAY</div>
+  <div class="nav-mid">Part 2 · Lesson 05 — Changing Box Values</div>
+  <button class="btn-back" onclick="location.href='2_5lesson.html'">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Back
+  </button>
+</nav>
+
+<div class="shell">
+  <div class="game-header">
+    <div class="eyebrow">🎮 Space Coding Adventure</div>
+    <div class="game-title">Box <span class="hl">Blaster!</span> 💥</div>
+    <div class="game-sub">Help Cosmo the robot 🤖 blast through 4 fun levels and learn how variables can change!</div>
+  </div>
+
+  <div class="scoreboard">
+    <div class="spill">⚡ <span id="elXP" class="v" style="color:var(--gold)">0</span>&thinsp;<span style="font-size:.72rem;color:var(--muted)">XP</span></div>
+    <div class="spill">❤️ <span id="elLives" class="v" style="color:var(--red)">❤️❤️❤️</span></div>
+    <div class="spill">🏆 <span id="elStage" class="v" style="color:var(--teal)">1/4</span></div>
+    <div class="spill">🔥 <span id="elStreak" class="v" style="color:var(--orange)">0</span></div>
+  </div>
+
+  <div id="panel"></div>
+
+  <div class="nextwrap">
+    <button class="bnext" id="btnNext" onclick="advance()">Next Level!</button>
+  </div>
+
+  <div class="result" id="result">
+    <span class="r-trophy" id="rTrophy">🏆</span>
+    <div class="r-title" id="rTitle">You did it!</div>
+    <div class="r-sub" id="rSub"></div>
+    <div class="r-stats">
+      <div class="rpill"><span class="rpval" id="rXP" style="color:var(--gold)">0</span><span class="rplbl">XP Won</span></div>
+      <div class="rpill"><span class="rpval" id="rRight" style="color:var(--green)">0</span><span class="rplbl">Correct</span></div>
+      <div class="rpill"><span class="rpval" id="rStars" style="color:var(--cyan)">⭐</span><span class="rplbl">Stars</span></div>
+    </div>
+    <div class="r-btns">
+      <button class="btn-replay" onclick="restart()">🔄 Play Again</button>
+      <button class="btn-next-lesson" onclick="location.href='quest2.html'">Next Lesson</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="stats-bar">
+  <div class="sb-item">📍 <span class="sb-val" style="color:var(--teal)">Part 2</span></div>
+  <div class="sb-item">📖 <span class="sb-val" style="color:var(--text)">Lesson 5</span></div>
+  <div class="sb-item">⚡ <span class="sb-val" style="color:var(--gold)" id="barXP">0 XP</span></div>
+</div>
+
+<script>
+/* ── SPARKLES ── */
+(function(){
+  const field=document.getElementById('sparkles');
+  const colors=['rgba(12,191,181,','rgba(124,92,191,','rgba(212,86,122,','rgba(200,150,10,','rgba(26,158,106,'];
+  for(let i=0;i<30;i++){
+    const el=document.createElement('div');el.className='sp';
+    const c=colors[Math.floor(Math.random()*colors.length)];
+    const op=(0.13+Math.random()*0.28).toFixed(2);
+    const size=3+Math.random()*5;
+    el.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px;background:${c}${op});--dur:${6+Math.random()*9}s;--delay:${Math.random()*6}s;--op:${op};filter:blur(${Math.random()>.5?'1px':'0px'})`;
+    field.appendChild(el);
+  }
+})();
+
+/* ── STATE ── */
+let xp=0,lives=3,streak=0,hits=0,stage=0;
+
+/* ════════ LEVEL DATA ════════ */
+const L1=[
+  {emoji:'🎮',varName:'score',lines:['score = 0','score = 10','score = 25'],answer:'25',choices:['0','10','25','35'],praise:'Amazing! score ends at 25 — it was the LAST value we gave it! 🎉'},
+  {emoji:'❤️',varName:'lives',lines:['lives = 3','lives = 5','lives = 1'],answer:'1',choices:['3','5','1','8'],praise:'Super! The last line wins — lives ends at 1! 🌟'},
+  {emoji:'🌈',varName:'colour',lines:["colour = 'red'","colour = 'blue'","colour = 'green'"],answer:"'green'",choices:["'red'","'blue'","'green'","'yellow'"],praise:"Brilliant! colour ends as 'green' — it was changed last! 🎨"},
+  {emoji:'⭐',varName:'stars',lines:['stars = 1','stars = 5'],answer:'5',choices:['1','5','6','0'],praise:'Yes! The old value 1 was erased — stars is now 5! ⭐'},
+];
+
+const L2=[
+  {emoji:'🤖',story:'Cosmo wants score to become 10 — but the code is broken!',broken:'score == 10',hint:'💡 Use ONE equals sign = to give a value!\n== means "are they equal?" — not what we want here!',choices:['score = 10','score + 10','Score = 10','score = = 10'],answer:0},
+  {emoji:'😬',story:"Cosmo wants to change name to 'Sam' — but Python is confused!",broken:'name = Sam',hint:"💡 Text always needs quote marks! Try: name = \"Sam\"",choices:['name = "Sam"','Name = "Sam"','name == Sam','name = (Sam)'],answer:0},
+  {emoji:'🧐',story:'Cosmo wants score to go UP by 5 — but something is wrong!',broken:'score = + 5',hint:'💡 To add to itself, write the variable name on BOTH sides of the equals!',choices:['score = score + 5','score + 5','score += + 5','score = 5'],answer:0},
+  {emoji:'😅',story:'Cosmo wants lives to go DOWN by 1 — can you spot the mistake?',broken:'live = lives - 1',hint:'💡 Check the variable name carefully — it is missing an "s" at the end!',choices:['lives = lives - 1','lives = live - 1','lives == lives - 1','live = live - 1'],answer:0},
+];
+
+const L3=[
+  {story:'🎮 We want score to END as 30.\nTap the steps in the RIGHT order — first to last!',endVal:'30',steps:[{code:'score = 10',note:'Start here'},{code:'score = 20',note:'Then this'},{code:'score = 30',note:'Finally this'}],correctOrder:[0,1,2]},
+  {story:"🌟 We want name to END as 'Zara'.\nTap in the correct order — first to last!",endVal:"'Zara'",steps:[{code:"name = 'Tom'",note:'Start here'},{code:"name = 'Leo'",note:'Then this'},{code:"name = 'Zara'",note:'Finally this'}],correctOrder:[0,1,2]},
+];
+
+const L4=[
+  {emoji:'🎮',story:'A game starts with 0 lives. Cosmo earns 3 more!\nWhat value goes in the blank?',prevLine:'lives = 0',parts:['lives',' = ',null],answer:'3',output:'3',tokens:['0','1','3','5','lives']},
+  {emoji:'👋',story:'greeting says "Hello". Cosmo updates it to say "Hi"!\nWhat goes in the blank?',prevLine:'greeting = "Hello"',parts:['greeting',' = ',null],answer:'"Hi"',output:'"Hi"',tokens:['"Hello"','"Hi"','greeting','"Hey"','0']},
+  {emoji:'🎯',story:'score is 10. Cosmo adds 5 more using the variable name!\nWhat goes in the blank?',prevLine:'score = 10',parts:['score',' = ',null,' + 5'],answer:'score',output:'15',tokens:['10','5','score','0','5 + 5']},
+  {emoji:'🌈',story:'colour is "red". Cosmo changes it to "blue"!\nWhat goes in the blank?',prevLine:'colour = "red"',parts:['colour',' = ',null],answer:'"blue"',output:'"blue"',tokens:['"red"','"green"','"blue"','colour','0']},
+];
+
+/* ── HELPERS ── */
+function sync(){
+  document.getElementById('elXP').textContent=xp;
+  document.getElementById('elLives').textContent=lives>0?'❤️'.repeat(lives):'💀';
+  document.getElementById('elStage').textContent=(stage+1)+'/4';
+  document.getElementById('elStreak').textContent=streak;
+  document.getElementById('barXP').textContent=xp+' XP';
+}
+let toastT;
+function toast(type,msg){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;clearTimeout(toastT);toastT=setTimeout(()=>{t.className=`toast ${type}`},2800)}
+function showNext(){document.getElementById('btnNext').classList.add('show')}
+function hideNext(){document.getElementById('btnNext').classList.remove('show')}
+
+function starBurst(x,y){
+  ['⭐','✨','💥','🌟'].forEach((s,i)=>{
+    const el=document.createElement('div');el.className='star-pop';el.textContent=s;
+    el.style.cssText=`left:${x+(-30+i*20)}px;top:${y-20}px;animation-delay:${i*.07}s`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),700);
+  });
+}
+
+const LVL_NAMES=["🔍 Level 1: What's Left in the Box?","🐛 Level 2: Fix Cosmo's Bug!","🔢 Level 3: Tap in Order!","✏️ Level 4: Fill the Blank!"];
+function hdr(){
+  return `<div class="stg-row">
+    <span class="stg-lbl">${LVL_NAMES[stage]}</span>
+    <div class="dots">${[0,1,2,3].map(i=>`<div class="dot${i<stage?' done':i===stage?' active':''}"></div>`).join('')}</div>
+  </div>`;
+}
+function animPanel(){const p=document.getElementById('panel');p.style.animation='none';void p.offsetWidth;p.style.animation='pop .42s ease both'}
+
+/* ── LEVEL 1 ── */
+let l1i=0;
+function drawL1(){
+  hideNext();if(l1i>=L1.length){showNext();return}
+  const q=L1[l1i];
+  document.getElementById('panel').innerHTML=`${hdr()}
+<div class="arena">
+  <div class="qbox">🤖 Cosmo reads the code line by line...<br>What will be inside the <span style="color:var(--teal);font-family:var(--mono)">${q.varName}</span> box at the END? 📦</div>
+  <div class="sub-tip">Python reads top ⬇️ to bottom. Only the <b>LAST line</b> stays in the box!</div>
+  <div class="code-block" id="cb"></div>
+  <div class="box-wrap"><div class="box3d"><div class="bspin"></div><div class="bemoji">${q.emoji}</div><div class="bval" id="bv">?</div></div></div>
+  <div class="fun-lbl">👇 Tap the correct answer!</div>
+  <div class="choice-grid" id="cg"></div>
+</div>`;
+  const cb=document.getElementById('cb');
+  q.lines.forEach((line,i)=>{
+    const row=document.createElement('div');row.className='code-line';row.style.animationDelay=(i*.09)+'s';
+    const lnum=document.createElement('span');lnum.className='ln';lnum.textContent=i+1;
+    const[varPart,...rest]=line.split(' = ');const rawVal=rest.join(' = ');
+    const wrap=document.createElement('span');
+    const v=document.createElement('span');v.className='cl-var';v.textContent=varPart;
+    const eq=document.createElement('span');eq.className='cl-eq';eq.textContent=' = ';
+    const val=document.createElement('span');val.className=(rawVal.startsWith("'")||rawVal.startsWith('"'))?'cl-str':'cl-num';val.textContent=rawVal;
+    wrap.append(v,eq,val);row.append(lnum,wrap);cb.appendChild(row);
+  });
+  let ai=0;const bv=document.getElementById('bv');
+  function tick(){if(ai>=q.lines.length)return;const[,rv]=q.lines[ai].split(' = ');bv.textContent=rv;bv.className='bval updating';setTimeout(()=>{bv.className='bval'},450);ai++;if(ai<q.lines.length)setTimeout(tick,850)}
+  setTimeout(tick,700);
+  const cg=document.getElementById('cg');
+  q.choices.forEach((c,i)=>{const el=document.createElement('div');el.className='choice';el.textContent=c;el.addEventListener('click',e=>pickL1(i,e));cg.appendChild(el)});
+  sync();
+}
+function pickL1(idx,e){
+  const q=L1[l1i];const cards=[...document.querySelectorAll('.choice')];cards.forEach(c=>c.classList.add('off'));
+  if(q.choices[idx]===q.answer){cards[idx].classList.add('ok');xp+=20;streak++;hits++;if(e)starBurst(e.clientX,e.clientY);toast('ok','🎉 '+q.praise+' +20 XP!')}
+  else{cards[idx].classList.add('bad');q.choices.forEach((_,i)=>{if(q.choices[i]===q.answer)cards[i].classList.add('reveal')});lives=Math.max(0,lives-1);streak=0;toast('bad','❌ Not quite! The LAST line always wins. Try again! 💪')}
+  l1i++;sync();setTimeout(drawL1,1200);
+}
+
+/* ── LEVEL 2 ── */
+let l2i=0;
+function drawL2(){
+  hideNext();if(l2i>=L2.length){showNext();return}
+  const q=L2[l2i];
+  document.getElementById('panel').innerHTML=`${hdr()}
+<div class="arena">
+  <div class="qbox">🐛 Oh no! Cosmo found a bug in the code!<br>Can YOU help fix it? 🔧</div>
+  <div class="story-card"><span class="big-emoji">${q.emoji}</span>${q.story}</div>
+  <div class="bug-label">⚠️ This code is broken:</div>
+  <div class="bug-code" id="bugCode"></div>
+  <div class="sub-tip" style="white-space:pre-line">${q.hint}</div>
+  <div class="fun-lbl">👇 Tap the correct fixed version!</div>
+  <div class="fix-grid" id="fg"></div>
+</div>`;
+  document.getElementById('bugCode').textContent=q.broken;
+  const fg=document.getElementById('fg');
+  q.choices.forEach((opt,i)=>{const btn=document.createElement('button');btn.className='fopt';btn.textContent=opt;btn.addEventListener('click',e=>pickL2(i,e));fg.appendChild(btn)});
+  sync();
+}
+function pickL2(idx,e){
+  const q=L2[l2i];const btns=[...document.querySelectorAll('.fopt')];btns.forEach(b=>b.classList.add('off'));
+  if(idx===q.answer){btns[idx].classList.add('ok');xp+=20;streak++;hits++;if(e)starBurst(e.clientX,e.clientY);toast('ok','🔧 Bug squashed! Great work, coder! +20 XP 🚀')}
+  else{btns[idx].classList.add('bad');btns[q.answer].classList.add('reveal');lives=Math.max(0,lives-1);streak=0;toast('bad','❌ Almost! Read the hint carefully and try next time! 💪')}
+  l2i++;sync();setTimeout(drawL2,1200);
+}
+
+/* ── LEVEL 3 ── */
+let l3i=0,l3tapped=[],l3done=false;
+function drawL3(){
+  hideNext();if(l3i>=L3.length){showNext();return}
+  const q=L3[l3i];l3tapped=[];l3done=false;
+  document.getElementById('panel').innerHTML=`${hdr()}
+<div class="arena">
+  <div class="qbox">🔢 Help Cosmo put the steps in order!<br>Tap Step 1 first, then Step 2, then Step 3! 👆</div>
+  <div class="story-card"><span class="big-emoji">🤖</span><span style="white-space:pre-line">${q.story}</span></div>
+  <div class="fun-lbl">Tap them one at a time — first step first!</div>
+  <div class="sort-list" id="sl"></div>
+  <div class="order-feedback" id="ofb"></div>
+</div>`;
+  const shuffled=q.steps.map((s,i)=>({...s,origIdx:i}));
+  for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+  const sl=document.getElementById('sl');
+  shuffled.forEach(step=>{
+    const el=document.createElement('div');el.className='sort-item';el.dataset.orig=step.origIdx;
+    const num=document.createElement('span');num.className='step-num';num.textContent='?';
+    const code=document.createElement('span');code.className='si-code';code.textContent=step.code;
+    const note=document.createElement('span');note.className='si-note';note.textContent=step.note;
+    el.append(num,code,note);el.addEventListener('click',e=>tapStep(el,step.origIdx,num,q,e));sl.appendChild(el);
+  });
+  sync();
+}
+function tapStep(el,origIdx,numEl,q,e){
+  if(l3done||el.classList.contains('ok-order'))return;
+  const nextExpected=q.correctOrder[l3tapped.length];
+  if(origIdx===nextExpected){
+    l3tapped.push(origIdx);const n=l3tapped.length;
+    el.classList.add('ok-order');numEl.textContent=n;numEl.classList.add('tapped');
+    if(e)starBurst(e.clientX,e.clientY);
+    const fb=document.getElementById('ofb');
+    if(n<q.steps.length){fb.textContent=`✅ Step ${n} done! Now tap Step ${n+1}!`}
+    else{l3done=true;fb.textContent='';xp+=25;streak++;hits++;toast('ok','🎉 Perfect order! You are a real coding star! +25 XP 🌟');l3i++;sync();setTimeout(drawL3,1300)}
+  } else {
+    el.classList.add('bad-order');lives=Math.max(0,lives-1);streak=0;
+    toast('bad','❌ Not that one yet! Think: what happens FIRST? 🤔');sync();setTimeout(()=>el.classList.remove('bad-order'),750);
+  }
+}
+
+/* ── LEVEL 4 ── */
+let l4i=0;
+function drawL4(){
+  hideNext();if(l4i>=L4.length){showNext();return}
+  const q=L4[l4i];
+  document.getElementById('panel').innerHTML=`${hdr()}
+<div class="arena">
+  <div class="qbox">✏️ Cosmo left a blank in the code!<br>Tap the right answer to fill it in! 🎯</div>
+  <div class="story-card"><span class="big-emoji">${q.emoji}</span><span style="white-space:pre-line">${q.story}</span></div>
+  <div class="fill-code" id="fc"></div>
+  <div class="result-row"><span class="res-lbl">Result →</span><span class="res-val" id="rv">${q.emoji}&thinsp;?</span></div>
+  <div class="fun-lbl">👇 Tap the correct value!</div>
+  <div class="tokens" id="tw"></div>
+</div>`;
+  const fc=document.getElementById('fc');
+  const p1=document.createElement('div');p1.className='code-line';
+  const n1=document.createElement('span');n1.className='ln';n1.textContent='1';
+  const t1=document.createElement('span');t1.style.color='var(--muted2)';t1.textContent=q.prevLine;
+  p1.append(n1,t1);fc.appendChild(p1);
+  const p2=document.createElement('div');p2.className='code-line';p2.style.animationDelay='.1s';
+  const n2=document.createElement('span');n2.className='ln';n2.textContent='2';
+  const cw=document.createElement('span');
+  q.parts.forEach((part,pi)=>{
+    if(part===null){const bl=document.createElement('span');bl.className='blank';bl.id='theBlank';bl.textContent='???';cw.appendChild(bl)}
+    else{const sp=document.createElement('span');sp.className=pi===0?'cl-var':'cl-eq';sp.textContent=part;cw.appendChild(sp)}
+  });
+  p2.append(n2,cw);fc.appendChild(p2);
+  const tw=document.getElementById('tw');
+  q.tokens.forEach((tok,i)=>{const el=document.createElement('span');el.className='token';el.textContent=tok;el.addEventListener('click',e=>pickToken(i,e));tw.appendChild(el)});
+  sync();
+}
+function pickToken(idx,e){
+  const q=L4[l4i];const blank=document.getElementById('theBlank');const tokens=[...document.querySelectorAll('.token')];const picked=q.tokens[idx];
+  blank.textContent=picked;blank.className='blank filled';tokens.forEach(t=>t.classList.remove('used'));tokens[idx].classList.add('used');
+  setTimeout(()=>{
+    if(picked===q.answer){
+      blank.className='blank ok';tokens[idx].classList.add('ok');
+      document.getElementById('rv').textContent=q.emoji+' = '+q.output;document.getElementById('rv').style.color='var(--green)';
+      xp+=25;streak++;hits++;if(e)starBurst(e.clientX,e.clientY);
+      toast('ok',`✅ "${picked}" is exactly right! +25 XP 🚀`);l4i++;sync();setTimeout(drawL4,1100);
+    } else {
+      blank.className='blank bad';lives=Math.max(0,lives-1);streak=0;
+      toast('bad','❌ Not quite! Think: what value should go in the box? 🤔');sync();
+      setTimeout(()=>{blank.textContent='???';blank.className='blank';tokens[idx].classList.remove('used')},800);
+    }
+  },300);
+}
+
+/* ── FLOW ── */
+function draw(){animPanel();if(stage===0)drawL1();else if(stage===1)drawL2();else if(stage===2)drawL3();else if(stage===3)drawL4()}
+function advance(){hideNext();stage++;if(stage>=4)showResult();else draw()}
+
+/* ── RESULT ── */
+function showResult(){
+  document.getElementById('panel').style.display='none';document.querySelector('.nextwrap').style.display='none';
+  const stars=xp>=320?'⭐⭐⭐':xp>=200?'⭐⭐':'⭐';
+  document.getElementById('rTrophy').textContent=xp>=320?'🏆':xp>=200?'🥈':'🎖️';
+  document.getElementById('rTitle').textContent=xp>=320?'Box Blasting Champion! 🎉':xp>=200?'Super Coder! 🚀':'Great Effort! 💪';
+  document.getElementById('rSub').textContent=xp>=320?'WOW! You understand how to change variable values like a real Python programmer!':xp>=200?'Amazing work! You are getting really good at updating variables in Python!':'Good try! Watch the lesson again and play again — you can do it!';
+  document.getElementById('rXP').textContent=xp;document.getElementById('rRight').textContent=hits;document.getElementById('rStars').textContent=stars;
+  document.getElementById('result').classList.add('show');
+  if(xp>=200)confetti();
+  localStorage.setItem('p2_lesson05GameScore',xp);const prev=parseInt(localStorage.getItem('part2_progress'))||1;if(prev<6)localStorage.setItem('part2_progress','6');
+}
+
+function confetti(){
+  const cols=['#0cbfb5','#7c5cbf','#d4567a','#c8960a','#1a9e6a','#60a5fa'];
+  for(let i=0;i<70;i++){
+    const el=document.createElement('div');el.className='cp';
+    el.style.cssText=`left:${Math.random()*100}vw;top:-18px;background:${cols[i%cols.length]};width:${6+Math.random()*9}px;height:${6+Math.random()*9}px;border-radius:${Math.random()>.5?'50%':'3px'};animation-delay:${Math.random()*1}s;animation-duration:${2.2+Math.random()*1.6}s`;
+    document.body.appendChild(el);setTimeout(()=>el.remove(),4500);
+  }
+}
+
+function restart(){
+  xp=0;lives=3;streak=0;hits=0;stage=0;l1i=0;l2i=0;l3i=0;l3tapped=[];l3done=false;l4i=0;
+  document.getElementById('panel').style.display='';document.querySelector('.nextwrap').style.display='';
+  document.getElementById('result').classList.remove('show');hideNext();sync();draw();
+}
+
+sync();draw();
+</script>
+</body>
+</html>
+
+
+
