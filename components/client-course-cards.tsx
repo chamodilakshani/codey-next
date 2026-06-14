@@ -39,7 +39,7 @@ export function ClientCourseCards({ courses }: ClientCourseCardsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
       {courses.map((course, idx) => {
-        const thumbnailSrc = course.thumbnailUrl.startsWith("https://images.unsplash.com/")
+        const thumbnailSrc = course?.thumbnailUrl
           ? course.thumbnailUrl
           : "/course-placeholder.svg";
 
