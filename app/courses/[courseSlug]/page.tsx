@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { BookOpenCheck, Clock3, PlayCircle } from "lucide-react";
+import { BookOpenCheck, ChevronDown, Clock3, PlayCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -98,36 +98,57 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <h2 className="text-xl font-semibold">Levels & Lessons</h2>
 
           {course.levels.length > 0 ? (
-            course.levels.map((level) => (
-              <div key={level.id} className="grid gap-3">
-                <h3 className="text-lg font-semibold">{level.title}</h3>
-                {level.lessons.map((lesson) => (
-                  <article
-                    key={lesson.id}
-                    className="rounded-2xl border border-border bg-card p-5 shadow-sm"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Lesson {lesson.displayOrder}</p>
-                        <h4 className="text-lg font-semibold">{lesson.title}</h4>
-                        <p className="mt-1 text-sm text-muted-foreground">{lesson.description}</p>
-                      </div>
+            course.levels.map((level, index) => (
+              <details
+                key={level.id}
+                open={index === 0}
+                className="group rounded-2xl border border-border bg-card shadow-sm"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 marker:hidden">
+                  <div>
+                    <h3 className="text-lg font-semibold">{level.title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {level.lessons.length} lessons
+                    </p>
+                  </div>
+                  <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                </summary>
 
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground">
-                          {lesson.durationMinutes} mins
-                        </span>
-                        <Button asChild variant="outline">
-                          <Link href={`/courses/${course.slug}/levels/${level.slug}/lessons/${lesson.slug}`}>
-                            <PlayCircle className="mr-1 size-4" />
-                            Watch
-                          </Link>
-                        </Button>
+                <div className="grid gap-3 border-t border-border p-5">
+                  {level.lessons.map((lesson) => (
+                    <article
+                      key={lesson.id}
+                      className="rounded-2xl border border-border bg-background p-5"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Lesson {lesson.displayOrder}
+                          </p>
+                          <h4 className="text-lg font-semibold">{lesson.title}</h4>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {lesson.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-muted-foreground">
+                            {lesson.durationMinutes} mins
+                          </span>
+                          <Button asChild variant="outline">
+                            <Link
+                              href={`/courses/${course.slug}/levels/${level.slug}/lessons/${lesson.slug}`}
+                            >
+                              <PlayCircle className="mr-1 size-4" />
+                              Watch
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
+                    </article>
+                  ))}
+                </div>
+              </details>
             ))
           ) : (
             <p className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
