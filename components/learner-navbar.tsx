@@ -40,7 +40,7 @@ export function LearnerNavbar() {
           <span className="flex size-9 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm">
             <BookOpenCheck className="size-5" />
           </span>
-          <span className="text-base font-black tracking-tight">Codey Kids</span>
+          <span className="text-base font-black tracking-tight">CodePlay</span>
         </Link>
 
         <div className="order-3 flex w-full items-center gap-2 overflow-x-auto sm:order-2 sm:w-auto">
