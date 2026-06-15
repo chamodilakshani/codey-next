@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { BookOpenCheck, Clock3, PlayCircle } from "lucide-react";
 
+
 import { Button } from "@/components/ui/button";
+import { levelThemes } from "@/lib/levelThemes";
 import {
   getCourseBySlug,
   getLevelsByCourseSlug,
@@ -49,19 +51,30 @@ export default async function LevelPage({ params }: LevelPageProps) {
   const courseWithLevels = { ...course, levels };
   const level = courseWithLevels.levels.find((item) => item.slug === levelSlug);
 
-  if (!level) {
-    notFound();
-  }
+ if (!level) {
+  notFound();
+}
 
-  const lessonCount = level.lessons.length;
+const theme =
+  levelThemes[level.displayOrder as keyof typeof levelThemes] ??
+  levelThemes[1];
+
+const lessonCount = level.lessons.length;
   const firstLesson = level.lessons[0] ?? null;
 
   return (
-    <main className="min-h-full bg-background px-6 py-8 sm:px-10">
+    <main
+  className={`min-h-screen px-6 py-8 sm:px-10 ${theme.background}`}>
       <section className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+       <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <p className="mb-3 text-sm font-semibold text-primary">{course.title}</p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{level.title}</h1>
+          <h1
+            className={`text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r ${theme.heading} bg-clip-text text-transparent`}
+          >
+            {level.title}
+          </h1>
+            {level.title}
+          
           <p className="mt-3 max-w-3xl text-muted-foreground">
             {lessonCount} lessons in this level.
           </p>
@@ -84,8 +97,9 @@ export default async function LevelPage({ params }: LevelPageProps) {
           </div>
 
           {firstLesson ? (
-            <Button asChild className="mt-6">
-              <Link href={`/courses/${course.slug}/levels/${level.slug}/lessons/${firstLesson.slug}`}>
+            <Button asChild
+                className={`mt-6 bg-gradient-to-r ${theme.button} text-white border-0`}>
+                <Link href={`/courses/${course.slug}/levels/${level.slug}/lessons/${firstLesson.slug}`}>
                 Start Level {level.displayOrder}
               </Link>
             </Button>
@@ -112,7 +126,7 @@ export default async function LevelPage({ params }: LevelPageProps) {
 
           {level.lessons.length > 0 ? (
             level.lessons.map((lesson) => (
-              <article key={lesson.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+             <article key={lesson.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Lesson {lesson.displayOrder}</p>

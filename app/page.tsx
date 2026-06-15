@@ -24,16 +24,35 @@ export default async function Home() {
   ];
 
   return (
-    <main className="min-h-full bg-[radial-gradient(circle_at_top_left,rgba(254,215,170,0.4),transparent_28%),radial-gradient(circle_at_top_right,rgba(253,164,175,0.25),transparent_20%),linear-gradient(180deg,#fffbeb_0%,#fef3c7_100%)] px-6 py-10 sm:px-10">
+    <main className="relative overflow-hidden bg-gradient-to-br background: rgba(255,255,255,0.15); from-white via-blue-50 to-purple-50 min-h-screen">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none"></div>
+      {/* Floating Background Layer */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+           {/* Snow */}
+            <span className="snow snow-1">❄</span>
+            <span className="snow snow-2">❄</span>
+            <span className="snow snow-3">❄</span>
+            <span className="snow snow-4">❄</span>
+            <span className="snow snow-5">❄</span>
+
+          </div>
+      
       <section className="mx-auto w-full max-w-6xl space-y-10">
+        <section className="relative z-10 mx-auto w-full max-w-6xl space-y-10"></section>
+        <div className="hero-animated-bgrelative overflow-hiddenrounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-blue-50/50 to-purple-50/40 shadow-[0_24px_80px_-40px_rgba(59,130,246,0.15)]" ></div>
 
         {/* ── Hero Banner ── */}
-        <div className="relative overflow-hidden rounded-[2rem] border border-orange-200 bg-gradient-to-br from-orange-50/60 via-amber-50/40 to-yellow-50/60 px-8 py-20 shadow-[0_24px_80px_-40px_rgba(249,115,22,0.15)] sm:px-16 sm:py-28">
+        <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-blue-50/50 to-purple-50/40 px-8 py-20 shadow-[0_24px_80px_-40px_rgba(59,130,246,0.15)] sm:px-16 sm:py-28">
+          
+          
           {/* Ambient blobs */}
-          <div className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-orange-200/40 blur-3xl -translate-x-1/3 -translate-y-1/3" />
-          <div className="pointer-events-none absolute right-0 top-0 h-56 w-56 rounded-full bg-yellow-200/30 blur-3xl translate-x-1/4 -translate-y-1/4" />
-          <div className="pointer-events-none absolute bottom-0 left-1/2 h-48 w-96 rounded-full bg-amber-100/40 blur-3xl -translate-x-1/2 translate-y-1/3" />
-          <div className="pointer-events-none absolute left-1/4 top-1/2 h-24 w-24 rounded-full bg-orange-200/20 blur-2xl" />
+          <div className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl -translate-x-1/3 -translate-y-1/3" />
+
+          <div className="pointer-events-none absolute right-0 top-0 h-56 w-56 rounded-full bg-purple-200/25 blur-3xl translate-x-1/4 -translate-y-1/4" />
+
+          <div className="pointer-events-none absolute bottom-0 left-1/2 h-48 w-96 rounded-full bg-sky-100/40 blur-3xl -translate-x-1/2 translate-y-1/3" />
+
+          <div className="pointer-events-none absolute left-1/4 top-1/2 h-24 w-24 rounded-full bg-violet-200/20 blur-2xl" />
 
           {/* Client-side hero content with animations */}
           <ClientHero />
@@ -41,11 +60,13 @@ export default async function Home() {
 
         {/* ── How It Works ── */}
         <section className="rounded-[2rem] border border-slate-200 bg-white/95 p-8 shadow-[0_24px_80px_-40px_rgba(59,130,246,0.2)] sm:p-10">
-          <ClientHowItWorks />
+             
+              <ClientHowItWorks />
         </section>
 
         {/* ── Courses Section ── */}
         <section className="space-y-10">
+          <section className="relative z-10 mx-auto w-full max-w-6xl space-y-10"></section>
           <div className="text-center">
             <p className="animate-fade-up text-sm font-bold uppercase tracking-[0.25em] text-slate-500">
               🌍 Choose Your Adventure
@@ -73,6 +94,7 @@ export default async function Home() {
 
         {/* ── Badges Section ── */}
         <section className="rounded-[2rem] border border-slate-200 bg-gradient-to-b from-blue-50 to-sky-100 px-6 py-14 sm:px-10 sm:py-20">
+          <section className="relative z-10 mx-auto w-full max-w-6xl space-y-10"></section>
           <div className="mx-auto max-w-3xl text-center">
             <p className="animate-fade-up text-sm font-bold uppercase tracking-widest text-slate-500">
               Collect Them All
