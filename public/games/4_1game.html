@@ -55,29 +55,6 @@ body{
 .cloud{position:absolute;pointer-events:none;font-size:2rem;opacity:.18;animation:cloudDrift linear infinite}
 @keyframes cloudDrift{0%{transform:translateX(-120px)}100%{transform:translateX(110vw)}}
 
-/* ═══ NAV ═══ */
-nav{
-  flex-shrink:0;height:52px;position:relative;z-index:60;
-  display:flex;align-items:center;justify-content:space-between;padding:0 14px;
-  background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);
-  border-bottom:1.5px solid var(--border);
-  box-shadow:0 2px 12px rgba(77,184,232,0.1);
-}
-.logo{
-  font-family:var(--font);font-size:1rem;font-weight:800;letter-spacing:.04em;
-  color:#ff8c00;
-}
-.logo span{color:#ff8c00}
-.nav-center{text-align:center}
-.nav-t{font-size:.74rem;font-weight:700;color:var(--ocean-dark)}
-.nav-s{font-size:.48rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
-.back-btn{
-  display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;
-  border:1.5px solid var(--border);background:var(--sky);
-  color:var(--ocean-dark);font-size:.66rem;font-weight:700;cursor:pointer;text-decoration:none;
-  transition:background .2s;
-}
-.back-btn:hover{background:var(--sky2)}
 
 /* ═══ SCREENS ═══ */
 .screens{flex:1;min-height:0;overflow:hidden;position:relative;z-index:2;display:flex;flex-direction:column}
@@ -544,15 +521,7 @@ nav{
   </div>
 </div>
 
-<!-- ═══ NAV ═══ -->
-<nav>
-  <div class="logo">🐙 <span>CODE</span>PLAY</div>
-  <div class="nav-center">
-    <div class="nav-t">Loop Catcher!</div>
-    <div class="nav-s">Part 4 · Lesson 01 · Game</div>
-  </div>
-  <a href="4_1lesson.html" class="back-btn">← Back</a>
-</nav>
+
 
 <!-- ═══ SCREENS ═══ -->
 <div class="screens">

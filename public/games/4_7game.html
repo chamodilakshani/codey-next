@@ -70,23 +70,6 @@ body{font-family:'Nunito',sans-serif;
 @keyframes iPulse{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* ── NAV ── */
-nav{flex-shrink:0;height:52px;position:relative;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:0 16px;
-  background:rgba(255,255,255,.95);backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(0,0,0,.08);
-  box-shadow:0 2px 20px rgba(10,191,163,.1)}
-.logo{display:flex;align-items:center;gap:7px;font-size:.9rem;font-weight:900;color:#ff8c00;letter-spacing:.07em}
-.logo-dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px rgba(10,191,163,.5);animation:blink 2s infinite}
-.sonar{position:relative;width:20px;height:20px;flex-shrink:0}
-.sr{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(10,191,163,.35);animation:sonarPing 2.2s ease-out infinite}
-.sr2{animation-delay:.8s}
-.sd{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;border-radius:50%;background:var(--teal);box-shadow:0 0 7px var(--teal)}
-.nav-c{text-align:center}
-.nav-t{font-size:.7rem;font-weight:800;color:var(--text)}
-.nav-s{font-size:.48rem;color:var(--muted);letter-spacing:.1em}
-.back-btn{display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;border:1.5px solid rgba(10,191,163,.4);background:rgba(10,191,163,.08);color:var(--teal-dark);font-size:.66rem;font-weight:800;text-decoration:none;font-family:'Nunito',sans-serif}
-.back-btn:hover{background:rgba(10,191,163,.16)}
-.back-btn svg{width:10px;height:10px;stroke:var(--teal-dark);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── SCREENS ── */
 .screens{flex:1;min-height:0;overflow:hidden;position:relative;z-index:2;display:flex;flex-direction:column}
@@ -306,19 +289,6 @@ nav{flex-shrink:0;height:52px;position:relative;z-index:50;display:flex;align-it
 </div>
 <div class="jelly">🪼</div>
 
-<nav>
-  <div class="logo">
-    <div class="logo-dot"></div>
-    CODEPLAY
-  </div>
-  <div class="nav-c">
-    <div class="nav-t">Coral's Color Sequencer!</div>
-    <div class="nav-s">Part 4 · Lesson 07 · Game</div>
-  </div>
-  <a href="quest4.html" class="back-btn">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-  </a>
-</nav>
 
 <div class="screens">
 

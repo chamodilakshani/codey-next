@@ -3,9 +3,7 @@ import { Trophy } from "lucide-react";
 import { auth } from "@clerk/nextjs/server";
 
 import { Button } from "@/components/ui/button";
-import {
-  getPublishedCourses,
-} from "@/lib/course-data";
+import { getPublishedCourses } from "@/lib/course-data";
 import { ClientHero } from "@/components/client-hero";
 import { ClientHowItWorks } from "@/components/client-how-it-works";
 import { ClientCourseCards } from "@/components/client-course-cards";
@@ -34,7 +32,6 @@ export default async function Home() {
             <span className="snow snow-3">❄</span>
             <span className="snow snow-4">❄</span>
             <span className="snow snow-5">❄</span>
-
           </div>
       
       <section className="mx-auto w-full max-w-6xl space-y-10">
@@ -43,25 +40,16 @@ export default async function Home() {
 
         {/* ── Hero Banner ── */}
         <div className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-blue-50/50 to-purple-50/40 px-8 py-20 shadow-[0_24px_80px_-40px_rgba(59,130,246,0.15)] sm:px-16 sm:py-28">
-          
-          
-          {/* Ambient blobs */}
           <div className="pointer-events-none absolute left-0 top-0 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl -translate-x-1/3 -translate-y-1/3" />
-
           <div className="pointer-events-none absolute right-0 top-0 h-56 w-56 rounded-full bg-purple-200/25 blur-3xl translate-x-1/4 -translate-y-1/4" />
-
           <div className="pointer-events-none absolute bottom-0 left-1/2 h-48 w-96 rounded-full bg-sky-100/40 blur-3xl -translate-x-1/2 translate-y-1/3" />
-
           <div className="pointer-events-none absolute left-1/4 top-1/2 h-24 w-24 rounded-full bg-violet-200/20 blur-2xl" />
-
-          {/* Client-side hero content with animations */}
           <ClientHero />
         </div>
 
         {/* ── How It Works ── */}
         <section className="rounded-[2rem] border border-slate-200 bg-white/95 p-8 shadow-[0_24px_80px_-40px_rgba(59,130,246,0.2)] sm:p-10">
-             
-              <ClientHowItWorks />
+          <ClientHowItWorks />
         </section>
 
         {/* ── Courses Section ── */}
@@ -106,9 +94,27 @@ export default async function Home() {
               Complete each world to unlock a special badge. Can you collect all five?
             </p>
           </div>
-
           <ClientBadges badges={badges} />
         </section>
+
+                
+                {/* ── Footer ── */}
+        <footer className="rounded-[2rem] border border-blue-900/20 bg-navy-900 bg-[#0f172a] px-8 py-10 sm:px-16">
+          <div className="mx-auto max-w-6xl flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div className="flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-amber-400" />
+              <span className="text-sm font-bold text-white">CodePlay</span>
+            </div>
+            <p className="text-sm text-blue-300">
+              © {new Date().getFullYear()} CodePlay. All rights reserved.
+            </p>
+            <div className="flex gap-6 text-sm text-blue-300">
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+              <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
+            </div>
+          </div>
+        </footer>
 
       </section>
     </main>

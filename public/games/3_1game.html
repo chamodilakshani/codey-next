@@ -45,18 +45,6 @@ body{width:100%;height:100%;overflow:hidden;background:var(--cream);font-family:
 @keyframes flashRed{0%,100%{background:transparent}40%{background:rgba(184,74,26,.08)}}
 @keyframes scoreUp{0%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-55px)}}
 
-/* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 12px;
-  background:rgba(253,250,244,.97);backdrop-filter:blur(18px);
-  border-bottom:2px solid rgba(200,116,14,.2);
-  box-shadow:0 2px 16px rgba(44,32,21,.1)}
-.nav-logo-wrap{display:flex;align-items:center;gap:7px}
-.nav-logo-vid{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,116,14,.35);background:rgba(200,116,14,.1);flex-shrink:0}
-.nav-logo-text{font-family:var(--head);font-size:.88rem;font-weight:900;color:#ff8c00}
-.nav-title{font-family:var(--head);font-size:.65rem;font-weight:800;color:var(--orange);letter-spacing:.06em}
-.btn-back{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;border:1.5px solid rgba(200,116,14,.4);background:rgba(200,116,14,.08);color:var(--ink);font-family:var(--body);font-size:.7rem;font-weight:800;cursor:pointer;transition:all .2s}
-.btn-back:hover{background:rgba(200,116,14,.18);border-color:rgba(200,116,14,.7)}
-.btn-back svg{width:10px;height:10px;stroke:var(--ink);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── BOTTOM BAR ── */
 .bar{position:fixed;bottom:0;left:0;right:0;height:var(--bar);z-index:200;
@@ -308,16 +296,7 @@ nav{position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:200;display:fl
 <div class="env-flash" id="envFlash"></div>
 <canvas id="ccvs"></canvas>
 
-<nav>
-  <div class="nav-logo-wrap">
-    <video class="nav-logo-vid" autoplay loop muted playsinline src="video/nav_logo.mp4" onerror="this.style.display='none'"></video>
-    <span class="nav-logo-text">CODEPLAY</span>
-  </div>
-  <span class="nav-title">Lesson 01 · What Is a Decision?</span>
-  <button class="btn-back" onclick="go('3_1lesson.html')">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-  </button>
-</nav>
+
 
 <!-- INTRO SCREEN -->
 <div class="screen on" id="introScreen">

@@ -74,22 +74,6 @@ body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:1
 .bio{position:fixed;border-radius:50%;pointer-events:none;animation:bio ease-in-out infinite}
 .jelly{position:fixed;right:5%;top:20%;font-size:2.4rem;opacity:.22;animation:jellyFloat 4s ease-in-out infinite;z-index:1;pointer-events:none}
 
-/* ── NAV ── */
-nav{position:sticky;top:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;
-  background:rgba(255,255,255,0.92);backdrop-filter:blur(22px);border-bottom:1.5px solid rgba(0,180,190,0.18);box-shadow:0 1px 18px rgba(0,120,130,0.08)}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--head);font-weight:900;font-size:1.3rem;
-  background:linear-gradient(135deg,var(--teal2),var(--biolime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:.08em}
-.nav-sonar{position:relative;width:32px;height:32px;flex-shrink:0}
-.nav-sonar-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(0,180,190,.35);animation:sonarPing 2.2s ease-out infinite}
-.nav-sonar-ring2{animation-delay:.8s}
-.nav-sonar-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;border-radius:50%;background:var(--teal2);box-shadow:0 0 10px var(--teal2)}
-.nav-center{display:flex;align-items:center;gap:12px}
-.nav-pip{width:6px;height:6px;border-radius:50%;background:var(--teal2);box-shadow:0 0 10px var(--teal2);animation:blink 1.4s infinite}
-.nav-lesson-tag{font-family:var(--head);font-size:.6rem;letter-spacing:.18em;color:var(--muted2);text-transform:uppercase;font-weight:700}
-.nav-lesson-title{font-family:var(--head);font-size:.8rem;font-weight:700;color:var(--text);letter-spacing:.04em;margin-top:2px}
-.btn-back{display:flex;align-items:center;gap:8px;padding:9px 22px;border-radius:99px;border:1.5px solid rgba(0,160,180,.3);background:rgba(0,160,180,.06);color:var(--teal);font-family:var(--body);font-size:.85rem;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:all .2s}
-.btn-back:hover{border-color:rgba(0,160,180,.65);background:rgba(0,160,180,.12)}
-.btn-back svg{width:14px;height:14px;stroke:var(--teal);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── HEADER ── */
 .lesson-header{position:relative;z-index:2;max-width:1060px;width:100%;margin:0 auto;padding:24px 24px 0;animation:fadeUp .6s ease both}
@@ -303,7 +287,6 @@ nav{position:sticky;top:0;z-index:100;height:64px;display:flex;align-items:cente
 .sval{font-family:var(--head);font-weight:700;font-size:.8rem}
 
 @media(max-width:760px){.page-wrap,.lesson-header{padding-left:16px;padding-right:16px}.intro-grid,.scramble-wrap,.learnt-grid{grid-template-columns:1fr}.compare-row{grid-template-columns:1fr;gap:10px}.magic-arrow{transform:rotate(90deg)}.runner-opts{grid-template-columns:1fr 1fr}.oracle-pool{gap:8px}}
-@media(max-width:500px){nav{padding:0 16px}.logo span:last-child{display:none}.nav-center{display:none}.gp-stages{display:none}}
 </style>
 </head>
 <body>
@@ -312,19 +295,7 @@ nav{position:sticky;top:0;z-index:100;height:64px;display:flex;align-items:cente
 <div class="scan-overlay"></div>
 <div class="jelly">🪼</div>
 
-<nav>
-  <div class="logo">
-    <div class="nav-sonar"><div class="nav-sonar-ring"></div><div class="nav-sonar-ring nav-sonar-ring2"></div><div class="nav-sonar-dot"></div></div>
-    <span>CODEPLAY</span>
-  </div>
-  <div class="nav-center">
-    <div class="nav-pip"></div>
-    <div><div class="nav-lesson-tag">Part 4 · Lesson 02</div><div class="nav-lesson-title">What Is a Loop?</div></div>
-  </div>
-  <button class="btn-back" onclick="location.href='4_2lesson.html'">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back to Lessons
-  </button>
-</nav>
+
 
 <div class="lesson-header">
   <div class="lesson-eyebrow"><div class="lesson-part-tag">Part 4 of 10 · Lesson 02</div></div>
