@@ -84,7 +84,9 @@ const DEFAULT_THEME: ThemeStyle = {
   buttonClass: "bg-white hover:bg-slate-50 text-slate-700 border-slate-200",
 };
 
-export async function generateMetadata({ params }: CoursePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: CoursePageProps): Promise<Metadata> {
   const { courseSlug } = await params;
   const course = await getCourseBySlug(courseSlug);
 
@@ -105,27 +107,36 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const course = await getCourseBySlug(courseSlug);
   const levels = await getLevelsByCourseSlug(courseSlug);
   const { userId, sessionClaims } = await auth();
-  const isAdmin = Boolean(userId) && getRoleFromSessionClaims(sessionClaims) === "admin";
+  const isAdmin =
+    Boolean(userId) && getRoleFromSessionClaims(sessionClaims) === "admin";
 
   if (!course || !course.isPublished || (course.isLocked && !isAdmin)) {
     notFound();
   }
 
   const courseWithLevels = { ...course, levels };
-  const levelLessons = courseWithLevels.levels.flatMap((level) => level.lessons);
+  const levelLessons = courseWithLevels.levels.flatMap(
+    (level) => level.lessons,
+  );
   const totalLessons = levelLessons.length || courseWithLevels.lessons.length;
   const firstLevel = courseWithLevels.levels[0] ?? null;
-  const firstLesson = firstLevel?.lessons[0] ?? courseWithLevels.lessons[0] ?? null;
+  const firstLesson =
+    firstLevel?.lessons[0] ?? courseWithLevels.lessons[0] ?? null;
 
   return (
     <main className="min-h-full bg-slate-50 px-6 py-8 sm:px-10 text-slate-800 transition-colors duration-500">
       <section className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-        
         {/* Course Header Card */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <p className="mb-2 text-xs font-bold tracking-wider uppercase text-blue-600">Course</p>
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900">{course.title}</h1>
-          <p className="mt-3 max-w-3xl text-slate-600 leading-relaxed text-base">{course.description}</p>
+          <p className="mb-2 text-xs font-bold tracking-wider uppercase text-blue-600">
+            Course
+          </p>
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900">
+            {course.title}
+          </h1>
+          <p className="mt-3 max-w-3xl text-slate-600 leading-relaxed text-base">
+            {course.description}
+          </p>
 
           <div className="mt-5 flex flex-wrap gap-3 text-sm">
             <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-100 px-3 py-1 font-semibold text-blue-700">
@@ -145,7 +156,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </div>
 
           {firstLesson ? (
-            <Button asChild className="mt-6 bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all transform hover:scale-[1.02]">
+            <Button
+              asChild
+              className="mt-6 bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all transform hover:scale-[1.02]"
+            >
               <Link
                 href={
                   firstLevel
@@ -175,55 +189,72 @@ export default async function CoursePage({ params }: CoursePageProps) {
               const theme = LEVEL_THEMES[levelOrder] || DEFAULT_THEME;
 
               return (
-                <div key={level.id} className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-                  
-                  {/* Stage Title Area */}
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <details
+                  key={level.id}
+                  open={levelOrder === 1} // Keep first level expanded by default
+                  className="rounded-3xl border border-slate-200 bg-white shadow-sm group"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between p-5 sm:p-6">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2.5">
-                      <span className={`inline-flex items-center justify-center size-6 text-xs font-bold rounded-md border ${theme.badge}`}>
+                      <span
+                        className={`inline-flex items-center justify-center size-6 text-xs font-bold rounded-md border ${theme.badge}`}
+                      >
                         {levelOrder}
                       </span>
                       {level.title}
                     </h3>
-                  </div>
 
-                  {/* Lessons Listing */}
-                  <div className="grid gap-3 pl-1 sm:pl-2">
-                    {level.lessons.map((lesson) => (
-                      <article
-                        key={lesson.id}
-                        className={`rounded-2xl border ${theme.border} ${theme.bg} p-4 transition-all duration-300 hover:scale-[1.005] hover:shadow-sm`}
-                      >
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="space-y-0.5">
-                            <span className={`text-xs font-bold uppercase tracking-wider ${theme.textAccent}`}>
-                              Lesson {lesson.displayOrder}
-                            </span>
-                            <h4 className="text-base font-bold text-slate-900 tracking-tight">{lesson.title}</h4>
-                            <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">{lesson.description}</p>
-                          </div>
+                    <ChevronDown className="size-5 transition-transform duration-300 group-open:rotate-180 text-slate-500" />
+                  </summary>
 
-                          <div className="flex items-center justify-between border-t border-slate-200/60 pt-3 sm:pt-0 sm:border-0 sm:justify-end gap-4">
-                            <span className="text-xs text-slate-500 font-semibold whitespace-nowrap bg-white px-2.5 py-1 rounded-md border border-slate-200 shadow-2xs">
-                              {lesson.durationMinutes} mins
-                            </span>
-                            
-                            <Button 
-                              asChild 
-                              variant={theme.buttonVariant} 
-                              className={`text-xs h-9 px-4 font-semibold transition-all transform active:scale-95 ${theme.buttonClass}`}
-                            >
-                              <Link href={`/courses/${course.slug}/levels/${level.slug}/lessons/${lesson.slug}`}>
-                                <PlayCircle className="mr-1.5 size-4" />
-                                Watch
-                              </Link>
-                            </Button>
+                  <div className="border-t border-slate-100 px-5 pb-5 pt-4 sm:px-6">
+                    <div className="grid gap-3 pl-1 sm:pl-2">
+                      {level.lessons.map((lesson) => (
+                        <article
+                          key={lesson.id}
+                          className={`rounded-2xl border ${theme.border} ${theme.bg} p-4 transition-all duration-300 hover:scale-[1.005] hover:shadow-sm`}
+                        >
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="space-y-0.5">
+                              <span
+                                className={`text-xs font-bold uppercase tracking-wider ${theme.textAccent}`}
+                              >
+                                Lesson {lesson.displayOrder}
+                              </span>
+
+                              <h4 className="text-base font-bold text-slate-900 tracking-tight">
+                                {lesson.title}
+                              </h4>
+
+                              <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
+                                {lesson.description}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between border-t border-slate-200/60 pt-3 sm:pt-0 sm:border-0 sm:justify-end gap-4">
+                              <span className="text-xs text-slate-500 font-semibold whitespace-nowrap bg-white px-2.5 py-1 rounded-md border border-slate-200">
+                                {lesson.durationMinutes} mins
+                              </span>
+
+                              <Button
+                                asChild
+                                variant={theme.buttonVariant}
+                                className={`text-xs h-9 px-4 font-semibold transition-all active:scale-95 ${theme.buttonClass}`}
+                              >
+                                <Link
+                                  href={`/courses/${course.slug}/levels/${level.slug}/lessons/${lesson.slug}`}
+                                >
+                                  <PlayCircle className="mr-1.5 size-4" />
+                                  Watch
+                                </Link>
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      </article>
-                    ))}
+                        </article>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </details>
               );
             })
           ) : (
