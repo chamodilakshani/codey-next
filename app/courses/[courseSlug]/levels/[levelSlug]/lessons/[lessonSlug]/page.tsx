@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { ArrowLeft, PlayCircle } from "lucide-react";
+import { ArrowLeft, BookOpenCheck, Clock3, PlayCircle } from "lucide-react";
 
 import { LessonLearningFlow } from "@/components/lesson/lesson-learning-flow";
 import { getLessonBySlugs } from "@/lib/course-data";
@@ -125,19 +125,40 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const playlistLessons = lesson.level.lessons;
 
   return (
-    <main className="min-h-full bg-background px-6 py-8 sm:px-10">
-      <section className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[2fr_1fr]">
-        <article className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-6">
+    <main className="min-h-full bg-slate-50 px-6 py-8 text-slate-800 sm:px-10">
+      <section className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+        <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <Link
             href={`/courses/${courseSlug}/levels/${levelSlug}`}
-            className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
           >
             <ArrowLeft className="size-4" />
             Back to level
           </Link>
 
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{lesson.title}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{lesson.description}</p>
+          <p className="mt-5 text-xs font-bold uppercase tracking-[0.24em] text-blue-600">
+            Course
+          </p>
+          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+            {lesson.title}
+          </h1>
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-slate-600">
+            {lesson.description}
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-3 text-sm">
+            <span className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 font-semibold text-blue-700">
+              <BookOpenCheck className="size-4" />
+              Lesson {lesson.displayOrder}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 font-medium text-slate-600">
+              <Clock3 className="size-4" />
+              {lesson.durationMinutes} mins
+            </span>
+            <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 font-medium text-slate-600">
+              {lesson.level.title}
+            </span>
+          </div>
 
           <LessonLearningFlow
             lessonId={lesson.id}
@@ -156,10 +177,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
           />
         </article>
 
-        <aside className="rounded-3xl border border-border bg-card p-5 shadow-sm">
-          <p className="text-sm font-semibold text-primary">Level Playlist</p>
-          <h2 className="mt-1 text-lg font-semibold">{lesson.level.title}</h2>
-          <p className="text-sm text-muted-foreground">{lesson.level.course.title}</p>
+        <aside className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">
+            Level Playlist
+          </p>
+          <h2 className="mt-2 text-xl font-bold tracking-tight text-slate-900">
+            {lesson.level.title}
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">{lesson.level.course.title}</p>
 
           <div className="mt-4 space-y-2">
             {playlistLessons.map((item) => {
@@ -169,14 +194,21 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   key={item.id}
                   href={`/courses/${courseSlug}/levels/${levelSlug}/lessons/${item.slug}`}
                   className={[
-                    "flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition",
+                    "flex items-center justify-between gap-3 rounded-2xl border px-3 py-3 text-sm transition",
                     isActive
-                      ? "border-primary bg-primary/10 text-foreground"
-                      : "border-border hover:bg-muted",
+                      ? "border-blue-200 bg-blue-50 text-slate-900 shadow-sm"
+                      : "border-slate-200 bg-slate-50/70 text-slate-700 hover:border-slate-300 hover:bg-white",
                   ].join(" ")}
                 >
-                  <span className="line-clamp-1">{item.title}</span>
-                  <span className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                      Lesson {item.displayOrder}
+                    </p>
+                    <span className="mt-1 block line-clamp-1 font-semibold">
+                      {item.title}
+                    </span>
+                  </div>
+                  <span className="ml-2 inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-500">
                     <PlayCircle className="size-3.5" />
                     {item.durationMinutes}m
                   </span>
