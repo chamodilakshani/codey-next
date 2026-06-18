@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { BookOpenCheck, Clock3, PlayCircle } from "lucide-react";
+import { BookOpenCheck, ChevronDown, Clock3, PlayCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

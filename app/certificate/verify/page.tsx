@@ -61,7 +61,7 @@ export default function CertificateVerifyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-b ">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-xl mx-auto">
           <Card className="mb-8">
