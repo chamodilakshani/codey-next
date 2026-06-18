@@ -282,10 +282,10 @@ export function LessonLearningFlow({
       setIsGameFullscreen(document.fullscreenElement === gameFrameRef.current);
     };
 
-    document.addEventListener("fullscreenchange", syncFullscreenState);
-    return () => {
-      document.removeEventListener("fullscreenchange", syncFullscreenState);
-    };
+    // document.addEventListener("fullscreenchange", syncFullscreenState);
+    // return () => {
+    //   document.removeEventListener("fullscreenchange", syncFullscreenState);
+    // };
   }, []);
 
   return (
@@ -365,9 +365,11 @@ export function LessonLearningFlow({
                 Play this mini game to practice what you learned in this lesson.
               </p>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => toggleGameFullscreen()}>
+            <a href={gamePath} target="_blank" rel="noopener noreferrer">
+            <Button type="button" variant="outline" size="sm" >
               {isGameFullscreen ? "Exit Fullscreen" : "Fullscreen"}
             </Button>
+            </a>
           </div>
           <div
             ref={gameFrameRef}
