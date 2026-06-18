@@ -139,16 +139,17 @@ export function LessonLearningFlow({
   initialVideoCompleted,
   initialGamePlayed,
 }: LessonLearningFlowProps) {
-  const [videoCompleted, setVideoCompleted] = useState(initialVideoCompleted);
+  const hasVideo = videoUrl.trim().length > 0;
+  const [videoCompleted, setVideoCompleted] = useState(initialVideoCompleted || !hasVideo);
   const [gamePlayed, setGamePlayed] = useState(initialGamePlayed);
   const [isTracking, setIsTracking] = useState(false);
   const iframeId = useMemo(() => `lesson-video-${lessonId}`, [lessonId]);
   const hasTrackedVisit = useRef(false);
 
   const canTrack = isSignedIn && isLearner;
-  const canShowQuiz = videoCompleted;
-  const trackedVideoUrl = withYouTubeApiParams(videoUrl);
-  const trackVideoViaYouTubeApi = isYouTubeUrl(trackedVideoUrl);
+  const canShowQuiz = hasVideo ? videoCompleted : true;
+  const trackedVideoUrl = hasVideo ? withYouTubeApiParams(videoUrl) : "";
+  const trackVideoViaYouTubeApi = hasVideo && isYouTubeUrl(trackedVideoUrl);
 
   const markVideoCompleted = useCallback(async () => {
     if (videoCompleted || !canTrack) {
@@ -262,21 +263,23 @@ export function LessonLearningFlow({
 
   return (
     <>
-      <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-muted/30">
-        <div className="relative aspect-video w-full">
-          <iframe
-            id={iframeId}
-            src={trackedVideoUrl}
-            title={lessonTitle}
-            className="absolute inset-0 h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
+      {hasVideo ? (
+        <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-muted/30">
+          <div className="relative aspect-video w-full">
+            <iframe
+              id={iframeId}
+              src={trackedVideoUrl}
+              title={lessonTitle}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      {canTrack && !trackVideoViaYouTubeApi && !videoCompleted ? (
+      {hasVideo && canTrack && !trackVideoViaYouTubeApi && !videoCompleted ? (
         <div className="mt-4">
           <Button type="button" onClick={() => markVideoCompleted()} disabled={isTracking}>
             {isTracking ? "Saving..." : "Mark Video as Completed"}
@@ -287,7 +290,9 @@ export function LessonLearningFlow({
       {!isSignedIn ? (
         <div className="mt-6 rounded-2xl border border-dashed border-border p-4">
           <p className="text-sm text-muted-foreground">
-            Sign in as a learner to unlock quizzes after completing the lesson video.
+            {hasVideo
+              ? "Sign in as a learner to unlock quizzes after completing the lesson video."
+              : "Sign in as a learner to track progress and unlock lesson quizzes."}
           </p>
           <div className="mt-3">
             <SignInButton mode="modal">
@@ -319,7 +324,7 @@ export function LessonLearningFlow({
           </div>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-            Complete the lesson video to unlock the quiz.
+            {hasVideo ? "Complete the lesson video to unlock the quiz." : "This quiz is not available yet."}
           </div>
         )
       ) : null}

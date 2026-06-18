@@ -2,79 +2,89 @@ import prisma from "@/lib/prisma"
 import { getAgeGroupLabel, getDifficultyLabel } from "@/lib/course-data"
 
 export async function getAdminDashboardData() {
-  const [users, posts, courses, lessons, quizzes] = await prisma.$transaction([
-    prisma.user.findMany({
-      include: {
-        posts: {
-          select: {
-            id: true,
-            title: true,
-            published: true,
-          },
-          orderBy: {
-            id: "desc",
-          },
+  const usersPromise = prisma.user.findMany({
+    include: {
+      posts: {
+        select: {
+          id: true,
+          title: true,
+          published: true,
+        },
+        orderBy: {
+          id: "desc",
         },
       },
-      orderBy: {
-        id: "asc",
-      },
-    }),
-    prisma.post.findMany({
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+    },
+    orderBy: {
+      id: "asc",
+    },
+  })
+
+  const postsPromise = prisma.post.findMany({
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
         },
       },
-      orderBy: {
-        id: "desc",
-      },
-    }),
-    prisma.course.findMany({
-      include: {
-        levels: {
-          include: {
-            lessons: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                isPreview: true,
-                quiz: {
-                  select: {
-                    id: true,
-                  },
+    },
+    orderBy: {
+      id: "desc",
+    },
+  })
+
+  const coursesPromise = prisma.course.findMany({
+    include: {
+      levels: {
+        include: {
+          lessons: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              isPreview: true,
+              quiz: {
+                select: {
+                  id: true,
                 },
               },
-              orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
             },
+            orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
           },
         },
       },
-      orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
-    }),
-    prisma.lesson.findMany({
-      include: {
-        level: { include: { course: { select: { id: true, title: true, slug: true } } } },
-        quiz: {
-          select: {
-            id: true,
-            title: true,
-          },
+    },
+    orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+  })
+
+  const lessonsPromise = prisma.lesson.findMany({
+    include: {
+      level: { include: { course: { select: { id: true, title: true, slug: true } } } },
+      quiz: {
+        select: {
+          id: true,
+          title: true,
         },
       },
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-    }),
-    prisma.quiz.findMany({
-      include: {
-        lesson: { include: { level: { include: { course: { select: { id: true, title: true } } } } } },
-      },
-      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-    }),
+    },
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+  })
+
+  const quizzesPromise = prisma.quiz.findMany({
+    include: {
+      lesson: { include: { level: { include: { course: { select: { id: true, title: true } } } } } },
+    },
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+  })
+
+  const [users, posts, courses, lessons, quizzes] = await Promise.all([
+    usersPromise,
+    postsPromise,
+    coursesPromise,
+    lessonsPromise,
+    quizzesPromise,
   ])
 
   const coursesWithLessons = courses.map((course) => {

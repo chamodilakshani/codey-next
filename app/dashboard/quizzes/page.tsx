@@ -5,27 +5,28 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import prisma from "@/lib/prisma";
 
 export default async function QuizzesPage() {
-  const [lessons, quizzes] = await prisma.$transaction([
-    prisma.lesson.findMany({
-      select: {
-        id: true,
-        title: true,
-        level: { select: { course: { select: { title: true } } } },
-      },
-      orderBy: [{ createdAt: "desc" }],
-    }),
-    prisma.quiz.findMany({
-      include: {
-        lesson: {
-          select: {
-            title: true,
-            level: { select: { course: { select: { title: true } } } },
-          },
+  const lessonsPromise = prisma.lesson.findMany({
+    select: {
+      id: true,
+      title: true,
+      level: { select: { course: { select: { title: true } } } },
+    },
+    orderBy: [{ createdAt: "desc" }],
+  });
+
+  const quizzesPromise = prisma.quiz.findMany({
+    include: {
+      lesson: {
+        select: {
+          title: true,
+          level: { select: { course: { select: { title: true } } } },
         },
       },
-      orderBy: [{ updatedAt: "desc" }],
-    }),
-  ]);
+    },
+    orderBy: [{ updatedAt: "desc" }],
+  });
+
+  const [lessons, quizzes] = await Promise.all([lessonsPromise, quizzesPromise]);
 
   const lessonOptions = lessons.map((lesson) => ({
     id: lesson.id,

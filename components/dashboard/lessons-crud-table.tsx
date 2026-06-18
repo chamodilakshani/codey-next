@@ -117,26 +117,30 @@ function LessonForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <Label htmlFor={`${mode}-videoUrl-${lesson?.id ?? "new"}`}>
-            Video URL
+            Video URL (Optional)
           </Label>
           <Input
             id={`${mode}-videoUrl-${lesson?.id ?? "new"}`}
             name="videoUrl"
             defaultValue={lesson?.videoUrl}
-            required
+            placeholder="Leave blank for a game-only lesson"
           />
         </div>
         <div>
           <Label htmlFor={`${mode}-gameHtmlPath-${lesson?.id ?? "new"}`}>
-            Game HTML Path
+            Game HTML Path (Optional)
           </Label>
           <Input
             id={`${mode}-gameHtmlPath-${lesson?.id ?? "new"}`}
             name="gameHtmlPath"
             defaultValue={lesson?.gameHtmlPath ?? ""}
+            placeholder="Add a game path or provide a video URL"
           />
         </div>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Add at least one lesson activity: a video URL or a game HTML path.
+      </p>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <Label htmlFor={`${mode}-durationMinutes-${lesson?.id ?? "new"}`}>

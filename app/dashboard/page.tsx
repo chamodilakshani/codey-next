@@ -7,16 +7,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { getDashboardData } from "@/lib/dashboard-data"
 
 export default async function Page() {
-  const { metrics, chartData, courseRows } = await getDashboardData()
-  const tableData = courseRows.map((course, index) => ({
-    id: index + 1,
-    header: course.title,
-    type: `${course.ageGroup} ${course.difficulty}`,
-    status: course.status === "Published" ? "Done" : "In Progress",
-    target: course.lessonCount.toString(),
-    limit: course.quizCount.toString(),
-    reviewer: course.recentLessons[0]?.title ?? "Assign reviewer",
-  }))
+  const { metrics, chartData } = await getDashboardData()
 
   return (
     <SidebarProvider

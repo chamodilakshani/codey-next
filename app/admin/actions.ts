@@ -70,6 +70,20 @@ function getOptionalString(formData: FormData, key: string) {
   return value.length > 0 ? value : null;
 }
 
+function getLessonMediaFields(formData: FormData) {
+  const videoUrl = getString(formData, "videoUrl");
+  const gameHtmlPath = getOptionalString(formData, "gameHtmlPath");
+
+  if (!videoUrl && !gameHtmlPath) {
+    throw new Error("A lesson must include either a video URL or a game HTML path");
+  }
+
+  return {
+    videoUrl,
+    gameHtmlPath,
+  };
+}
+
 function getRoleFromFormData(formData: FormData) {
   const role = getString(formData, "role");
   if (role === "admin" || role === "learner") {
@@ -306,14 +320,15 @@ export async function deleteCourseAction(formData: FormData) {
 
 export async function createLessonAction(formData: FormData) {
   await requireAdminSession();
+  const { videoUrl, gameHtmlPath } = getLessonMediaFields(formData);
   const lesson = await prisma.lesson.create({
     data: {
       levelId: getRequiredString(formData, "levelId"),
       title: getRequiredString(formData, "title"),
       slug: normalizeSlug(getRequiredString(formData, "slug")),
       description: getRequiredString(formData, "description"),
-      videoUrl: getRequiredString(formData, "videoUrl"),
-      gameHtmlPath: getOptionalString(formData, "gameHtmlPath"),
+      videoUrl,
+      gameHtmlPath,
       durationMinutes: Math.max(1, getNumber(formData, "durationMinutes", 1)),
       displayOrder: Math.max(0, getNumber(formData, "displayOrder", 0)),
       isPreview: getBoolean(formData, "isPreview"),
@@ -331,6 +346,7 @@ export async function createLessonAction(formData: FormData) {
 export async function updateLessonAction(formData: FormData) {
   await requireAdminSession();
   const id = getRequiredString(formData, "id");
+  const { videoUrl, gameHtmlPath } = getLessonMediaFields(formData);
 
   await prisma.lesson.update({
     where: { id },
@@ -339,8 +355,8 @@ export async function updateLessonAction(formData: FormData) {
       title: getRequiredString(formData, "title"),
       slug: normalizeSlug(getRequiredString(formData, "slug")),
       description: getRequiredString(formData, "description"),
-      videoUrl: getRequiredString(formData, "videoUrl"),
-      gameHtmlPath: getOptionalString(formData, "gameHtmlPath"),
+      videoUrl,
+      gameHtmlPath,
       durationMinutes: Math.max(1, getNumber(formData, "durationMinutes", 1)),
       displayOrder: Math.max(0, getNumber(formData, "displayOrder", 0)),
       isPreview: getBoolean(formData, "isPreview"),

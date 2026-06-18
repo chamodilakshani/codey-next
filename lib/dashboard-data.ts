@@ -61,44 +61,47 @@ export async function getDashboardData() {
   const lastNinetyDays = new Date(now)
   lastNinetyDays.setDate(lastNinetyDays.getDate() - 89)
 
-  const [courses, totalCourses, publishedCourses, totalLessons, totalQuizzes, previewLessons] =
-    await prisma.$transaction([
-      prisma.course.findMany({
+  const courses = await prisma.course.findMany({
+    include: {
+      levels: {
         include: {
-          levels: {
-            include: {
-              lessons: {
+          lessons: {
+            select: {
+              id: true,
+              title: true,
+              durationMinutes: true,
+              isPreview: true,
+              createdAt: true,
+              quiz: {
                 select: {
                   id: true,
-                  title: true,
-                  durationMinutes: true,
-                  isPreview: true,
-                  createdAt: true,
-                  quiz: {
-                    select: {
-                      id: true,
-                    },
-                  },
                 },
-                orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
               },
             },
+            orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
           },
         },
-        orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
-      }),
-      prisma.course.count(),
-      prisma.course.count({ where: { isPublished: true } }),
-      prisma.lesson.count(),
-      prisma.quiz.count(),
-      prisma.lesson.count({ where: { isPreview: true } }),
-      
-    ])
+      },
+    },
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+  })
 
   const coursesWithLessons = courses.map((course) => ({
     ...course,
     lessons: course.levels.flatMap((level) => level.lessons),
-  }));
+  }))
+
+  const totalCourses = coursesWithLessons.length
+  const publishedCourses = coursesWithLessons.filter((course) => course.isPublished).length
+  const totalLessons = coursesWithLessons.reduce((sum, course) => sum + course.lessons.length, 0)
+  const totalQuizzes = coursesWithLessons.reduce(
+    (sum, course) => sum + course.lessons.filter((lesson) => lesson.quiz).length,
+    0
+  )
+  const previewLessons = coursesWithLessons.reduce(
+    (sum, course) => sum + course.lessons.filter((lesson) => lesson.isPreview).length,
+    0
+  )
 
   const courseRows: DashboardCourseRow[] = coursesWithLessons.map((course) => {
     const quizCount = course.lessons.filter((lesson) => lesson.quiz).length
