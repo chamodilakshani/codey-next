@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { motion } from "framer-motion"
 
 export function ClientHowItWorks() {
   const [tiltedCard, setTiltedCard] = useState<number | null>(null);
@@ -39,18 +40,33 @@ export function ClientHowItWorks() {
   return (
     <div className="space-y-10">
       <div className="mx-auto max-w-3xl text-center">
-        <p className="animate-fade-up text-sm font-bold uppercase tracking-[0.25em] text-slate-500">
+        <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9 }}
+              className="animate-fade-up text-sm font-bold uppercase tracking-[0.25em] text-slate-500">
           🎮 How It Works
-        </p>
-        <h2 className="animate-fade-up delay-100 mt-4 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-          Your Coding Adventure Awaits
-        </h2>
-        <p className="animate-fade-up delay-200 mt-4 text-lg leading-7 text-slate-600 sm:text-lg">
+        </motion.p>
+          <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9 }}
+              className="mt-4 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl"  >
+              Your Coding Adventure Awaits
+            </motion.h2>
+        <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9 }}
+              className="animate-fade-up delay-200 mt-4 text-lg leading-7 text-slate-600 sm:text-lg">
           Every world has 10 lessons, XP rewards, badges to unlock, and a final challenge. Learn by doing with fun, engaging activities! 🚀
-        </p>
+        </motion.p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {steps.map((step, idx) => (
           <div
             key={step.num}

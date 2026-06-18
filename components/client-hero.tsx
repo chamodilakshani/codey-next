@@ -42,7 +42,7 @@ export function ClientHero() {
       {/* Headings with per-letter bounce-in animation */}
       <div className="mb-0" style={headlineTransform}>
         <h1 className="text-6xl font-black tracking-tight text-slate-900 md:text-7xl leading-none mb-3">
-          {"Welcome, Explorer!".split("").map((char, i) => (
+          {"Welcome Explorer!".split("").map((char, i) => (
             <span
               key={i}
               className="inline-block animate-bounce-in"
@@ -67,7 +67,7 @@ export function ClientHero() {
       <div className="animate-fade-up delay-200 flex flex-wrap items-center justify-center gap-4 mt-12">
         <Button asChild>
           <Link
-            href="/courses"
+            href="/profile"
             className="rounded-full bg-gradient-to-r from-orange-400 to-pink-500 text-white font-black text-sm px-10 py-4 uppercase tracking-widest shadow-lg shadow-orange-400/40 hover:shadow-xl hover:shadow-orange-400/50 hover:-translate-y-0.5 transition-all duration-200"
           >
             Start Learning
@@ -75,7 +75,7 @@ export function ClientHero() {
         </Button>
         <Button asChild variant="outline">
           <Link
-            href="/courses"
+            href="/courses/01"
             className="rounded-full border-2 border-sky-300 bg-white/60 backdrop-blur-sm text-slate-800 font-black text-sm px-10 py-4 uppercase tracking-widest hover:bg-sky-50 hover:-translate-y-0.5 transition-all duration-200"
           >
             View All Lessons

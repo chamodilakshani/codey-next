@@ -55,36 +55,6 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:var(--body);backgro
 @keyframes popIn{0%{transform:scale(.35);opacity:0}65%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
 @keyframes pdotAnim{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
 
-/* ── NAV — matches screenshot exactly: light, CODEPLAY dark ink, title amber, Back outlined ── */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav);
-  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
-  background:rgba(253,250,244,.96);backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(44,32,21,.08);
-  box-shadow:0 1px 12px rgba(44,32,21,.07)
-}
-/* CODEPLAY — dark ink like screenshot (not orange) */
-.logo{
-  display:flex;align-items:center;gap:7px;
-  font-family:var(--head);font-weight:900;font-size:.95rem;
-  color:#ff8c00;letter-spacing:.04em;text-decoration:none
-}
-.logo-img{width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(44,32,21,.18)}
-/* Centre title — amber/gold like screenshot */
-.nav-title{
-  font-family:var(--head);font-size:.7rem;font-weight:800;
-  color:var(--gold);letter-spacing:.06em;
-  position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap
-}
-/* Back button — light outlined pill like screenshot */
-.btn-back{
-  display:flex;align-items:center;gap:5px;padding:5px 14px;border-radius:99px;
-  border:1.5px solid rgba(44,32,21,.18);background:rgba(253,250,244,.7);
-  color:var(--ink-lt);font-family:var(--body);font-size:.72rem;font-weight:700;
-  cursor:pointer;transition:all .2s
-}
-.btn-back:hover{background:rgba(200,116,14,.07);border-color:rgba(200,116,14,.35);color:var(--orange)}
-.btn-back svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── BOTTOM BAR ── */
 .bar{
@@ -353,17 +323,7 @@ nav{
 <canvas id="cvs"></canvas>
 <canvas id="ccvs"></canvas>
 
-<!-- NAV -->
-<nav>
-  <div class="logo">
-    <img class="logo-img" id="imgNavLogo" src="image/png" alt="" onerror="this.style.display='none'">
-    CODEPLAY
-  </div>
-  <span class="nav-title">Lesson 03 · Dragon Truth Hunt</span>
-  <button class="btn-back" onclick="go('3_3.html')">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-  </button>
-</nav>
+
 
 <!-- INTRO -->
 <div class="screen on" id="introScreen">

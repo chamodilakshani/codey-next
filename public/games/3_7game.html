@@ -49,22 +49,6 @@ html,body{
 @keyframes arrowBounce{0%,100%{transform:translateX(0)}50%{transform:translateX(10px)}}
 @keyframes arrowBounceL{0%,100%{transform:translateX(0)}50%{transform:translateX(-10px)}}
 
-/* ── NAV ── */
-nav{
-  position:fixed;top:0;left:0;right:0;height:48px;z-index:200;
-  display:flex;align-items:center;justify-content:space-between;padding:0 12px;
-  background:rgba(42,22,8,.97);
-  backdrop-filter:blur(16px);
-  border-bottom:2px solid rgba(180,130,40,.35);
-  box-shadow:0 2px 16px rgba(0,0,0,.18);
-}
-.nav-logo-wrap{display:flex;align-items:center;gap:7px;}
-.nav-logo-vid{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(212,168,64,.5);background:rgba(212,168,64,.1);flex-shrink:0;box-shadow:0 0 10px rgba(212,168,64,.25);}
-.nav-logo-text{font-family:var(--head);font-size:.88rem;font-weight:900;color:#ff8c00}
-.nav-title{font-family:var(--head);font-size:.65rem;font-weight:800;color:#D4A840;letter-spacing:.06em;}
-.btn-back{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;border:1.5px solid rgba(212,168,64,.4);background:rgba(212,168,64,.1);color:#F7F0DC;font-family:var(--body);font-size:.7rem;font-weight:800;cursor:pointer;transition:all .2s;}
-.btn-back:hover{background:rgba(212,168,64,.2);}
-.btn-back svg{width:10px;height:10px;stroke:#F7F0DC;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
 
 /* ── BOTTOM BAR ── */
 .bar{
@@ -377,17 +361,7 @@ nav{
 <div id="envFlash"></div>
 <canvas id="ccvs"></canvas>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo-wrap">
-    <video class="nav-logo-vid" autoplay loop muted playsinline src="video/nav_logo.mp4" onerror="this.style.display='none'"></video>
-    <span class="nav-logo-text">CODEPLAY</span>
-  </div>
-  <span class="nav-title">Lesson 07 — Game Lives</span>
-  <button class="btn-back" onclick="go('3_7lesson.html')">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-  </button>
-</nav>
+
 
 <!-- ══ INTRO ══ -->
 <div class="screen on" id="introScreen">

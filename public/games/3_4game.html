@@ -52,21 +52,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--cream);font-fa
 @keyframes wrongShake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
 @keyframes leafDrift {0%{opacity:0;transform:translateY(-10px) rotate(0deg)}10%{opacity:.45}90%{opacity:.2}100%{opacity:0;transform:translateY(110vh) rotate(300deg)}}
 
-/* ── NAV ── */
-nav{
-  position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:200;
-  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
-  background:rgba(253,250,244,.97);backdrop-filter:blur(18px);
-  border-bottom:2px solid rgba(200,116,14,.18);
-  box-shadow:0 2px 18px var(--shadow)
-}
-.nav-logo    {display:flex;align-items:center;gap:8px;font-family:var(--head);font-size:1rem;font-weight:900;color:#ff8c00}
-.nav-logo-img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,116,14,.35)}
-.nav-logo-dino{animation:bobY 3s ease-in-out infinite;display:inline-block}
-.nav-lesson  {font-family:var(--head);font-size:.72rem;font-weight:800;color:var(--orange);letter-spacing:.06em}
-.btn-back    {display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:99px;border:1.5px solid rgba(200,116,14,.38);background:rgba(200,116,14,.09);color:var(--orange);font-family:var(--body);font-size:.75rem;font-weight:800;cursor:pointer;transition:all .2s}
-.btn-back:hover{background:rgba(200,116,14,.18);border-color:rgba(200,116,14,.65)}
-.btn-back svg{width:11px;height:11px;stroke:var(--orange);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── BOTTOM BAR ── */
 .bar{
@@ -281,18 +266,6 @@ nav{
 <div id="starField"></div>
 <canvas id="ccvs"></canvas>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">
-    <img class="nav-logo-img" id="imgNavLogo" src="image/png" alt="" onerror="this.style.display='none'">
-    <span class="nav-logo-dino">🦕</span>
-    CODE<span style="color:var(--orange)">PLAY</span>
-  </div>
-  <span class="nav-lesson">Lesson 04 — ELSE</span>
-  <button class="btn-back" onclick="go('3_4lesson.html')">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-  </button>
-</nav>
 
 <!-- INTRO -->
 <div class="screen on" id="introScreen">

@@ -52,32 +52,6 @@ body{width:100%;height:100%;overflow:hidden;background:var(--cream);font-family:
 @keyframes gateOpen{0%{transform:scaleY(1);opacity:1}100%{transform:scaleY(0);opacity:0}}
 @keyframes gatePulse{0%,100%{box-shadow:0 0 14px rgba(200,116,14,.15)}50%{box-shadow:0 0 28px rgba(200,116,14,.38)}}
 
-/* ── NAV — matches screenshot: light/transparent, CODEPLAY left, title centre, Back right ── */
-nav{
-  position:fixed;top:0;left:0;right:0;height:var(--nav);z-index:200;
-  display:flex;align-items:center;justify-content:space-between;padding:0 16px;
-  background:rgba(253,250,244,.96);backdrop-filter:blur(18px);
-  border-bottom:1.5px solid rgba(200,116,14,.15);
-  box-shadow:0 2px 14px var(--shadow)
-}
-.nav-logo-wrap{display:flex;align-items:center;gap:7px}
-.nav-logo-vid{width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,116,14,.3);background:rgba(200,116,14,.1);flex-shrink:0}
-/* CODEPLAY text — amber like screenshot */
-.nav-logo-text{font-family:var(--head);font-size:.92rem;font-weight:900;color:#ff8c00;letter-spacing:.02em}
-/* Centre title — amber/gold like screenshot */
-.nav-title{
-  font-family:var(--head);font-size:.68rem;font-weight:800;
-  color:var(--gold);letter-spacing:.04em;
-  position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap
-}
-/* Back button — subtle outlined pill like screenshot */
-.btn-back{
-  display:flex;align-items:center;gap:5px;padding:5px 13px;border-radius:99px;
-  border:1.5px solid rgba(44,32,21,.18);background:rgba(253,250,244,.7);
-  color:var(--ink-lt);font-family:var(--body);font-size:.7rem;font-weight:800;cursor:pointer;transition:all .2s
-}
-.btn-back:hover{background:rgba(200,116,14,.08);border-color:rgba(200,116,14,.35);color:var(--orange)}
-.btn-back svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 
 /* ── BOTTOM BAR ── */
 .bar{
@@ -401,16 +375,7 @@ nav{
 <div class="env-flash" id="envFlash"></div>
 <canvas id="ccvs"></canvas>
 
-<nav>
-  <div class="nav-logo-wrap">
-    <video class="nav-logo-vid" autoplay loop muted playsinline src="video/nav_logo.mp4" onerror="this.style.display='none'"></video>
-    <span class="nav-logo-text">CODEPLAY</span>
-  </div>
-  <span class="nav-title">Lesson 02 · The IF Statement</span>
-  <button class="btn-back" onclick="go('3_2lesson.html')">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
-  </button>
-</nav>
+
 
 <!-- INTRO -->
 <div class="screen on" id="introScreen">
