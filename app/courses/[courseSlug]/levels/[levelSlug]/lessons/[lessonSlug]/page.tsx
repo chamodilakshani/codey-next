@@ -76,8 +76,8 @@ function normalizeQuizQuestions(value: unknown): QuizQuestion[] {
 }
 
 export async function generateMetadata({ params }: LessonPageProps): Promise<Metadata> {
-  const { courseSlug, lessonSlug } = await params;
-  const lesson = await getLessonBySlugs(courseSlug, lessonSlug);
+  const { courseSlug, levelSlug, lessonSlug } = await params;
+  const lesson = await getLessonBySlugs(courseSlug, levelSlug, lessonSlug);
 
   if (!lesson) {
     return { title: "Lesson Not Found" };
@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: LessonPageProps): Promise<Met
 
 export default async function LessonPage({ params }: LessonPageProps) {
   const { courseSlug, levelSlug, lessonSlug } = await params;
-  const lesson = await getLessonBySlugs(courseSlug, lessonSlug);
+  const lesson = await getLessonBySlugs(courseSlug, levelSlug, lessonSlug);
   const { userId, sessionClaims } = await auth();
   const role = getRoleFromSessionClaims(sessionClaims);
   const isSignedIn = Boolean(userId);

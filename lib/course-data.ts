@@ -77,11 +77,16 @@ export async function getLevelsByCourseSlug(courseSlug: string) {
   });
 }
 
-export async function getLessonBySlugs(courseSlug: string, lessonSlug: string) {
+export async function getLessonBySlugs(
+  courseSlug: string,
+  levelSlug: string,
+  lessonSlug: string
+) {
   return prisma.lesson.findFirst({
     where: {
       slug: lessonSlug,
       level: {
+        slug: levelSlug,
         course: {
           slug: courseSlug,
         },
