@@ -142,9 +142,11 @@ export function LessonLearningFlow({
   const hasVideo = videoUrl.trim().length > 0;
   const [videoCompleted, setVideoCompleted] = useState(initialVideoCompleted || !hasVideo);
   const [gamePlayed, setGamePlayed] = useState(initialGamePlayed);
+  const [isGameFullscreen, setIsGameFullscreen] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
   const iframeId = useMemo(() => `lesson-video-${lessonId}`, [lessonId]);
   const hasTrackedVisit = useRef(false);
+  const gameFrameRef = useRef<HTMLDivElement | null>(null);
 
   const canTrack = isSignedIn && isLearner;
   const canShowQuiz = hasVideo ? videoCompleted : true;
@@ -197,6 +199,20 @@ export function LessonLearningFlow({
       quizScorePercent,
     });
   }, [canTrack, lessonId, courseSlug, lessonSlug]);
+
+  const toggleGameFullscreen = useCallback(async () => {
+    const gameFrame = gameFrameRef.current;
+    if (!gameFrame) {
+      return;
+    }
+
+    if (document.fullscreenElement === gameFrame) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    await gameFrame.requestFullscreen();
+  }, []);
 
   useEffect(() => {
     if (!canTrack || hasTrackedVisit.current) {
@@ -260,6 +276,17 @@ export function LessonLearningFlow({
       window.onYouTubeIframeAPIReady = previousReady;
     };
   }, [canTrack, trackVideoViaYouTubeApi, iframeId, videoCompleted, markVideoCompleted]);
+
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      setIsGameFullscreen(document.fullscreenElement === gameFrameRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFullscreenState);
+    };
+  }, []);
 
   return (
     <>
@@ -331,16 +358,27 @@ export function LessonLearningFlow({
 
       {gamePath ? (
         <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card p-4 sm:p-5">
-          <h2 className="text-xl font-semibold">Interactive Game</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Play this mini game to practice what you learned in this lesson.
-          </p>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted/20">
-            <div className="relative h-[520px] w-full">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold">Interactive Game</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Play this mini game to practice what you learned in this lesson.
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={() => toggleGameFullscreen()}>
+              {isGameFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            </Button>
+          </div>
+          <div
+            ref={gameFrameRef}
+            className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted/20"
+          >
+            <div className="relative h-[520px] w-full bg-background">
               <iframe
                 src={gamePath}
                 title={`${lessonTitle} interactive game`}
                 className="absolute inset-0 h-full w-full"
+                allowFullScreen
                 onLoad={() => {
                   markGamePlayed().catch(() => {});
                 }}
