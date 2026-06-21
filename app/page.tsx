@@ -25,17 +25,10 @@ export default async function Home() {
     <main className="relative overflow-hidden bg-gradient-to-br background: rgba(255,255,255,0.15); from-white via-blue-50 to-purple-50 min-h-screen">
       <div className="absolute inset-0 overflow-hidden pointer-events-none"></div>
       {/* Floating Background Layer */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-           {/* Snow */}
-            <span className="snow snow-1">❄</span>
-            <span className="snow snow-2">❄</span>
-            <span className="snow snow-3">❄</span>
-            <span className="snow snow-4">❄</span>
-            <span className="snow snow-5">❄</span>
-          </div>
+    
       
       <section className="mx-auto w-full max-w-6xl space-y-10">
-        <section className="relative z-10 mx-auto w-full max-w-6xl space-y-10"></section>
+        
         <div className="hero-animated-bgrelative overflow-hiddenrounded-[2rem] border border-slate-200 bg-gradient-to-br from-white via-blue-50/50 to-purple-50/40 shadow-[0_24px_80px_-40px_rgba(59,130,246,0.15)]" ></div>
 
         {/* ── Hero Banner ── */}
