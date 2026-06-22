@@ -22,6 +22,8 @@ export default async function Home() {
     { img: "/image/PYTHON_PRO.png", name: "Python Pro",  desc: "Complete All Parts" },
   ];
 
+
+  
   return (
     // 🌈 Eye-pleasing Pastel Rainbow Background
     <main className="relative overflow-hidden min-h-screen bg-gradient-to-tr from-rose-100 via-amber-100 via-emerald-100 via-sky-100 to-violet-100">
