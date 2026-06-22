@@ -411,3 +411,339 @@
 /* Shadcn CSS - temporarily disabled to debug Tailwind CSS v4 compatibility */
 /* @import "shadcn/tailwind.css"; */
 @import "tw-animate-css";
+
+@keyframes gradientShift {
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes rainbowBorder {
+          0%   { border-color: #f97316; }
+          16%  { border-color: #eab308; }
+          33%  { border-color: #22c55e; }
+          50%  { border-color: #3b82f6; }
+          66%  { border-color: #8b5cf6; }
+          83%  { border-color: #ec4899; }
+          100% { border-color: #f97316; }
+        }
+        .hero-rainbow-bg {
+          background: linear-gradient(270deg,
+            #fdf2f8, #eff6ff, #f0fdf4, #fffbeb, #fdf4ff, #fdf2f8);
+          background-size: 400% 400%;
+          animation: gradientShift 10s ease infinite;
+        }
+        .badges-rainbow-bg {
+          background: linear-gradient(270deg,
+            #ede9fe, #dbeafe, #d1fae5, #fef3c7, #fce7f3, #ede9fe);
+          background-size: 400% 400%;
+          animation: gradientShift 12s ease infinite;
+        }
+        .rainbow-text {
+          background: linear-gradient(90deg,
+            #f97316, #eab308, #22c55e, #3b82f6, #8b5cf6, #ec4899);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .rainbow-badge-ring {
+          position: relative;
+          border-radius: 9999px;
+        }
+        .rainbow-badge-ring::before {
+          content: '';
+          position: absolute;
+          inset: -3px;
+          border-radius: 9999px;
+          background: linear-gradient(135deg,
+            #f97316, #eab308, #22c55e, #3b82f6, #8b5cf6, #ec4899);
+          z-index: -1;
+        }
+        .snow { position: absolute; color: #a5b4fc; animation: snowfall linear infinite; }
+        @keyframes snowfall {
+          0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(800px) rotate(360deg); opacity: 0; }
+        }
+        .snow-1 { left: 10%; font-size: 18px; animation-duration: 6s;  animation-delay: 0s; }
+        .snow-2 { left: 30%; font-size: 14px; animation-duration: 8s;  animation-delay: 1s; }
+        .snow-3 { left: 55%; font-size: 20px; animation-duration: 7s;  animation-delay: 2s; }
+        .snow-4 { left: 75%; font-size: 16px; animation-duration: 9s;  animation-delay: 0.5s; }
+        .snow-5 { left: 90%; font-size: 12px; animation-duration: 5s;  animation-delay: 3s; }
+        .course-card-pink   { background: linear-gradient(135deg, #fdf2f8, #fce7f3); border: 1.5px solid #f9a8d4; }
+        .course-card-blue   { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1.5px solid #93c5fd; }
+        .course-card-green  { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1.5px solid #86efac; }
+        .course-card-amber  { background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px solid #fcd34d; }
+        .course-card-purple { background: linear-gradient(135deg, #faf5ff, #ede9fe); border: 1.5px solid #c4b5fd; }
+        .cta-rainbow {
+          background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+          box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+        .cta-rainbow:hover {
+          background: linear-gradient(135deg, #4f46e5, #7c3aed, #db2777);
+          box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+          transform: translateY(-1px);
+        }
+
+
+        /* ===========================
+   Animated Rainbow Background
+=========================== */
+
+@keyframes rainbowMove {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.rainbow-page-bg {
+  background: linear-gradient(
+    -45deg,
+    #ffe5ec,
+    #fff3bf,
+    #d8f3dc,
+    #caf0f8,
+    #cdb4db,
+    #ffc8dd,
+    #bde0fe,
+    #ffe5ec
+  );
+
+  background-size: 500% 500%;
+  animation: rainbowMove 18s ease infinite;
+}
+
+/* ===========================
+   Hero Section
+=========================== */
+
+.hero-rainbow-bg {
+  background: linear-gradient(
+    135deg,
+    #ff9aa2,
+    #ffdac1,
+    #fff1b6,
+    #caffbf,
+    #9bf6ff,
+    #a0c4ff,
+    #bdb2ff,
+    #ffc6ff
+  );
+
+  background-size: 300% 300%;
+  animation: rainbowMove 10s ease infinite;
+}
+
+/* ===========================
+   Badge Section
+=========================== */
+
+.badges-rainbow-bg {
+  background: linear-gradient(
+    135deg,
+    #e0c3fc,
+    #8ec5fc,
+    #a8edea,
+    #fed6e3,
+    #fbc2eb,
+    #fad0c4,
+    #f6d365
+  );
+
+  background-size: 300% 300%;
+  animation: rainbowMove 12s ease infinite;
+}
+
+/* ===========================
+   Rainbow Text
+=========================== */
+
+.rainbow-text {
+  background: linear-gradient(
+    90deg,
+    #ff006e,
+    #fb5607,
+    #ffbe0b,
+    #06d6a0,
+    #118ab2,
+    #8338ec,
+    #ff006e
+  );
+
+  background-size: 300% 300%;
+  animation: rainbowMove 6s linear infinite;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===========================
+   Rainbow Border
+=========================== */
+
+.rainbow-border {
+  position: relative;
+  border-radius: 32px;
+}
+
+.rainbow-border::before {
+  content: "";
+
+  position: absolute;
+  inset: -3px;
+
+  border-radius: inherit;
+
+  background: linear-gradient(
+    90deg,
+    #ff595e,
+    #ffca3a,
+    #8ac926,
+    #1982c4,
+    #6a4c93,
+    #ff595e
+  );
+
+  background-size: 300% 300%;
+  animation: rainbowMove 4s linear infinite;
+
+  z-index: -1;
+}
+
+/* ===========================
+   Snow
+=========================== */
+
+.snow {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.8);
+  animation: snowfall linear infinite;
+}
+
+@keyframes snowfall {
+  from {
+    transform: translateY(-50px) rotate(0deg);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(120vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.snow-1 {
+  left: 5%;
+  font-size: 18px;
+  animation-duration: 7s;
+}
+
+.snow-2 {
+  left: 22%;
+  font-size: 14px;
+  animation-duration: 8s;
+}
+
+.snow-3 {
+  left: 42%;
+  font-size: 22px;
+  animation-duration: 9s;
+}
+
+.snow-4 {
+  left: 63%;
+  font-size: 16px;
+  animation-duration: 10s;
+}
+
+.snow-5 {
+  left: 82%;
+  font-size: 20px;
+  animation-duration: 6s;
+}
+
+.snow-6 {
+  left: 94%;
+  font-size: 14px;
+  animation-duration: 8s;
+}
+
+/* ===========================
+   Floating Rainbow Blobs
+=========================== */
+
+.rainbow-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: blobFloat 8s ease-in-out infinite alternate;
+}
+
+@keyframes blobFloat {
+  from {
+    transform: translateY(0px) scale(1);
+  }
+
+  to {
+    transform: translateY(-30px) scale(1.08);
+  }
+}
+
+/* ===========================
+   Rainbow Buttons
+=========================== */
+
+.rainbow-button {
+  background: linear-gradient(
+    90deg,
+    #ff006e,
+    #fb5607,
+    #ffbe0b,
+    #06d6a0,
+    #3a86ff,
+    #8338ec
+  );
+
+  background-size: 300% 300%;
+  animation: rainbowMove 5s linear infinite;
+
+  color: white;
+  font-weight: bold;
+  transition: 0.25s;
+}
+
+.rainbow-button:hover {
+  transform: scale(1.05);
+}
+
+/* ===========================
+   Course Card Colors
+=========================== */
+
+.course-card-pink {
+  background: linear-gradient(135deg, #ffe5ec, #ffc2d1);
+}
+
+.course-card-blue {
+  background: linear-gradient(135deg, #caf0f8, #90e0ef);
+}
+
+.course-card-green {
+  background: linear-gradient(135deg, #d8f3dc, #95d5b2);
+}
+
+.course-card-yellow {
+  background: linear-gradient(135deg, #fff1b6, #ffe066);
+}
+
+.course-card-purple {
+  background: linear-gradient(135deg, #e0c3fc, #cdb4db);
+}
