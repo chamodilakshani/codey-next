@@ -29,6 +29,7 @@ type CourseProgress = {
     id: string;
     title: string;
     slug: string;
+    levelSlug: string;
     isCompleted: boolean;
     lastVisitedAt?: string;
     quizScorePercent?: number;
@@ -148,7 +149,12 @@ export default async function ProfilePage() {
   });
 
   const progressByCourse: CourseProgress[] = courses.map((course) => {
-    const lessons = course.levels.flatMap((level) => level.lessons);
+    const lessons = course.levels.flatMap((level) =>
+      level.lessons.map((lesson) => ({
+        ...lesson,
+        levelSlug: level.slug,
+      }))
+    );
     const entriesForCourse = activityEntries.filter((entry) => entry.courseSlug === course.slug);
     const completedLessonIds = new Set(
       entriesForCourse.filter((e) => Boolean(e.videoCompletedAt)).map((e) => e.lessonId)
@@ -181,6 +187,7 @@ export default async function ProfilePage() {
           id: lesson.id,
           title: lesson.title,
           slug: lesson.slug,
+          levelSlug: lesson.levelSlug,
           isCompleted: Boolean(activity?.videoCompletedAt),
           lastVisitedAt: activity?.lastVisitedAt,
           quizScorePercent: activity?.quizScorePercent,
@@ -387,7 +394,7 @@ export default async function ProfilePage() {
                             </span>
                           )}
                           <Link
-                            href={`/courses/${course.slug}/lessons/${lesson.slug}`}
+                            href={`/courses/${course.slug}/levels/${lesson.levelSlug}/lessons/${lesson.slug}`}
                             className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
                           >
                             Open
