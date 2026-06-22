@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SignInButton } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
+
 import { LessonQuiz } from "@/components/lesson/lesson-quiz";
+import { Button } from "@/components/ui/button";
 
 type QuizQuestion = {
   question: string;
@@ -139,16 +140,19 @@ export function LessonLearningFlow({
   initialVideoCompleted,
   initialGamePlayed,
 }: LessonLearningFlowProps) {
-  const [videoCompleted, setVideoCompleted] = useState(initialVideoCompleted);
+  const hasVideo = videoUrl.trim().length > 0;
+  const [videoCompleted, setVideoCompleted] = useState(initialVideoCompleted || !hasVideo);
   const [gamePlayed, setGamePlayed] = useState(initialGamePlayed);
+  const [isGameFullscreen, setIsGameFullscreen] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
   const iframeId = useMemo(() => `lesson-video-${lessonId}`, [lessonId]);
   const hasTrackedVisit = useRef(false);
+  const gameFrameRef = useRef<HTMLDivElement | null>(null);
 
   const canTrack = isSignedIn && isLearner;
-  const canShowQuiz = videoCompleted;
-  const trackedVideoUrl = withYouTubeApiParams(videoUrl);
-  const trackVideoViaYouTubeApi = isYouTubeUrl(trackedVideoUrl);
+  const canShowQuiz = hasVideo ? videoCompleted : true;
+  const trackedVideoUrl = hasVideo ? withYouTubeApiParams(videoUrl) : "";
+  const trackVideoViaYouTubeApi = hasVideo && isYouTubeUrl(trackedVideoUrl);
 
   const markVideoCompleted = useCallback(async () => {
     if (videoCompleted || !canTrack) {
@@ -183,19 +187,36 @@ export function LessonLearningFlow({
     });
   }, [gamePlayed, canTrack, lessonId, courseSlug, lessonSlug]);
 
-  const markQuizSubmitted = useCallback(async (quizScorePercent: number) => {
-    if (!canTrack) {
+  const markQuizSubmitted = useCallback(
+    async (quizScorePercent: number) => {
+      if (!canTrack) {
+        return;
+      }
+
+      await trackLessonEvent({
+        lessonId,
+        courseSlug,
+        lessonSlug,
+        event: "quiz_submitted",
+        quizScorePercent,
+      });
+    },
+    [canTrack, lessonId, courseSlug, lessonSlug]
+  );
+
+  const toggleGameFullscreen = useCallback(async () => {
+    const gameFrame = gameFrameRef.current;
+    if (!gameFrame) {
       return;
     }
 
-    await trackLessonEvent({
-      lessonId,
-      courseSlug,
-      lessonSlug,
-      event: "quiz_submitted",
-      quizScorePercent,
-    });
-  }, [canTrack, lessonId, courseSlug, lessonSlug]);
+    if (document.fullscreenElement === gameFrame) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    await gameFrame.requestFullscreen();
+  }, []);
 
   useEffect(() => {
     if (!canTrack || hasTrackedVisit.current) {
@@ -260,23 +281,45 @@ export function LessonLearningFlow({
     };
   }, [canTrack, trackVideoViaYouTubeApi, iframeId, videoCompleted, markVideoCompleted]);
 
+  useEffect(() => {
+    const syncFullscreenState = () => {
+      setIsGameFullscreen(document.fullscreenElement === gameFrameRef.current);
+    };
+
+    // document.addEventListener("fullscreenchange", syncFullscreenState);
+    // return () => {
+    //   document.removeEventListener("fullscreenchange", syncFullscreenState);
+    // };
+  }, []);
+
   return (
     <>
-      <div className="mt-5 overflow-hidden rounded-2xl border border-border bg-muted/30">
-        <div className="relative aspect-video w-full">
-          <iframe
-            id={iframeId}
-            src={trackedVideoUrl}
-            title={lessonTitle}
-            className="absolute inset-0 h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-          />
+      {hasVideo ? (
+        <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md animate-in fade-in">
+          <div className="border-b border-slate-100 bg-gradient-to-r from-blue-50 via-white to-white px-5 py-4">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">
+              Lesson Video
+            </p>
+            <h2 className="mt-2 text-lg font-bold text-slate-900">Watch and learn</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Watch the lesson carefully before attempting the quiz.
+            </p>
+          </div>
+          <div className="relative aspect-video w-full bg-slate-950">
+            <iframe
+              id={iframeId}
+              src={trackedVideoUrl}
+              title={lessonTitle}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      {canTrack && !trackVideoViaYouTubeApi && !videoCompleted ? (
+      {hasVideo && canTrack && !trackVideoViaYouTubeApi && !videoCompleted ? (
         <div className="mt-4">
           <Button type="button" onClick={() => markVideoCompleted()} disabled={isTracking}>
             {isTracking ? "Saving..." : "Mark Video as Completed"}
@@ -285,13 +328,19 @@ export function LessonLearningFlow({
       ) : null}
 
       {!isSignedIn ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-border p-4">
-          <p className="text-sm text-muted-foreground">
-            Sign in as a learner to unlock quizzes after completing the lesson video.
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-4">
+          <p className="text-sm text-slate-600">
+            {hasVideo
+              ? "Sign in as a learner to unlock quizzes after completing the lesson video."
+              : "Sign in as a learner to track progress and unlock lesson quizzes."}
           </p>
           <div className="mt-3">
             <SignInButton mode="modal">
-              <Button type="button" variant="outline">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+              >
                 Sign In
               </Button>
             </SignInButton>
@@ -300,7 +349,7 @@ export function LessonLearningFlow({
       ) : null}
 
       {isSignedIn && !isLearner ? (
-        <div className="mt-6 rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+        <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-4 text-sm text-slate-600">
           Admin sessions do not track learner progress and cannot unlock quiz progression.
         </div>
       ) : null}
@@ -318,24 +367,45 @@ export function LessonLearningFlow({
             />
           </div>
         ) : (
-          <div className="mt-6 rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-            Complete the lesson video to unlock the quiz.
+          <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-4 text-sm text-slate-600">
+            {hasVideo ? "Complete the lesson video to unlock the quiz." : "This quiz is not available yet."}
           </div>
         )
       ) : null}
 
       {gamePath ? (
-        <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card p-4 sm:p-5">
-          <h2 className="text-xl font-semibold">Interactive Game</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Play this mini game to practice what you learned in this lesson.
-          </p>
-          <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-muted/20">
-            <div className="relative h-[520px] w-full">
+        <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">
+                Practice
+              </p>
+              <h2 className="mt-2 text-xl font-bold text-slate-900">Interactive Game</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Play this mini game to practice what you learned in this lesson.
+              </p>
+            </div>
+            <a href={gamePath} target="_blank" rel="noopener noreferrer">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+              >
+                {isGameFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+              </Button>
+            </a>
+          </div>
+          <div
+            ref={gameFrameRef}
+            className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100"
+          >
+            <div className="relative h-[520px] w-full bg-white">
               <iframe
                 src={gamePath}
                 title={`${lessonTitle} interactive game`}
                 className="absolute inset-0 h-full w-full"
+                allowFullScreen
                 onLoad={() => {
                   markGamePlayed().catch(() => {});
                 }}
@@ -343,7 +413,7 @@ export function LessonLearningFlow({
             </div>
           </div>
           {canTrack ? (
-            <p className="mt-3 text-xs text-muted-foreground">
+            <p className="mt-3 text-xs font-medium text-slate-500">
               {gamePlayed ? "Game activity tracked." : "Game activity will be tracked when loaded."}
             </p>
           ) : null}

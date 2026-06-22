@@ -18,7 +18,7 @@ function flattenCourseLessons(course: {
 
 export async function getPublishedCourses() {
   const courses = await prisma.course.findMany({
-    where: { isPublished: true, isLocked: false },
+    where: { isPublished: true,},
     include: {
       levels: {
         orderBy: { displayOrder: "asc" },
@@ -77,11 +77,16 @@ export async function getLevelsByCourseSlug(courseSlug: string) {
   });
 }
 
-export async function getLessonBySlugs(courseSlug: string, lessonSlug: string) {
+export async function getLessonBySlugs(
+  courseSlug: string,
+  levelSlug: string,
+  lessonSlug: string
+) {
   return prisma.lesson.findFirst({
     where: {
       slug: lessonSlug,
       level: {
+        slug: levelSlug,
         course: {
           slug: courseSlug,
         },

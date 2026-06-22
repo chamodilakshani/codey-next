@@ -26,6 +26,7 @@ interface Course {
   difficulty: string;
   durationMinutes: number;
   thumbnailUrl: string;
+  isLocked: boolean;
   lessons: { id: string }[];
 }
 
@@ -39,7 +40,7 @@ export function ClientCourseCards({ courses }: ClientCourseCardsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
       {courses.map((course, idx) => {
-        const thumbnailSrc = course.thumbnailUrl.startsWith("https://images.unsplash.com/")
+        const thumbnailSrc = course?.thumbnailUrl.startsWith("http")
           ? course.thumbnailUrl
           : "/course-placeholder.svg";
 
@@ -47,11 +48,13 @@ export function ClientCourseCards({ courses }: ClientCourseCardsProps) {
         const theme = courseThemes[themeKeys[idx % themeKeys.length]];
         const delays = ["delay-100", "delay-200", "delay-300", "delay-400", "delay-500"];
         const delay = delays[idx % delays.length];
+        const isLocked = course.isLocked; // Assuming this property exists in the course data
 
         return (
           <article
+            
             key={course.id}
-            className={`animate-pop-in ${delay} group relative overflow-hidden rounded-[1.75rem] border-2 border-slate-100 ${theme.bgColor} shadow-lg shadow-slate-200/50 transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:shadow-slate-300/60 cursor-pointer`}
+            className={`animate-pop-in ${delay} ${isLocked ? "cursor-not-allowed opacity-50" : "cursor-pointer"} group relative overflow-hidden rounded-[1.75rem] border-2 border-slate-100 ${theme.bgColor}  shadow-lg shadow-slate-200/50 transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:shadow-slate-300/60 `}
             style={{
               animationFillMode: "both",
             }}
@@ -92,6 +95,7 @@ export function ClientCourseCards({ courses }: ClientCourseCardsProps) {
                 <span className={`rounded-full px-3 py-1.5 text-xs font-bold ${theme.color} ${theme.bgColor} border-2 border-slate-200 transition-all duration-300 group-hover:scale-105`}>
                   {getAgeGroupLabel(course.ageGroup)}
                 </span>
+            
                 <span className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700 border-2 border-slate-200 transition-all duration-300 group-hover:scale-105">
                   {getDifficultyLabel(course.difficulty)}
                 </span>
@@ -121,7 +125,12 @@ export function ClientCourseCards({ courses }: ClientCourseCardsProps) {
               </div>
 
               {/* CTA Button with shine effect */}
-              <Button asChild className={`w-full rounded-full bg-gradient-to-r ${theme.gradient} text-white font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden group/button`}>
+              {isLocked ?
+                <Button disabled className={`w-full rounded-full bg-gradient-to-r from-gray-300 to-gray-400 text-white font-bold shadow-lg cursor-not-allowed`}>
+                  🔒 Locked
+                </Button>
+                :
+                              <Button asChild className={`w-full rounded-full bg-gradient-to-r ${theme.gradient} text-white font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden group/button`}>
                 <Link href={`/courses/${course.slug}`}>
                   <span className="relative z-10">🎮 Start Quest</span>
                   {/* Shine effect overlay */}
@@ -133,6 +142,8 @@ export function ClientCourseCards({ courses }: ClientCourseCardsProps) {
                   />
                 </Link>
               </Button>
+              }
+
             </div>
           </article>
         );
